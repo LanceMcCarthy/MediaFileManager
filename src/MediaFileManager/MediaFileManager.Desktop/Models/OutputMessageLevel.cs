@@ -3,6 +3,7 @@
     public enum OutputMessageLevel
     {
         Normal,
+        Informational,
         Success,
         Warning,
         Error

@@ -11,10 +11,13 @@ namespace MediaFileManager.Desktop
 {
     public partial class MainWindow : Window
     {
-        private ObservableCollection<string> Seasons = new ObservableCollection<string>();
-        private ObservableCollection<string> Episodes = new ObservableCollection<string>();
-        private ObservableCollection<OutputMessage> OutputMessages = new ObservableCollection<OutputMessage>();
-        readonly RadOpenFolderDialog openFolderDialog;
+        private readonly RadOpenFolderDialog openFolderDialog;
+        // ReSharper disable once InconsistentNaming
+        private readonly ObservableCollection<string> Seasons = new ObservableCollection<string>();
+        // ReSharper disable once InconsistentNaming
+        private readonly ObservableCollection<string> Episodes = new ObservableCollection<string>();
+        // ReSharper disable once InconsistentNaming
+        private readonly ObservableCollection<OutputMessage> OutputMessages = new ObservableCollection<OutputMessage>();
 
         public MainWindow()
         {
@@ -24,13 +27,10 @@ namespace MediaFileManager.Desktop
             EpisodesListBox.ItemsSource = Episodes;
             OutputListBox.ItemsSource = OutputMessages;
 
-            openFolderDialog = new RadOpenFolderDialog();
-            openFolderDialog.Owner = this;
-            openFolderDialog.ExpandToCurrentDirectory = false;
+            openFolderDialog = new RadOpenFolderDialog {Owner = this, ExpandToCurrentDirectory = false};
 
             WriteOutput($"Application ready, open a folder to begin.", OutputMessageLevel.Success);
         }
-
 
         #region Source operations
 
@@ -40,15 +40,22 @@ namespace MediaFileManager.Desktop
             {
                 WriteOutput($"Opening folder picker...", OutputMessageLevel.Normal);
 
-                if (!string.IsNullOrEmpty(Properties.Settings.Default["LastFolder"] as string))
-                {
-                    openFolderDialog.InitialDirectory = Properties.Settings.Default["LastFolder"] as string;
+                busyIndicator.IsBusy = true;
+                busyIndicator.BusyContent = "opening folder...";
+                busyIndicator.IsIndeterminate = true;
 
-                    WriteOutput($"LastFolder setting loaded.", OutputMessageLevel.Normal);
+                if (!string.IsNullOrEmpty(Properties.Settings.Default.LastFolder))
+                {
+                    // Need to bump up one level from the last folder location
+                    var topDirectoryInfo = Directory.GetParent(Properties.Settings.Default.LastFolder);
+
+                    openFolderDialog.InitialDirectory = topDirectoryInfo.FullName;
+
+                    WriteOutput($"Starting at saved folder.", OutputMessageLevel.Normal);
                 }
                 else
                 {
-                    WriteOutput($"No LastFolder setting found, starting with root folder.", OutputMessageLevel.Warning);
+                    WriteOutput($"No saved folder, starting at root.", OutputMessageLevel.Warning);
                 }
 
                 openFolderDialog.ShowDialog();
@@ -60,27 +67,49 @@ namespace MediaFileManager.Desktop
                 }
                 else
                 {
-                    Properties.Settings.Default["LastFolder"] = openFolderDialog.FileName;
+                    Properties.Settings.Default.LastFolder = openFolderDialog.FileName;
                     Properties.Settings.Default.Save();
                 }
 
                 Reset();
 
-                var seasonsResult = Directory.EnumerateDirectories(openFolderDialog.FileName);
+                busyIndicator.BusyContent = $"searching for seasons...";
+
+                var seasonsResult = Directory.EnumerateDirectories(openFolderDialog.FileName).ToList();
 
                 Seasons.Clear();
 
                 foreach (var season in seasonsResult)
                 {
                     Seasons.Add(season);
+
+                    busyIndicator.BusyContent = $"added {season}";
                 }
 
-                WriteOutput($"Discovered {seasonsResult?.Count()} seasons.", OutputMessageLevel.Success);
+                if (Seasons.Count == 0)
+                {
+                    WriteOutput("No seasons detected, make sure there are subfolders with season number.", OutputMessageLevel.Warning);
+                }
+                else if (Seasons.Count == 1)
+                {
+                    WriteOutput($"Opened '{Path.GetFileName(openFolderDialog.FileName)}' ({Seasons.Count} season).", OutputMessageLevel.Success);
+                }
+                else
+                {
+                    WriteOutput($"Opened '{Path.GetFileName(openFolderDialog.FileName)}' ({Seasons.Count} seasons).", OutputMessageLevel.Success);
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+
                 WriteOutput(ex.Message, OutputMessageLevel.Error);
+            }
+            finally
+            {
+                busyIndicator.BusyContent = "";
+                busyIndicator.IsBusy = false;
+                busyIndicator.IsIndeterminate = false;
             }
         }
 
@@ -98,26 +127,42 @@ namespace MediaFileManager.Desktop
                 }
             }
 
-            WriteOutput($"{SeasonsListBox.SelectedItems.Count} seasons selected ({Episodes.Count} total episodes).", OutputMessageLevel.Normal);
+            if (SeasonsListBox.SelectedItems.Count == 0)
+            {
+                WriteOutput("Selections cleared.", OutputMessageLevel.Warning);
+            }
+            else if (SeasonsListBox.SelectedItems.Count == 1)
+            {
+                WriteOutput($"{Path.GetFileName(openFolderDialog.FileName)} selected ({Episodes.Count} episodes).", OutputMessageLevel.Informational);
+            }
+            else
+            {
+                WriteOutput($"{SeasonsListBox.SelectedItems.Count} seasons selected ({Episodes.Count} total episodes).", OutputMessageLevel.Informational);
+            }
         }
 
         private void EpisodesListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            if (e.AddedItems != null)
-            {
-                if (EpisodesListBox.SelectedItems.Count > 0)
-                {
-                    var firstEpisodeFilePath = e.AddedItems.OfType<string>().FirstOrDefault();
-                    string curName = Path.GetFileName(firstEpisodeFilePath);
-                    EpisodeNameTextBox.Text = curName;
-                }
-            }
-        }
+            if (e.AddedItems == null)
+                return;
 
-        private void EpisodeNameTextBox_SelectionChanged(object sender, RoutedEventArgs e)
-        {
-            OriginalTextBox_Renaming.Text = EpisodeNameTextBox.SelectedText;
-            OriginalTextBox_Renumbering.Text = EpisodeNameTextBox.SelectedText;
+            if (EpisodesListBox.SelectedItems.Count <= 0)
+                return;
+
+            var firstEpisodeFilePath = e.AddedItems.OfType<string>().FirstOrDefault();
+
+            string curName = Path.GetFileName(firstEpisodeFilePath);
+
+            if (!string.IsNullOrEmpty(curName))
+            {
+                EpisodeName_Renaming_TextBox.Text = curName;
+                EpisodeName_Renumbering_TextBox.Text = curName;
+            }
+            else
+            {
+                EpisodeName_Renaming_TextBox.Text = string.Empty;
+                EpisodeName_Renumbering_TextBox.Text = string.Empty;
+            }
         }
 
         private void ResetButton_Click(object sender, RoutedEventArgs e)
@@ -130,34 +175,9 @@ namespace MediaFileManager.Desktop
 
         #region Renaming operation
 
-        private void UpdateFileNameButton_Click(object sender, RoutedEventArgs e)
+        private void EpisodeNameTextBox_SelectionChanged(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(OriginalTextBox_Renaming.Text))
-            {
-                WriteOutput($"No text selected, aborting file name update.", OutputMessageLevel.Error);
-                return;
-            }
-            else
-            {
-                WriteOutput($"Renaming operation starting...", OutputMessageLevel.Warning);
-            }
-
-            foreach (string episodeFilePath in EpisodesListBox.SelectedItems)
-            {
-                // Need to separate name and path in order to prefix the file name
-                string curDir = Path.GetDirectoryName(episodeFilePath);
-                string curName = Path.GetFileName(episodeFilePath);
-
-                string newName = curName.Replace(OriginalTextBox_Renaming.Text, ReplacementTextBox.Text);
-
-                File.Move(episodeFilePath, Path.Combine(curDir, newName));
-
-                WriteOutput($"Renaming - '{OriginalTextBox_Renaming.Text}' to '{ReplacementTextBox.Text}'...", OutputMessageLevel.Success, true);
-            }
-
-            WriteOutput($"Renaming complete.", OutputMessageLevel.Success, true);
-
-            RefreshEpisodesList();
+            OriginalTextBox_Renaming.Text = EpisodeName_Renaming_TextBox.SelectedText;
         }
 
         private void OriginalTextBox_Renaming_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
@@ -165,9 +185,78 @@ namespace MediaFileManager.Desktop
             UpdateFileNameButton.IsEnabled = !string.IsNullOrEmpty(OriginalTextBox_Renaming?.Text);
         }
 
+        private void UpdateFileNameButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                busyIndicator.IsBusy = true;
+                busyIndicator.BusyContent = "updating file names...";
+                busyIndicator.IsIndeterminate = false;
+                busyIndicator.ProgressValue = 0;
+
+                if (string.IsNullOrEmpty(OriginalTextBox_Renaming.Text))
+                {
+                    WriteOutput($"No text selected, aborting file name update.", OutputMessageLevel.Error);
+                    return;
+                }
+                else
+                {
+                    WriteOutput($"Renaming operation starting...", OutputMessageLevel.Warning);
+                }
+
+                for (int i = 1; i <= EpisodesListBox.SelectedItems.Count; i++)
+                {
+                    var episodeFilePath = EpisodesListBox.SelectedItems[i - 1] as string;
+
+                    // Need to separate name and path in order to prefix the file name
+                    string curDir = Path.GetDirectoryName(episodeFilePath);
+
+                    if (string.IsNullOrEmpty(curDir))
+                    {
+                        WriteOutput($"Could not identify directory.", OutputMessageLevel.Error);
+                        continue;
+                    }
+
+                    string curName = Path.GetFileName(episodeFilePath);
+
+                    if (string.IsNullOrEmpty(curName))
+                    {
+                        WriteOutput($"Could not identify file name.", OutputMessageLevel.Error);
+                        continue;
+                    }
+
+                    string newName = curName.Replace(OriginalTextBox_Renaming.Text, ReplacementTextBox.Text);
+
+                    File.Move(episodeFilePath, Path.Combine(curDir, newName));
+
+                    busyIndicator.ProgressValue = i / EpisodesListBox.SelectedItems.Count * 100;
+                    busyIndicator.BusyContent = $"Renaming - '{OriginalTextBox_Renaming.Text}' to '{ReplacementTextBox.Text}'...";
+                }
+
+                WriteOutput($"Renaming complete.", OutputMessageLevel.Success, true);
+
+                RefreshEpisodesList();
+            }
+            catch (Exception ex)
+            {
+                WriteOutput(ex.Message, OutputMessageLevel.Error);
+            }
+            finally
+            {
+                busyIndicator.BusyContent = "";
+                busyIndicator.IsBusy = false;
+                busyIndicator.ProgressValue = 0;
+            }
+        }
+
         #endregion
 
         #region Renumbering operation
+
+        private void EpisodeNameTextBox_Renumbering_SelectionChanged(object sender, RoutedEventArgs e)
+        {
+            OriginalTextBox_Renumbering.Text = EpisodeName_Renumbering_TextBox.SelectedText;
+        }
 
         private void OriginalTextBox_Renumbering_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
@@ -183,6 +272,7 @@ namespace MediaFileManager.Desktop
 
         private void SeasonNumberTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
+            // We also want to make sure user entered a season number
             if (string.IsNullOrEmpty(OriginalTextBox_Renumbering?.Text) || string.IsNullOrEmpty(SeasonNumberTextBox?.Text))
             {
                 RenumberingButton.IsEnabled = false;
@@ -195,40 +285,98 @@ namespace MediaFileManager.Desktop
 
         private void RenumberingButton_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(SeasonNumberTextBox?.Text))
+            try
             {
-                WriteOutput($"No text selected, aborting re-numbering operation.", OutputMessageLevel.Error);
-                return;
+                busyIndicator.IsBusy = true;
+                busyIndicator.BusyContent = "re-numbering and renaming files...";
+                busyIndicator.IsIndeterminate = false;
+                busyIndicator.ProgressValue = 0;
+
+                if (string.IsNullOrEmpty(OriginalTextBox_Renumbering?.Text))
+                {
+                    WriteOutput($"You must selected text that will be replaced by the season and episode number.", OutputMessageLevel.Error);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(SeasonNumberTextBox?.Text))
+                {
+                    WriteOutput($"You must enter a valid two-digit number for the season.", OutputMessageLevel.Error);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(EpisodeStartTextBox?.Text) || string.IsNullOrEmpty(EpisodeEndTextBox?.Text))
+                {
+                    WriteOutput($"You must enter a valid two-digit number for the first and last selected episodes.", OutputMessageLevel.Error);
+                    return;
+                }
+
+                if (!int.TryParse(EpisodeStartTextBox?.Text, out int startingEpisodeNumber) || !int.TryParse(EpisodeEndTextBox?.Text, out int lastEpisodeNumber))
+                {
+                    WriteOutput($"You must enter a valid two-digit number for the first and last selected episodes.", OutputMessageLevel.Error);
+                    return;
+                }
+
+                // Make sure the user has entered the correct number of episodes
+                if (lastEpisodeNumber - startingEpisodeNumber + 1 != EpisodesListBox.SelectedItems.Count)
+                {
+                    WriteOutput($"The episode numbers do not match the total selected episodes, you need to have the same number of episode number as selected episodes.", OutputMessageLevel.Error);
+                    return;
+                }
+
+                int currentEpisodeNumber = startingEpisodeNumber;
+
+                WriteOutput("Begin re-numbering operation...", OutputMessageLevel.Warning);
+
+                for (int i = 0; i < EpisodesListBox.SelectedItems.Count; i++)
+                {
+                    var episodeFilePath = EpisodesListBox.SelectedItems[i] as string;
+
+                    string curDir = Path.GetDirectoryName(episodeFilePath);
+
+                    if (string.IsNullOrEmpty(curDir))
+                    {
+                        WriteOutput($"Could not identify directory.", OutputMessageLevel.Error);
+                        continue;
+                    }
+
+                    string curName = Path.GetFileName(episodeFilePath);
+
+                    if (string.IsNullOrEmpty(curName))
+                    {
+                        WriteOutput($"Could not identify file name, skipping.", OutputMessageLevel.Error);
+                        continue;
+                    }
+
+                    var selectedText = curName.Substring(0, OriginalTextBox_Renumbering.Text.Length);
+
+                    var seasonFolderInfo = Directory.GetParent(episodeFilePath);
+                    var showFolderInfo = seasonFolderInfo.Parent;
+                    var showName = showFolderInfo.Name;
+
+                    string newName = curName.Replace(selectedText, $"{showName} - S{SeasonNumberTextBox.Text}E{currentEpisodeNumber:00} - ");
+
+                    File.Move(episodeFilePath, Path.Combine(curDir, newName));
+
+                    busyIndicator.ProgressValue = i / EpisodesListBox.SelectedItems.Count * 100;
+                    busyIndicator.BusyContent = $"Re-numbering: '{OriginalTextBox_Renumbering.Text}' to 'S{SeasonNumberTextBox.Text}E{i}:00'...";
+
+                    currentEpisodeNumber++;
+                }
+
+                WriteOutput($"Numbered episodes complete.", OutputMessageLevel.Success, true);
+
+                RefreshEpisodesList();
             }
-
-            var result = MessageBox.Show("You are about to renumber all of the selected episodes, using the order they're selected. Are you sure you want to continue?", "Warning!", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-            if (result != MessageBoxResult.Yes)
+            catch (Exception ex)
             {
-                WriteOutput("Cancelled re-numbering operation.", OutputMessageLevel.Warning);
+                WriteOutput(ex.Message, OutputMessageLevel.Error);
             }
-            else
+            finally
             {
-                WriteOutput("Begin re-numering operation...", OutputMessageLevel.Warning);
+                busyIndicator.BusyContent = "";
+                busyIndicator.IsBusy = false;
+                busyIndicator.ProgressValue = 0;
             }
-
-            for (int i = 1; i <= EpisodesListBox.SelectedItems.Count; i++)
-            {
-                var episodeFilePath = EpisodesListBox.SelectedItems[i - 1] as string;
-
-                string curDir = Path.GetDirectoryName(episodeFilePath);
-                string curName = Path.GetFileName(episodeFilePath);
-
-                string newName = curName.Replace(OriginalTextBox_Renumbering.Text, $"S{SeasonNumberTextBox.Text}E{i.ToString("00")}");
-
-                File.Move(episodeFilePath, Path.Combine(curDir, newName));
-
-                WriteOutput($"Re-numbering: '{OriginalTextBox_Renumbering.Text}' to '{$"S{SeasonNumberTextBox.Text}E{i.ToString("00")}"}'...", OutputMessageLevel.Normal, true);
-            }
-
-            WriteOutput($"Numbered episodes complete.", OutputMessageLevel.Success, true);
-
-            RefreshEpisodesList();
         }
 
         #endregion
@@ -239,25 +387,40 @@ namespace MediaFileManager.Desktop
 
             foreach (string season in SeasonsListBox.SelectedItems)
             {
+                var folderName = Path.GetFileName(season);
+
+                if (string.IsNullOrEmpty(folderName))
+                {
+                    WriteOutput($"Could not identify directory.", OutputMessageLevel.Error);
+                    return;
+                }
+
                 var episodesResult = Directory.EnumerateFiles(season);
 
-                WriteOutput($"Discovering episodes for {season}...", OutputMessageLevel.Normal);
+                WriteOutput($"Searching {folderName} episodes...", OutputMessageLevel.Normal);
 
                 foreach (var filePath in episodesResult)
                 {
-                    Episodes.Add(filePath);
-                    WriteOutput($"Adding {filePath}...", OutputMessageLevel.Normal, true);
+                    if(Path.HasExtension(filePath))
+                    {
+                        Episodes.Add(filePath);
+
+                        WriteOutput($"Adding {filePath}...", OutputMessageLevel.Normal, true);
+                    }
                 }
 
-                WriteOutput($"Discovered {Episodes.Count} episodes.", OutputMessageLevel.Success, true);
+                WriteOutput($"Refreshed {folderName} {Episodes.Count} episodes.", OutputMessageLevel.Normal, true);
             }
         }
 
         private void Reset()
         {
-            EpisodeNameTextBox.Text = string.Empty;
+            EpisodeName_Renaming_TextBox.Text = string.Empty;
+            EpisodeName_Renumbering_TextBox.Text = string.Empty;
+
             OriginalTextBox_Renaming.Text = string.Empty;
             OriginalTextBox_Renumbering.Text = string.Empty;
+
             ReplacementTextBox.Text = string.Empty;
             SeasonNumberTextBox.Text = string.Empty;
 
@@ -273,6 +436,9 @@ namespace MediaFileManager.Desktop
             {
                 case OutputMessageLevel.Normal:
                     messageColor = Colors.Black;
+                    break;
+                case OutputMessageLevel.Informational:
+                    messageColor = Colors.Gray;
                     break;
                 case OutputMessageLevel.Success:
                     messageColor = Colors.Green;
@@ -300,5 +466,6 @@ namespace MediaFileManager.Desktop
 
             OutputListBox.ScrollIntoView(message);
         }
+
     }
 }
