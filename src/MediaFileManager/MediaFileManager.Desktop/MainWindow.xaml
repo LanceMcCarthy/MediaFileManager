@@ -1,0 +1,182 @@
+﻿<Window x:Class="MediaFileManager.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Media File Manager"
+        Height="700"
+        Width="1200">
+    <telerik:RadDocking>
+        <telerik:RadDocking.DocumentHost>
+            <telerik:RadSplitContainer>
+                <telerik:RadPaneGroup telerik:ProportionalStackPanel.RelativeSize="200, 200">
+                    <telerik:RadPane Header="Seasons">
+                        <ListBox x:Name="SeasonsListBox"
+                                 SelectionMode="Extended"
+                                 SelectionChanged="SeasonsListBox_SelectionChanged"
+                                 Margin="5" />
+                    </telerik:RadPane>
+                </telerik:RadPaneGroup>
+                <telerik:RadPaneGroup telerik:ProportionalStackPanel.RelativeSize="400, 200">
+                    <telerik:RadPane Header="Seasons">
+                        <ListBox x:Name="EpisodesListBox"
+                                 SelectionMode="Extended"
+                                 SelectionChanged="EpisodesListBox_SelectionChanged"
+                                 Margin="5" />
+                    </telerik:RadPane>
+                </telerik:RadPaneGroup>
+            </telerik:RadSplitContainer>
+        </telerik:RadDocking.DocumentHost>
+
+        <telerik:RadSplitContainer InitialPosition="DockedLeft">
+            <telerik:RadPaneGroup>
+                <telerik:RadPane Header="Source Management">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <ListBox x:Name="OutputListBox">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Message}">
+                                        <TextBlock.Foreground>
+                                            <SolidColorBrush Color="{Binding MessageColor}" />
+                                        </TextBlock.Foreground>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Margin"
+                                            Value="0" />
+                                    <Setter Property="Padding"
+                                            Value="1" />
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+
+                        <StackPanel Grid.Row="1">
+                            <Button Content="Open Folder"
+                                    Click="SelectFolderButton_Click"
+                                    Margin="5" />
+
+                            <Button Content="Start Over"
+                                    Click="ResetButton_Click"
+                                    Margin="5" />
+                        </StackPanel>
+                    </Grid>
+                </telerik:RadPane>
+                <telerik:RadPane Header="Help">
+                    <ScrollViewer>
+                        <TextBlock TextWrapping="Wrap"
+                                   Margin="5">
+                            <Run Text="Getting Started"
+                                 FontWeight="Bold" />
+                            <LineBreak />
+                            <Run Text="1. Open a folder to fill the Seasons list. " />
+                            <LineBreak />
+                            <Run Text="2. Select season(s) to fill the Episodes list. " />
+                            <LineBreak />
+                            <Run Text="3. Select episode(s) to be edited." />
+                            <LineBreak />
+                            <LineBreak />
+                            <Run Text="Renaming"
+                                 FontWeight="Bold" />
+                            <LineBreak />
+                            <Run Text="1. In the episode name box, make a partial section of the file name text." />
+                            <LineBreak />
+                            <Run Text="2. Enter replacement text in the replacement text box." />
+                            <LineBreak />
+                            <Run Text="3. Click the 'Rename' button to update all the selected episodes file names with the text replacement." />
+                            <LineBreak />
+                            <LineBreak />
+                            <Run Text="Renumbering"
+                                 FontWeight="Bold" />
+                            <LineBreak />
+                            <Run Text="1. Select episodes in the EXACT order you want the episodes to be numbered." />
+                            <LineBreak />
+                            <Run Text="2. In the episode name box, select the area that will be replaced with the 'SxxExx' text." />
+                            <LineBreak />
+                            <Run Text="3. Click the 'Number Episodes' button to rename all the selected episodes with the season and episode number." />
+                            <LineBreak />
+                            <Run Text="Instructions here" />
+                        </TextBlock>
+                    </ScrollViewer>
+                </telerik:RadPane>
+            </telerik:RadPaneGroup>
+        </telerik:RadSplitContainer>
+
+        <telerik:RadSplitContainer InitialPosition="DockedBottom">
+            <telerik:RadPaneGroup>
+                <telerik:RadPane Header="Renaming Operations">
+                    <StackPanel Grid.Row="2"
+                                Margin="5">
+                        <telerik:RadWatermarkTextBox x:Name="EpisodeNameTextBox"
+                                                     IsReadOnly="True"
+                                                     WatermarkContent="Select an episode, then highlight the section of text to be replaced (will be applied to all selected episodes)."
+                                                     SelectionChanged="EpisodeNameTextBox_SelectionChanged"
+                                                     Margin="5" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <telerik:RadWatermarkTextBox x:Name="OriginalTextBox_Renaming"
+                                                         IsReadOnly="True"
+                                                         WatermarkContent="original text"
+                                                         TextChanged="OriginalTextBox_Renaming_TextChanged"
+                                                         Margin="5" />
+
+                            <telerik:RadWatermarkTextBox x:Name="ReplacementTextBox"
+                                                         WatermarkContent="enter replacement text"
+                                                         Grid.Column="1"
+                                                         Margin="5" />
+
+                            <Button x:Name="UpdateFileNameButton"
+                                    Content="Rename"
+                                    Click="UpdateFileNameButton_Click"
+                                    Grid.Column="2"
+                                    Margin="5" />
+                        </Grid>
+                    </StackPanel>
+                </telerik:RadPane>
+                <telerik:RadPane Header="Renumbering Operations">
+                    <StackPanel Grid.Row="2"
+                                Margin="5">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <telerik:RadWatermarkTextBox x:Name="OriginalTextBox_Renumbering"
+                                                         IsReadOnly="True"
+                                                         WatermarkContent="original text"
+                                                         TextChanged="OriginalTextBox_Renumbering_TextChanged"
+                                                         Margin="5" />
+
+                            <telerik:RadWatermarkTextBox x:Name="SeasonNumberTextBox"
+                                                         WatermarkContent="Enter season number using two digits (e.g. 01)"
+                                                         TextChanged="SeasonNumberTextBox_TextChanged"
+                                                         Grid.Column="1"
+                                                         Margin="5" />
+
+                            <Button x:Name="RenumberingButton"
+                                    Content="Number Episodes"
+                                    Click="RenumberingButton_Click"
+                                    Grid.Column="2"
+                                    Margin="5" />
+                        </Grid>
+                    </StackPanel>
+                </telerik:RadPane>
+            </telerik:RadPaneGroup>
+        </telerik:RadSplitContainer>
+    </telerik:RadDocking>
+</Window>
