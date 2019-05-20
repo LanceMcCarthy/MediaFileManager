@@ -199,8 +199,6 @@
         </telerik:RadDocking>
 
         <telerik:RadBusyIndicator x:Name="busyIndicator"
-                                  IsBusy="False">
-            <!--Some Content-->
-        </telerik:RadBusyIndicator>
+                                  IsBusy="False"/>
     </Grid>
 </Window>

@@ -7,10 +7,10 @@ using System.Windows;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("MediaFileManager.Desktop")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("MediaFileManager")]
+[assembly: AssemblyDescription("An applicaiotn that lets you quickly name and number your media files in batch operations")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Lancelot Software LLC")]
 [assembly: AssemblyProduct("MediaFileManager.Desktop")]
 [assembly: AssemblyCopyright("Copyright ©  2019")]
 [assembly: AssemblyTrademark("")]
@@ -51,5 +51,5 @@ using System.Windows;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.1.0.0")]
-[assembly: AssemblyFileVersion("0.1.0.0")]
+[assembly: AssemblyVersion("2019.2.520.0")]
+[assembly: AssemblyFileVersion("209.2.520.0")]

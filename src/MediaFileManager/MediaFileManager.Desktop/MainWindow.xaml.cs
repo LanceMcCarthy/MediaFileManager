@@ -2,21 +2,20 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using MediaFileManager.Desktop.Models;
 using Telerik.Windows.Controls;
 
+// ReSharper disable InconsistentNaming
 namespace MediaFileManager.Desktop
 {
     public partial class MainWindow : Window
     {
         private readonly RadOpenFolderDialog openFolderDialog;
-        // ReSharper disable once InconsistentNaming
         private readonly ObservableCollection<string> Seasons = new ObservableCollection<string>();
-        // ReSharper disable once InconsistentNaming
         private readonly ObservableCollection<string> Episodes = new ObservableCollection<string>();
-        // ReSharper disable once InconsistentNaming
         private readonly ObservableCollection<OutputMessage> OutputMessages = new ObservableCollection<OutputMessage>();
 
         public MainWindow()
@@ -29,7 +28,7 @@ namespace MediaFileManager.Desktop
 
             openFolderDialog = new RadOpenFolderDialog {Owner = this, ExpandToCurrentDirectory = false};
 
-            WriteOutput($"Application ready, open a folder to begin.", OutputMessageLevel.Success);
+            WriteOutput($"Ready, open a folder to begin.", OutputMessageLevel.Success);
         }
 
         #region Source operations
@@ -185,68 +184,83 @@ namespace MediaFileManager.Desktop
             UpdateFileNameButton.IsEnabled = !string.IsNullOrEmpty(OriginalTextBox_Renaming?.Text);
         }
 
-        private void UpdateFileNameButton_Click(object sender, RoutedEventArgs e)
+        private async void UpdateFileNameButton_Click(object sender, RoutedEventArgs e)
         {
-            try
+            if (string.IsNullOrEmpty(OriginalTextBox_Renaming.Text))
             {
-                busyIndicator.IsBusy = true;
-                busyIndicator.BusyContent = "updating file names...";
-                busyIndicator.IsIndeterminate = false;
-                busyIndicator.ProgressValue = 0;
+                WriteOutput($"No text selected, aborting file name update.", OutputMessageLevel.Error);
+                return;
+            }
+            else
+            {
+                WriteOutput($"Renaming operation starting...", OutputMessageLevel.Warning);
+            }
 
-                if (string.IsNullOrEmpty(OriginalTextBox_Renaming.Text))
+            // variables for background thread access
+            var selectedItems = EpisodesListBox.SelectedItems.Cast<string>().ToList();
+            var selectedText = OriginalTextBox_Renaming.Text;
+            var replacementText = ReplacementTextBox.Text;
+
+            busyIndicator.IsBusy = true;
+            busyIndicator.BusyContent = "updating file names...";
+            busyIndicator.IsIndeterminate = false;
+            busyIndicator.ProgressValue = 0;
+
+            await Task.Run(() =>
+            {
+                try
                 {
-                    WriteOutput($"No text selected, aborting file name update.", OutputMessageLevel.Error);
-                    return;
-                }
-                else
-                {
-                    WriteOutput($"Renaming operation starting...", OutputMessageLevel.Warning);
-                }
-
-                for (int i = 1; i <= EpisodesListBox.SelectedItems.Count; i++)
-                {
-                    var episodeFilePath = EpisodesListBox.SelectedItems[i - 1] as string;
-
-                    // Need to separate name and path in order to prefix the file name
-                    string curDir = Path.GetDirectoryName(episodeFilePath);
-
-                    if (string.IsNullOrEmpty(curDir))
+                    for (int i = 0; i < selectedItems.Count; i++)
                     {
-                        WriteOutput($"Could not identify directory.", OutputMessageLevel.Error);
-                        continue;
+                        var episodeFilePath = selectedItems[i];
+
+                        // Need to separate name and path in order to prefix the file name
+                        string curDir = Path.GetDirectoryName(episodeFilePath);
+
+                        if (string.IsNullOrEmpty(curDir))
+                        {
+                            WriteOutput($"Could not find directory, skipping.", OutputMessageLevel.Error);
+                            continue;
+                        }
+
+                        string curName = Path.GetFileName(episodeFilePath);
+
+                        if (string.IsNullOrEmpty(curName))
+                        {
+                            WriteOutput($"Could not find file, skipping.", OutputMessageLevel.Error);
+                            continue;
+                        }
+
+                        // Replace the selected text with the new text (support empty replacement to remove text)
+                        string newName = curName.Replace(selectedText, replacementText);
+
+                        // Rename the file
+                        File.Move(episodeFilePath, Path.Combine(curDir, newName));
+
+                        // Need to dispatch back to UI thread, variables to avoid access to modified closure problem
+                        var progressComplete = i / selectedItems.Count * 100;
+                        var progressText = $"Renaming - '{selectedText}' to '{replacementText}'...";
+
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            busyIndicator.ProgressValue = progressComplete;
+                            busyIndicator.BusyContent = $"Completed {progressText}...";
+                        });
                     }
 
-                    string curName = Path.GetFileName(episodeFilePath);
-
-                    if (string.IsNullOrEmpty(curName))
-                    {
-                        WriteOutput($"Could not identify file name.", OutputMessageLevel.Error);
-                        continue;
-                    }
-
-                    string newName = curName.Replace(OriginalTextBox_Renaming.Text, ReplacementTextBox.Text);
-
-                    File.Move(episodeFilePath, Path.Combine(curDir, newName));
-
-                    busyIndicator.ProgressValue = i / EpisodesListBox.SelectedItems.Count * 100;
-                    busyIndicator.BusyContent = $"Renaming - '{OriginalTextBox_Renaming.Text}' to '{ReplacementTextBox.Text}'...";
+                    WriteOutput($"Renaming operation complete!", OutputMessageLevel.Success);
                 }
+                catch (Exception ex)
+                {
+                    WriteOutput(ex.Message, OutputMessageLevel.Error);
+                }
+            });
 
-                WriteOutput($"Renaming complete.", OutputMessageLevel.Success, true);
+            RefreshEpisodesList();
 
-                RefreshEpisodesList();
-            }
-            catch (Exception ex)
-            {
-                WriteOutput(ex.Message, OutputMessageLevel.Error);
-            }
-            finally
-            {
-                busyIndicator.BusyContent = "";
-                busyIndicator.IsBusy = false;
-                busyIndicator.ProgressValue = 0;
-            }
+            busyIndicator.BusyContent = "";
+            busyIndicator.IsBusy = false;
+            busyIndicator.ProgressValue = 0;
         }
 
         #endregion
@@ -283,100 +297,116 @@ namespace MediaFileManager.Desktop
             }
         }
 
-        private void RenumberingButton_Click(object sender, RoutedEventArgs e)
+        private async void RenumberingButton_Click(object sender, RoutedEventArgs e)
         {
-            try
+            if (string.IsNullOrEmpty(OriginalTextBox_Renumbering?.Text))
             {
-                busyIndicator.IsBusy = true;
-                busyIndicator.BusyContent = "re-numbering and renaming files...";
-                busyIndicator.IsIndeterminate = false;
-                busyIndicator.ProgressValue = 0;
+                WriteOutput($"You must selected text that will be replaced by the season and episode number.", OutputMessageLevel.Error);
+                return;
+            }
 
-                if (string.IsNullOrEmpty(OriginalTextBox_Renumbering?.Text))
+            if (string.IsNullOrEmpty(SeasonNumberTextBox?.Text))
+            {
+                WriteOutput($"You must enter a valid two-digit number for the season.", OutputMessageLevel.Error);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(EpisodeStartTextBox?.Text) || string.IsNullOrEmpty(EpisodeEndTextBox?.Text))
+            {
+                WriteOutput($"You must enter a first and last episode number.", OutputMessageLevel.Error);
+                return;
+            }
+
+            if (!int.TryParse(EpisodeStartTextBox?.Text, out int startingEpisodeNumber) || !int.TryParse(EpisodeEndTextBox?.Text, out int lastEpisodeNumber))
+            {
+                WriteOutput($"You must use a valid two-digit value for the start and end episode number.", OutputMessageLevel.Error);
+                return;
+            }
+
+            // Make sure the user has entered the correct number of episodes
+            if (lastEpisodeNumber - startingEpisodeNumber + 1 != EpisodesListBox.SelectedItems.Count)
+            {
+                WriteOutput($"The episode numbers do not match the total selected episodes, you need to have the same number of episode number as selected episodes.", OutputMessageLevel.Error);
+                return;
+            }
+
+            // Variables for background thread access
+            var selectedItems = EpisodesListBox.SelectedItems.Cast<string>().ToList();
+            var selectedTextLength = OriginalTextBox_Renumbering.Text.Length;
+            var seasonNumberText = SeasonNumberTextBox.Text;
+
+            busyIndicator.IsBusy = true;
+            busyIndicator.BusyContent = "re-numbering and renaming files...";
+            busyIndicator.IsIndeterminate = false;
+            busyIndicator.ProgressValue = 0;
+
+            await Task.Run(() =>
+            {
+                try
                 {
-                    WriteOutput($"You must selected text that will be replaced by the season and episode number.", OutputMessageLevel.Error);
-                    return;
-                }
+                    int currentEpisodeNumber = startingEpisodeNumber;
 
-                if (string.IsNullOrEmpty(SeasonNumberTextBox?.Text))
-                {
-                    WriteOutput($"You must enter a valid two-digit number for the season.", OutputMessageLevel.Error);
-                    return;
-                }
+                    WriteOutput("Begin re-numbering operation...", OutputMessageLevel.Warning);
 
-                if (string.IsNullOrEmpty(EpisodeStartTextBox?.Text) || string.IsNullOrEmpty(EpisodeEndTextBox?.Text))
-                {
-                    WriteOutput($"You must enter a valid two-digit number for the first and last selected episodes.", OutputMessageLevel.Error);
-                    return;
-                }
-
-                if (!int.TryParse(EpisodeStartTextBox?.Text, out int startingEpisodeNumber) || !int.TryParse(EpisodeEndTextBox?.Text, out int lastEpisodeNumber))
-                {
-                    WriteOutput($"You must enter a valid two-digit number for the first and last selected episodes.", OutputMessageLevel.Error);
-                    return;
-                }
-
-                // Make sure the user has entered the correct number of episodes
-                if (lastEpisodeNumber - startingEpisodeNumber + 1 != EpisodesListBox.SelectedItems.Count)
-                {
-                    WriteOutput($"The episode numbers do not match the total selected episodes, you need to have the same number of episode number as selected episodes.", OutputMessageLevel.Error);
-                    return;
-                }
-
-                int currentEpisodeNumber = startingEpisodeNumber;
-
-                WriteOutput("Begin re-numbering operation...", OutputMessageLevel.Warning);
-
-                for (int i = 0; i < EpisodesListBox.SelectedItems.Count; i++)
-                {
-                    var episodeFilePath = EpisodesListBox.SelectedItems[i] as string;
-
-                    string curDir = Path.GetDirectoryName(episodeFilePath);
-
-                    if (string.IsNullOrEmpty(curDir))
+                    for (int i = 0; i < selectedItems.Count; i++)
                     {
-                        WriteOutput($"Could not identify directory.", OutputMessageLevel.Error);
-                        continue;
+                        var episodeFilePath = selectedItems[i];
+
+                        string curDir = Path.GetDirectoryName(episodeFilePath);
+
+                        if (string.IsNullOrEmpty(curDir))
+                        {
+                            WriteOutput($"Could not find directory, skipping.", OutputMessageLevel.Error);
+                            continue;
+                        }
+
+                        string curName = Path.GetFileName(episodeFilePath);
+
+                        if (string.IsNullOrEmpty(curName))
+                        {
+                            WriteOutput($"Could not find file, skipping.", OutputMessageLevel.Error);
+                            continue;
+                        }
+
+                        // Using substring and Length so that user doesn't need an exact natch (e.g. episode number will be different for each selected episode, thus only one selection will get renamed... the exact match)
+                        var selectedText = curName.Substring(0, selectedTextLength);
+
+                        // Get the show name to workaround not being able to select exact text
+                        var showName = Directory.GetParent(episodeFilePath)?.Parent?.Name;
+
+                        // Prefix the name name with the Show, then the season, then the episode number
+                        string newName = curName.Replace(selectedText, $"{showName} - S{seasonNumberText}E{currentEpisodeNumber:00} -");
+
+                        // Rename the file
+                        File.Move(episodeFilePath, Path.Combine(curDir, newName));
+
+                        // Need to dispatch back to UI thread, variables to avoid access to modified closure problem
+                        var progressComplete = i / selectedItems.Count * 100;
+                        var progressText = $"Completed: S{seasonNumberText}E{currentEpisodeNumber:00}...";
+
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            busyIndicator.ProgressValue = progressComplete;
+                            busyIndicator.BusyContent = $"Completed {progressText}...";
+                        });
+
+                        // Increment the episode number
+                        currentEpisodeNumber++;
                     }
 
-                    string curName = Path.GetFileName(episodeFilePath);
-
-                    if (string.IsNullOrEmpty(curName))
-                    {
-                        WriteOutput($"Could not identify file name, skipping.", OutputMessageLevel.Error);
-                        continue;
-                    }
-
-                    var selectedText = curName.Substring(0, OriginalTextBox_Renumbering.Text.Length);
-
-                    var seasonFolderInfo = Directory.GetParent(episodeFilePath);
-                    var showFolderInfo = seasonFolderInfo.Parent;
-                    var showName = showFolderInfo.Name;
-
-                    string newName = curName.Replace(selectedText, $"{showName} - S{SeasonNumberTextBox.Text}E{currentEpisodeNumber:00} - ");
-
-                    File.Move(episodeFilePath, Path.Combine(curDir, newName));
-
-                    busyIndicator.ProgressValue = i / EpisodesListBox.SelectedItems.Count * 100;
-                    busyIndicator.BusyContent = $"Re-numbering: '{OriginalTextBox_Renumbering.Text}' to 'S{SeasonNumberTextBox.Text}E{i}:00'...";
-
-                    currentEpisodeNumber++;
+                    WriteOutput($"Re-numbering operation complete!", OutputMessageLevel.Success);
                 }
+                catch (Exception ex)
+                {
+                    WriteOutput(ex.Message, OutputMessageLevel.Error);
+                }
+            });
 
-                WriteOutput($"Numbered episodes complete.", OutputMessageLevel.Success, true);
+            RefreshEpisodesList();
 
-                RefreshEpisodesList();
-            }
-            catch (Exception ex)
-            {
-                WriteOutput(ex.Message, OutputMessageLevel.Error);
-            }
-            finally
-            {
-                busyIndicator.BusyContent = "";
-                busyIndicator.IsBusy = false;
-                busyIndicator.ProgressValue = 0;
-            }
+            busyIndicator.BusyContent = "";
+            busyIndicator.IsBusy = false;
+            busyIndicator.ProgressValue = 0;
         }
 
         #endregion
@@ -430,7 +460,7 @@ namespace MediaFileManager.Desktop
 
         private void WriteOutput(string text, OutputMessageLevel level, bool removeLastItem = false)
         {
-            Color messageColor = Colors.Gray;
+            var messageColor = Colors.Gray;
 
             switch (level)
             {
@@ -451,21 +481,41 @@ namespace MediaFileManager.Desktop
                     break;
             }
 
-            if (removeLastItem && OutputMessages.Count > 0)
+            if (this.Dispatcher.CheckAccess())
             {
-                OutputMessages.Remove(OutputMessages.LastOrDefault());
+                if (removeLastItem && OutputMessages.Count > 0)
+                {
+                    OutputMessages.Remove(OutputMessages.LastOrDefault());
+                }
+
+                var message = new OutputMessage
+                {
+                    Message = text,
+                    MessageColor = messageColor
+                };
+
+                OutputMessages.Add(message);
+                OutputListBox.ScrollIntoView(message);
             }
-
-            var message = new OutputMessage
+            else
             {
-                Message = text,
-                MessageColor = messageColor
-            };
+                this.Dispatcher.Invoke(() =>
+                {
+                    if (removeLastItem && OutputMessages.Count > 0)
+                    {
+                        OutputMessages.Remove(OutputMessages.LastOrDefault());
+                    }
 
-            OutputMessages.Add(message);
+                    var message = new OutputMessage
+                    {
+                        Message = text,
+                        MessageColor = messageColor
+                    };
 
-            OutputListBox.ScrollIntoView(message);
+                    OutputMessages.Add(message);
+                    OutputListBox.ScrollIntoView(message);
+                });
+            }
         }
-
     }
 }
