@@ -6,13 +6,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="Media File Manager"
-        Height="700"
-        Width="1200">
+        Height="800"
+        Width="1375">
     <Grid>
         <telerik:RadDocking>
             <telerik:RadDocking.DocumentHost>
                 <telerik:RadSplitContainer>
-                    <telerik:RadPaneGroup telerik:ProportionalStackPanel.RelativeSize="200, 200">
+                    <telerik:RadPaneGroup x:Name="SeasonsPaneGroup"
+                                          telerik:ProportionalStackPanel.RelativeSize="200, 200">
                         <telerik:RadPane Header="Seasons">
                             <ListBox x:Name="SeasonsListBox"
                                      SelectionMode="Extended"
@@ -20,12 +21,50 @@
                                      Margin="5" />
                         </telerik:RadPane>
                     </telerik:RadPaneGroup>
-                    <telerik:RadPaneGroup telerik:ProportionalStackPanel.RelativeSize="400, 200">
-                        <telerik:RadPane Header="Seasons">
+                    <telerik:RadPaneGroup x:Name="EpisodesPaneGroup"
+                                          telerik:ProportionalStackPanel.RelativeSize="400, 200">
+                        <telerik:RadPane x:Name="EpisodesPane" 
+                                         Header="Episodes">
                             <ListBox x:Name="EpisodesListBox"
                                      SelectionMode="Extended"
                                      SelectionChanged="EpisodesListBox_SelectionChanged"
                                      Margin="5" />
+                        </telerik:RadPane>
+                        <telerik:RadPane x:Name="ResultPreviewPane" 
+                                         Header="Preview">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                
+                                <ListBox x:Name="EpisodeRenamedPreviewListBox"
+                                         Grid.ColumnSpan="2"
+                                         Margin="5" />
+
+                                <Button x:Name="ApproveResultButton" 
+                                        Content="Approve"
+                                        Background="Green"
+                                        Foreground="White"
+                                        Margin="5"
+                                        Grid.Row="1"
+                                        Grid.Column="0"
+                                        Click="ApproveResultButton_Click"/>
+
+                                <Button x:Name="CancelResultButton"
+                                        Content="Cancel"
+                                        Background="DarkRed"
+                                        Foreground="White"
+                                        Margin="5"
+                                        Grid.Row="1"
+                                        Grid.Column="1" 
+                                        Click="CancelResultButton_Click"/>
+
+                            </Grid>
                         </telerik:RadPane>
                     </telerik:RadPaneGroup>
                 </telerik:RadSplitContainer>
@@ -148,12 +187,13 @@
                     </telerik:RadPane>
                     <telerik:RadPane Header="Renumbering Operations">
                         <StackPanel Margin="5">
+                            <TextBlock Text="Select the text that will be replaced with: 'show name - SXXEXX -' " 
+                                       Margin="5,0"/>
                             <telerik:RadWatermarkTextBox x:Name="EpisodeName_Renumbering_TextBox"
                                                          IsReadOnly="True"
                                                          WatermarkContent="Select episodes in the EXACT order they'll be numbered, then highlight the text where the season and episode number will be inserted."
                                                          SelectionChanged="EpisodeNameTextBox_Renumbering_SelectionChanged"
                                                          Margin="5" />
-
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition />
@@ -162,7 +202,6 @@
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-
 
                                 <telerik:RadWatermarkTextBox x:Name="OriginalTextBox_Renumbering"
                                                              IsReadOnly="True"
