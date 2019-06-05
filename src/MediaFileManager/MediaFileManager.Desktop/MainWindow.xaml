@@ -42,7 +42,7 @@
                                     <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
                                 
-                                <ListBox x:Name="EpisodeRenamePreviewListBox"
+                                <ListBox x:Name="EpisodeRenamedPreviewListBox"
                                          Grid.ColumnSpan="2"
                                          Margin="5" />
 
@@ -150,7 +150,7 @@
                 </telerik:RadPaneGroup>
             </telerik:RadSplitContainer>
 
-            <telerik:RadSplitContainer InitialPosition="DockedBottom" MinHeight="200">
+            <telerik:RadSplitContainer InitialPosition="DockedBottom">
                 <telerik:RadPaneGroup>
                     <telerik:RadPane Header="Renaming Operations">
                         <StackPanel Margin="5">
@@ -194,10 +194,6 @@
                                                          WatermarkContent="Select episodes in the EXACT order they'll be numbered, then highlight the text where the season and episode number will be inserted."
                                                          SelectionChanged="EpisodeNameTextBox_Renumbering_SelectionChanged"
                                                          Margin="5" />
-
-                            <TextBlock Text="Enter the season number, starting and ending episode numbers (the show name will automatically be inserted)"
-                                       Margin="5,0" />
-
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition />

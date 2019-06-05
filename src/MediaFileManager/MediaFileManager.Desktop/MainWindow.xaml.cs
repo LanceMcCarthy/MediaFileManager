@@ -17,24 +17,23 @@ namespace MediaFileManager.Desktop
     {
         private readonly BackgroundWorker renumberWorker;
         private readonly RadOpenFolderDialog openFolderDialog;
-        private readonly ObservableCollection<string> Seasons = new ObservableCollection<string>();
-        private readonly ObservableCollection<string> Episodes = new ObservableCollection<string>();
         private readonly ObservableCollection<OutputMessage> OutputMessages = new ObservableCollection<OutputMessage>();
 
-        private readonly ObservableCollection<string> EpisodeRenamePreviewResults = new ObservableCollection<string>();
+        private readonly ObservableCollection<string> Seasons = new ObservableCollection<string>();
+        private readonly ObservableCollection<string> Episodes = new ObservableCollection<string>();
+        private readonly ObservableCollection<string> RenamedEpisodesPreviewList = new ObservableCollection<string>();
 
         public MainWindow()
         {
             InitializeComponent();
 
-            SeasonsListBox.ItemsSource = Seasons;
-            EpisodesListBox.ItemsSource = Episodes;
-            EpisodeRenamePreviewListBox.ItemsSource = EpisodeRenamePreviewResults;
-            OutputListBox.ItemsSource = OutputMessages;
-
             openFolderDialog = new RadOpenFolderDialog {Owner = this, ExpandToCurrentDirectory = false};
 
-            //https://www.wpf-tutorial.com/misc/multi-threading-with-the-backgroundworker/
+            SeasonsListBox.ItemsSource = Seasons;
+            EpisodesListBox.ItemsSource = Episodes;
+            EpisodeRenamedPreviewListBox.ItemsSource = RenamedEpisodesPreviewList;
+            OutputListBox.ItemsSource = OutputMessages;
+
             renumberWorker = new BackgroundWorker();
             renumberWorker.WorkerReportsProgress = true;
             renumberWorker.DoWork += RenumberWorker_DoWork;
@@ -312,8 +311,6 @@ namespace MediaFileManager.Desktop
 
         private void RenumberingButton_Click(object sender, RoutedEventArgs e)
         {
-            //await RenumberAsync();
-
             if (string.IsNullOrEmpty(OriginalTextBox_Renumbering?.Text))
             {
                 WriteOutput($"You must selected text that will be replaced by the season and episode number.", OutputMessageLevel.Error);
@@ -345,15 +342,17 @@ namespace MediaFileManager.Desktop
                 return;
             }
 
-            // Because this is a preview run,switch to the Preview Results tab
-            ResultPreviewPane.IsSelected = true;
-
             busyIndicator.IsBusy = true;
             busyIndicator.BusyContent = "re-numbering and renaming files...";
             busyIndicator.IsIndeterminate = false;
             busyIndicator.ProgressValue = 0;
 
-            renumberWorker.RunWorkerAsync(new WorkerParameter
+            if (RenamedEpisodesPreviewList.Any())
+            {
+                RenamedEpisodesPreviewList.Clear();
+            }
+
+            renumberWorker.RunWorkerAsync(new WorkerParameters
             {
                 IsPreview = true,
                 SelectedEpisodes = EpisodesListBox.SelectedItems.Cast<string>().ToList(),
@@ -366,19 +365,15 @@ namespace MediaFileManager.Desktop
 
         private void RenumberWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            var param = e.Argument as WorkerParameter;
-
-            Debug.WriteLine($"Worker started - Param Season Number: {param.SeasonNumber}");
+            var workerParameter = e.Argument as WorkerParameters;
 
             try
             {
-                int currentEpisodeNumber = param.EpisodeNumberStart;
+                int currentEpisodeNumber = workerParameter.EpisodeNumberStart;
 
-                //WriteOutput("Begin re-numbering operation...", OutputMessageLevel.Warning);
-
-                for (int i = 0; i < param.SelectedEpisodes.Count; i++)
+                for (int i = 0; i < workerParameter.SelectedEpisodes.Count; i++)
                 {
-                    var episodeFilePath = param.SelectedEpisodes[i];
+                    var episodeFilePath = workerParameter.SelectedEpisodes[i];
 
                     string curDir = Path.GetDirectoryName(episodeFilePath);
 
@@ -397,18 +392,16 @@ namespace MediaFileManager.Desktop
                     }
 
                     // Using substring and Length so that user doesn't need an exact natch (e.g. episode number will be different for each selected episode, thus only one selection will get renamed... the exact match)
-                    var selectedText = curName.Substring(0, param.SelectedTextLength);
+                    var selectedText = curName.Substring(0, workerParameter.SelectedTextLength);
 
                     // Get the show name to workaround not being able to select exact text
                     var showName = Directory.GetParent(episodeFilePath)?.Parent?.Name;
 
                     // Prefix the name name with the Show, then the season, then the episode number
-                    string newName = curName.Replace(selectedText, $"{showName} - S{param.SeasonNumber}E{currentEpisodeNumber:00} -");
-
-                    
+                    string newName = curName.Replace(selectedText, $"{showName} - S{workerParameter.SeasonNumber}E{currentEpisodeNumber:00} -");
 
                     // If this is not a preview run, invoke the file rename
-                    if (!param.IsPreview)
+                    if (!workerParameter.IsPreview)
                     {
                         File.Move(episodeFilePath, Path.Combine(curDir, newName));
                     }
@@ -417,18 +410,22 @@ namespace MediaFileManager.Desktop
                     currentEpisodeNumber++;
 
                     // Report progress
-                    var resultParam = new WorkerResultParameter
+                    var progressParameter = new WorkerProgress
                     {
-                        IsPreview = param.IsPreview,
-                        PercentComplete = i / param.SelectedEpisodes.Count * 100,
-                        BusyMessage = $"Completed: S{param.SeasonNumber}E{currentEpisodeNumber:00}...",
+                        IsPreview = workerParameter.IsPreview,
+                        PercentComplete = i / workerParameter.SelectedEpisodes.Count * 100,
+                        BusyMessage = $"Completed: S{workerParameter.SeasonNumber}E{currentEpisodeNumber:00}...",
                         FileName = newName
                     };
 
-                    e.Result = resultParam;
-
-                    renumberWorker.ReportProgress(resultParam.PercentComplete);
+                    renumberWorker.ReportProgress(progressParameter.PercentComplete, progressParameter);
                 }
+
+                e.Result = new WorkerResult()
+                {
+                    FinalMessage = $"Complete, renumbered {workerParameter.SelectedEpisodes.Count} episodes.",
+                    IsPreview = workerParameter.IsPreview
+                };
             }
             catch (Exception ex)
             {
@@ -438,7 +435,7 @@ namespace MediaFileManager.Desktop
 
         private void RenumberWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            if (e.UserState is WorkerResultParameter resultParam)
+            if (e.UserState is WorkerProgress resultParam)
             {
                 busyIndicator.ProgressValue = e.ProgressPercentage;
                 busyIndicator.BusyContent = resultParam.BusyMessage;
@@ -446,18 +443,40 @@ namespace MediaFileManager.Desktop
                 // If this is a preview run, populate the preview ListBox
                 if (resultParam.IsPreview)
                 {
-                    EpisodeRenamePreviewResults.Add(resultParam.FileName);
+                    RenamedEpisodesPreviewList.Add(resultParam.FileName);
                 }
             }
         }
 
         private void RenumberWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            if (e.Result is WorkerResult resultParameter)
+            {
+                WriteOutput(resultParameter.FinalMessage, OutputMessageLevel.Success);
+
+                if (!resultParameter.IsPreview)
+                {
+                    RenamedEpisodesPreviewList.Clear();
+
+                    RefreshEpisodesList();
+
+                    EpisodesPane.IsSelected = true;
+
+                    ApproveResultButton.IsEnabled = false;
+                    CancelResultButton.IsEnabled = false;
+                }
+                else
+                {
+                    ResultPreviewPane.IsSelected = true;
+
+                    ApproveResultButton.IsEnabled = true;
+                    CancelResultButton.IsEnabled = true;
+                }
+            }
+
             busyIndicator.BusyContent = "";
             busyIndicator.IsBusy = false;
             busyIndicator.ProgressValue = 0;
-
-            WriteOutput($"Re-numbering operation complete!", OutputMessageLevel.Success);
         }
 
         private void ApproveResultButton_Click(object sender, RoutedEventArgs e)
@@ -493,15 +512,12 @@ namespace MediaFileManager.Desktop
                 return;
             }
 
-            // Because this is a final run, switch back to the episode list pane
-            EpisodesPane.IsSelected = true;
-
             busyIndicator.IsBusy = true;
             busyIndicator.BusyContent = "re-numbering and renaming files...";
             busyIndicator.IsIndeterminate = false;
             busyIndicator.ProgressValue = 0;
 
-            renumberWorker.RunWorkerAsync(new WorkerParameter
+            renumberWorker.RunWorkerAsync(new WorkerParameters
             {
                 SelectedEpisodes = EpisodesListBox.SelectedItems.Cast<string>().ToList(),
                 SeasonNumber = seasonNumber,
@@ -513,120 +529,12 @@ namespace MediaFileManager.Desktop
 
         private void CancelResultButton_Click(object sender, RoutedEventArgs e)
         {
-            EpisodeRenamePreviewResults.Clear();
+            RenamedEpisodesPreviewList.Clear();
+
             EpisodesPane.IsSelected = true;
-        }
 
-        private async Task RenumberAsync()
-        {
-            if (string.IsNullOrEmpty(OriginalTextBox_Renumbering?.Text))
-            {
-                WriteOutput($"You must selected text that will be replaced by the season and episode number.", OutputMessageLevel.Error);
-                return;
-            }
-
-            if (string.IsNullOrEmpty(SeasonNumberTextBox?.Text))
-            {
-                WriteOutput($"You must enter a valid two-digit number for the season.", OutputMessageLevel.Error);
-                return;
-            }
-
-            if (string.IsNullOrEmpty(EpisodeStartTextBox?.Text) || string.IsNullOrEmpty(EpisodeEndTextBox?.Text))
-            {
-                WriteOutput($"You must enter a first and last episode number.", OutputMessageLevel.Error);
-                return;
-            }
-
-            if (!int.TryParse(EpisodeStartTextBox?.Text, out int startingEpisodeNumber) || !int.TryParse(EpisodeEndTextBox?.Text, out int lastEpisodeNumber))
-            {
-                WriteOutput($"You must use a valid two-digit value for the start and end episode number.", OutputMessageLevel.Error);
-                return;
-            }
-
-            // Make sure the user has entered the correct number of episodes
-            if (lastEpisodeNumber - startingEpisodeNumber + 1 != EpisodesListBox.SelectedItems.Count)
-            {
-                WriteOutput($"The episode numbers do not match the total selected episodes, you need to have the same number of episode number as selected episodes.", OutputMessageLevel.Error);
-                return;
-            }
-
-            // Variables for background thread access
-            var selectedItems = EpisodesListBox.SelectedItems.Cast<string>().ToList();
-            var selectedTextLength = OriginalTextBox_Renumbering.Text.Length;
-            var seasonNumberText = SeasonNumberTextBox.Text;
-
-            busyIndicator.IsBusy = true;
-            busyIndicator.BusyContent = "re-numbering and renaming files...";
-            busyIndicator.IsIndeterminate = false;
-            busyIndicator.ProgressValue = 0;
-
-            await Task.Run(() =>
-            {
-                try
-                {
-                    int currentEpisodeNumber = startingEpisodeNumber;
-
-                    WriteOutput("Begin re-numbering operation...", OutputMessageLevel.Warning);
-
-                    for (int i = 0; i < selectedItems.Count; i++)
-                    {
-                        var episodeFilePath = selectedItems[i];
-
-                        string curDir = Path.GetDirectoryName(episodeFilePath);
-
-                        if (string.IsNullOrEmpty(curDir))
-                        {
-                            WriteOutput($"Could not find directory, skipping.", OutputMessageLevel.Error);
-                            continue;
-                        }
-
-                        string curName = Path.GetFileName(episodeFilePath);
-
-                        if (string.IsNullOrEmpty(curName))
-                        {
-                            WriteOutput($"Could not find file, skipping.", OutputMessageLevel.Error);
-                            continue;
-                        }
-
-                        // Using substring and Length so that user doesn't need an exact natch (e.g. episode number will be different for each selected episode, thus only one selection will get renamed... the exact match)
-                        var selectedText = curName.Substring(0, selectedTextLength);
-
-                        // Get the show name to workaround not being able to select exact text
-                        var showName = Directory.GetParent(episodeFilePath)?.Parent?.Name;
-
-                        // Prefix the name name with the Show, then the season, then the episode number
-                        string newName = curName.Replace(selectedText, $"{showName} - S{seasonNumberText}E{currentEpisodeNumber:00} -");
-
-                        // Rename the file
-                        File.Move(episodeFilePath, Path.Combine(curDir, newName));
-
-                        // Need to dispatch back to UI thread, variables to avoid access to modified closure problem
-                        var progressComplete = i / selectedItems.Count * 100;
-                        var progressText = $"Completed: S{seasonNumberText}E{currentEpisodeNumber:00}...";
-
-                        this.Dispatcher.Invoke(() =>
-                        {
-                            busyIndicator.ProgressValue = progressComplete;
-                            busyIndicator.BusyContent = $"Completed {progressText}...";
-                        });
-
-                        // Increment the episode number
-                        currentEpisodeNumber++;
-                    }
-
-                    WriteOutput($"Re-numbering operation complete!", OutputMessageLevel.Success);
-                }
-                catch (Exception ex)
-                {
-                    WriteOutput(ex.Message, OutputMessageLevel.Error);
-                }
-            });
-
-            RefreshEpisodesList();
-
-            busyIndicator.BusyContent = "";
-            busyIndicator.IsBusy = false;
-            busyIndicator.ProgressValue = 0;
+            ApproveResultButton.IsEnabled = false;
+            CancelResultButton.IsEnabled = false;
         }
 
         #endregion
@@ -676,6 +584,7 @@ namespace MediaFileManager.Desktop
 
             Seasons.Clear();
             Episodes.Clear();
+            
         }
 
         private void WriteOutput(string text, OutputMessageLevel level, bool removeLastItem = false)

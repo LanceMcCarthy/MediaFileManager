@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MediaFileManager.Desktop.Models
+﻿namespace MediaFileManager.Desktop.Models
 {
-    public class WorkerResultParameter
+    public class WorkerProgress
     {
         public int PercentComplete { get; set; }
         public string BusyMessage { get; set; }
