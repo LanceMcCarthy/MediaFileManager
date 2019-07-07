@@ -21,6 +21,6 @@
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
                 Margin="10"
-                Click="UpdateTagsButton" />
+                Click="UpdateTagsButton_Click" />
     </Grid>
 </UserControl>
