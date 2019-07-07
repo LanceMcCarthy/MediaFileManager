@@ -1,79 +1,354 @@
 ﻿using Id3;
 using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using MediaFileManager.Desktop.Models;
+using Telerik.Windows.Controls;
 
 namespace MediaFileManager.Desktop.Views
 {
     public partial class AudioFilesView : UserControl
     {
+        private readonly RadOpenFolderDialog openFolderDialog;
+        private readonly ObservableCollection<OutputMessage> OutputMessages = new ObservableCollection<OutputMessage>();
+
+        private readonly ObservableCollection<string> Albums = new ObservableCollection<string>();
+        private readonly ObservableCollection<AudiobookFile> Audiobooks = new ObservableCollection<AudiobookFile>();
+
         public AudioFilesView()
         {
             InitializeComponent();
+
+            openFolderDialog = new RadOpenFolderDialog { Owner = this, ExpandToCurrentDirectory = false };
+
+            AlbumsListBox.ItemsSource = Albums;
+            GridView.ItemsSource = Audiobooks;
+            OutputListBox.ItemsSource = OutputMessages;
+
+            WriteOutput($"Ready, open a folder to begin.", OutputMessageLevel.Success);
         }
 
-        private void LoadFilesButton_Click(object sender, RoutedEventArgs e)
+        private void SelectFolderButton_Click(object sender, RoutedEventArgs e)
         {
-
-        }
-
-        private void UpdateTagsButton_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void ReadTags()
-        {
-            string[] musicFiles = Directory.GetFiles(@"C:\Music", "*.mp3");
-
-            foreach (string musicFile in musicFiles)
+            try
             {
-                using (var mp3 = new Mp3(musicFile))
-                {
-                    Id3Tag tag = mp3.GetTag(Id3TagFamily.Version2X);
+                WriteOutput($"Opening folder picker...", OutputMessageLevel.Normal);
 
-                    Console.WriteLine("Title: {0}", tag.Title);
-                    Console.WriteLine("Artist: {0}", tag.Artists);
-                    Console.WriteLine("Album: {0}", tag.Album);
+                busyIndicator.IsBusy = true;
+                busyIndicator.BusyContent = "opening folder...";
+                busyIndicator.IsIndeterminate = true;
+
+                if (!string.IsNullOrEmpty(Properties.Settings.Default.LastFolder))
+                {
+                    // Need to bump up one level from the last folder location
+                    var topDirectoryInfo = Directory.GetParent(Properties.Settings.Default.LastFolder);
+
+                    openFolderDialog.InitialDirectory = topDirectoryInfo.FullName;
+
+                    WriteOutput($"Starting at saved folder.", OutputMessageLevel.Normal);
                 }
+                else
+                {
+                    WriteOutput($"No saved folder, starting at root.", OutputMessageLevel.Warning);
+                }
+
+                openFolderDialog.ShowDialog();
+
+                if (openFolderDialog.DialogResult != true)
+                {
+                    WriteOutput($"Canceled folder selection.", OutputMessageLevel.Normal);
+                    return;
+                }
+                else
+                {
+                    Properties.Settings.Default.LastFolder = openFolderDialog.FileName;
+                    Properties.Settings.Default.Save();
+                }
+
+                Reset();
+
+                busyIndicator.BusyContent = $"searching for albums...";
+
+                var seasonsResult = Directory.EnumerateDirectories(openFolderDialog.FileName).ToList();
+
+                Albums.Clear();
+
+                foreach (var season in seasonsResult)
+                {
+                    Albums.Add(season);
+
+                    busyIndicator.BusyContent = $"added {season}";
+                }
+
+                if (Albums.Count == 0)
+                {
+                    WriteOutput("No seasons detected, make sure there are subfolders with season number.", OutputMessageLevel.Warning);
+                }
+                else if (Albums.Count == 1)
+                {
+                    WriteOutput($"Opened '{System.IO.Path.GetFileName(openFolderDialog.FileName)}' ({Albums.Count} season).", OutputMessageLevel.Success);
+                }
+                else
+                {
+                    WriteOutput($"Opened '{System.IO.Path.GetFileName(openFolderDialog.FileName)}' ({Albums.Count} seasons).", OutputMessageLevel.Success);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                WriteOutput(ex.Message, OutputMessageLevel.Error);
+            }
+            finally
+            {
+                busyIndicator.BusyContent = "";
+                busyIndicator.IsBusy = false;
+                busyIndicator.IsIndeterminate = false;
             }
         }
 
-        private IEnumerable<string> GetMusicFrom80s(IEnumerable<string> mp3FilePaths)
+        private void AlbumsListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            foreach (var mp3FilePath in mp3FilePaths)
-            {
-                using (var mp3 = new Mp3(mp3FilePath))
-                {
-                    Id3Tag tag = mp3.GetTag(Id3TagFamily.Version2X);
+            UpdateSelectedMP3Files();
+        }
 
-                    if (tag.Year.Value.HasValue)
+        private void GridView_OnSelectionChanged(object sender, SelectionChangeEventArgs e)
+        {
+            if (e.AddedItems == null)
+                return;
+
+            if (GridView.SelectedItems.Count <= 0)
+                return;
+
+            var firstItem = e.AddedItems.OfType<AudiobookFile>().FirstOrDefault();
+
+            if (firstItem == null)
+                return;
+
+            if (!string.IsNullOrEmpty(firstItem.Artist))
+            {
+                ArtistTextBox.Text = firstItem.Artist;
+            }
+
+            if (!string.IsNullOrEmpty(firstItem.Album))
+            {
+                AlbumNameTextBox.Text = firstItem.Album;
+            }
+        }
+
+        private void ResetButton_Click(object sender, RoutedEventArgs e)
+        {
+            Reset();
+            WriteOutput("Reset complete.", OutputMessageLevel.Success);
+        }
+
+        private void AlbumNameTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            SetTitleTagsButton.IsEnabled = !string.IsNullOrEmpty((sender as RadWatermarkTextBox)?.Text);
+        }
+
+        private void ArtistTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            SetTitleTagsButton.IsEnabled = !string.IsNullOrEmpty((sender as RadWatermarkTextBox)?.Text);
+        }
+
+        private async void SetTagsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(ArtistTextBox.Text) || string.IsNullOrEmpty(AlbumNameTextBox.Text))
+            {
+                WriteOutput($"One of the required fields is empty.", OutputMessageLevel.Error);
+                return;
+            }
+
+            busyIndicator.IsBusy = true;
+            busyIndicator.BusyContent = "updating tags...";
+            busyIndicator.IsIndeterminate = false;
+            busyIndicator.ProgressValue = 0;
+
+            await Task.Run(() =>
+            {
+                try
+                {
+                    WriteOutput($"Updating MP3 tags...", OutputMessageLevel.Warning);
+
+                    foreach (AudiobookFile item in GridView.SelectedItems)
                     {
-                        if (tag.Year >= 1980 && tag.Year < 1990)
+                        using (var mp3 = new Mp3(item.FilePath, Mp3Permissions.ReadWrite))
                         {
-                            yield return mp3FilePath;
+                            Id3Tag tag = mp3.GetTag(Id3TagFamily.Version2X);
+
+                            // Updating Artist value
+                            tag.Artists.Value.Clear();
+                            tag.Artists.Value.Add(ArtistTextBox.Text);
+
+                            tag.Album = AlbumNameTextBox.Text;
+
+                            if (SetTitleCheckBox.IsChecked == true)
+                            {
+                                tag.Title = AlbumNameTextBox.Text;
+                            }
+
+                            mp3.WriteTag(tag, WriteConflictAction.Replace);
+                        }
+
+                        // Need to dispatch back to UI thread, variables to avoid access to modified closure problem
+                        var currentIndex = GridView.SelectedItems.IndexOf(item);
+                        var progressComplete = currentIndex / GridView.SelectedItems.Count * 100;
+                        var progressText = $"Updating tags {progressComplete}% complete...";
+
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            busyIndicator.ProgressValue = progressComplete;
+                            busyIndicator.BusyContent = $"Completed {progressText}...";
+                        });
+                    }
+
+                    WriteOutput($"Renaming operation complete!", OutputMessageLevel.Success);
+                }
+                catch (Exception ex)
+                {
+                    WriteOutput(ex.Message, OutputMessageLevel.Error);
+                }
+            });
+
+            UpdateSelectedMP3Files();
+
+            busyIndicator.BusyContent = "";
+            busyIndicator.IsBusy = false;
+            busyIndicator.ProgressValue = 0;
+        }
+
+        private void UpdateSelectedMP3Files()
+        {
+            Audiobooks.Clear();
+
+            foreach (string season in AlbumsListBox.SelectedItems)
+            {
+                var episodesResult = Directory.EnumerateFiles(season);
+
+                foreach (var filePath in episodesResult)
+                {
+                    var song = new AudiobookFile
+                    {
+                        FilePath = filePath
+                    };
+
+                    var fileName = System.IO.Path.GetFileName(filePath);
+
+                    if (!string.IsNullOrEmpty(fileName))
+                    {
+                        song.FileName = fileName;
+                    }
+
+                    using (var mp3 = new Mp3(filePath))
+                    {
+                        var availableVersions = mp3.AvailableTagVersions.ToList();
+
+                        if (availableVersions.Any())
+                        {
+                            Id3Tag tag = mp3.GetTag(availableVersions.FirstOrDefault());
+
+                            song.Title = tag.Title;
+                            song.Album = tag.Album;
+                            song.Artist = tag.Artists?.Value?.ToString();
+                        }
+                        else
+                        {
+                            song.Title = "No Tag";
+                            song.Album = "No Tag";
+                            song.Artist = "No Tag";
                         }
                     }
+
+                    Audiobooks.Add(song);
                 }
+            }
+
+            if (AlbumsListBox.SelectedItems.Count == 0)
+            {
+                WriteOutput("Selections cleared.", OutputMessageLevel.Warning);
+            }
+            else if (AlbumsListBox.SelectedItems.Count == 1)
+            {
+                WriteOutput($"{System.IO.Path.GetFileName(openFolderDialog.FileName)} selected ({Audiobooks.Count} files).", OutputMessageLevel.Informational);
+            }
+            else
+            {
+                WriteOutput($"{AlbumsListBox.SelectedItems.Count} albums selected ({Audiobooks.Count} total files).", OutputMessageLevel.Informational);
             }
         }
 
-        private void SetCopyright(string mp3FilePath)
+        private void Reset()
         {
-            using (var mp3 = new Mp3(mp3FilePath, Mp3Permissions.ReadWrite))
+            AlbumNameTextBox.Text = string.Empty;
+            ArtistTextBox.Text = string.Empty;
+
+            Albums.Clear();
+            Audiobooks.Clear();
+        }
+
+        private void WriteOutput(string text, OutputMessageLevel level, bool removeLastItem = false)
+        {
+            var messageColor = Colors.Gray;
+
+            switch (level)
             {
-                Id3Tag tag = mp3.GetTag(Id3TagFamily.Version2X);
+                case OutputMessageLevel.Normal:
+                    messageColor = Colors.Black;
+                    break;
+                case OutputMessageLevel.Informational:
+                    messageColor = Colors.Gray;
+                    break;
+                case OutputMessageLevel.Success:
+                    messageColor = Colors.Green;
+                    break;
+                case OutputMessageLevel.Warning:
+                    messageColor = Colors.Goldenrod;
+                    break;
+                case OutputMessageLevel.Error:
+                    messageColor = Colors.Red;
+                    break;
+            }
 
-                if (!tag.Copyright.IsAssigned)
+            if (this.Dispatcher.CheckAccess())
+            {
+                if (removeLastItem && OutputMessages.Count > 0)
                 {
-                    int year = tag.Year.Value.GetValueOrDefault(2000);
-
-                    string artists = tag.Artists.ToString();
-                    tag.Copyright = $"{year} {artists}";
-                    mp3.WriteTag(tag, WriteConflictAction.Replace);
+                    OutputMessages.Remove(OutputMessages.LastOrDefault());
                 }
+
+                var message = new OutputMessage
+                {
+                    Message = text,
+                    MessageColor = messageColor
+                };
+
+                OutputMessages.Add(message);
+                OutputListBox.ScrollIntoView(message);
+            }
+            else
+            {
+                this.Dispatcher.Invoke(() =>
+                {
+                    if (removeLastItem && OutputMessages.Count > 0)
+                    {
+                        OutputMessages.Remove(OutputMessages.LastOrDefault());
+                    }
+
+                    var message = new OutputMessage
+                    {
+                        Message = text,
+                        MessageColor = messageColor
+                    };
+
+                    OutputMessages.Add(message);
+                    OutputListBox.ScrollIntoView(message);
+                });
             }
         }
     }

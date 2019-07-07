@@ -95,6 +95,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Models\AudiobookFile.cs" />
+    <Compile Include="Models\BindableBase.cs" />
     <Compile Include="Models\WorkerParameters.cs" />
     <Compile Include="Models\WorkerProgress.cs" />
     <Compile Include="Models\WorkerResult.cs" />
