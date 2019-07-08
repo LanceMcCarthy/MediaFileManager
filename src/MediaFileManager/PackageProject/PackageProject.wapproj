@@ -55,9 +55,9 @@
     <TargetPlatformMinVersion>10.0.14393.0</TargetPlatformMinVersion>
     <DefaultLanguage>en-US</DefaultLanguage>
     <EntryPointProjectUniqueName>..\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj</EntryPointProjectUniqueName>
-    <PackageCertificateThumbprint>5DB0E5F425844CAF1C87D5FEF8EB676699D04567</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>8427FFF50262674862A9D8AF7BBC5C72E369D2EF</PackageCertificateThumbprint>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
-    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxBundlePlatforms>x86</AppxBundlePlatforms>
     <AppInstallerUpdateFrequency>1</AppInstallerUpdateFrequency>
     <AppInstallerCheckForUpdateFrequency>OnApplicationRun</AppInstallerCheckForUpdateFrequency>
