@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -13,11 +13,12 @@ namespace MediaFileManager.Desktop.Views
 {
     public partial class AudiobookFilesView : UserControl
     {
+        private readonly BackgroundWorker backgroundWorker;
         private readonly RadOpenFolderDialog openFolderDialog;
 
         public readonly ObservableCollection<OutputMessage> StatusMessages = new ObservableCollection<OutputMessage>();
-        public readonly ObservableCollection<string> Albums = new ObservableCollection<string>();
-        public readonly ObservableCollection<AudiobookFile> Audiobooks = new ObservableCollection<AudiobookFile>();
+        public readonly ObservableCollection<string> AudiobookTitles = new ObservableCollection<string>();
+        public readonly ObservableCollection<AudiobookFile> AudiobookFiles = new ObservableCollection<AudiobookFile>();
 
         public AudiobookFilesView()
         {
@@ -25,11 +26,17 @@ namespace MediaFileManager.Desktop.Views
 
             openFolderDialog = new RadOpenFolderDialog { Owner = this, ExpandToCurrentDirectory = false };
 
-            AlbumsListBox.ItemsSource = Albums;
-            GridView.ItemsSource = Audiobooks;
-            OutputListBox.ItemsSource = StatusMessages;
+            StatusListBox.ItemsSource = StatusMessages;
+            AudiobookTitlesListBox.ItemsSource = AudiobookTitles;
+            AudiobookFilesGridView.ItemsSource = AudiobookFiles;
 
-            WriteOutput($"Ready, open a folder to begin.", OutputMessageLevel.Success);
+            backgroundWorker = new BackgroundWorker();
+            backgroundWorker.WorkerReportsProgress = true;
+            backgroundWorker.DoWork += BackgroundWorker_DoWork;
+            backgroundWorker.ProgressChanged += BackgroundWorker_ProgressChanged;
+            backgroundWorker.RunWorkerCompleted += BackgroundWorker_RunWorkerCompleted;
+
+            WriteOutput($"Ready, open an author folder to begin.", OutputMessageLevel.Success);
         }
 
         private void SelectAuthorFolderButton_Click(object sender, RoutedEventArgs e)
@@ -73,28 +80,30 @@ namespace MediaFileManager.Desktop.Views
 
                 busyIndicator.BusyContent = $"searching for albums...";
 
-                var seasonsResult = Directory.EnumerateDirectories(openFolderDialog.FileName).ToList();
+                var folders = Directory.EnumerateDirectories(openFolderDialog.FileName).ToList();
 
-                Albums.Clear();
+                AudiobookTitles.Clear();
 
-                foreach (var season in seasonsResult)
+                foreach (var folder in folders)
                 {
-                    Albums.Add(season);
+                    AudiobookTitles.Add(folder);
 
-                    busyIndicator.BusyContent = $"added {season}";
+                    busyIndicator.BusyContent = $"added {folder}";
                 }
 
-                if (Albums.Count == 0)
+                if (AudiobookTitles.Count == 0)
                 {
-                    WriteOutput("No seasons detected, make sure there are subfolders with season number.", OutputMessageLevel.Warning);
+                    WriteOutput("No titles detected.", OutputMessageLevel.Error);
+
+                    MessageBox.Show("The selected Author's folder should have subfolders, each subfolder should be named with the audiobook's title.", "No Titles Available.");
                 }
-                else if (Albums.Count == 1)
+                else if (AudiobookTitles.Count == 1)
                 {
-                    WriteOutput($"Opened '{System.IO.Path.GetFileName(openFolderDialog.FileName)}' ({Albums.Count} season).", OutputMessageLevel.Success);
+                    WriteOutput($"Opened {Path.GetFileName(openFolderDialog.FileName)}' ({AudiobookTitles.Count} title).", OutputMessageLevel.Success);
                 }
                 else
                 {
-                    WriteOutput($"Opened '{System.IO.Path.GetFileName(openFolderDialog.FileName)}' ({Albums.Count} seasons).", OutputMessageLevel.Success);
+                    WriteOutput($"Opened {Path.GetFileName(openFolderDialog.FileName)} ({AudiobookTitles.Count} titles).", OutputMessageLevel.Success);
                 }
             }
             catch (Exception ex)
@@ -111,17 +120,17 @@ namespace MediaFileManager.Desktop.Views
             }
         }
 
-        private void AlbumsListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void AudiobookTitlesListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             RefreshFileList();
         }
 
-        private void GridView_OnSelectionChanged(object sender, SelectionChangeEventArgs e)
+        private void AudiobookFilesGridView_OnSelectionChanged(object sender, SelectionChangeEventArgs e)
         {
             if (e.AddedItems == null)
                 return;
 
-            if (GridView.SelectedItems.Count <= 0)
+            if (AudiobookFilesGridView.SelectedItems.Count <= 0)
                 return;
 
             var firstItem = e.AddedItems.OfType<AudiobookFile>().FirstOrDefault();
@@ -143,7 +152,8 @@ namespace MediaFileManager.Desktop.Views
         private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
             Reset();
-            WriteOutput("Reset complete.", OutputMessageLevel.Success);
+
+            WriteOutput("Reset complete! Open a folder to continue.", OutputMessageLevel.Success);
         }
 
         private void AlbumNameTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
@@ -156,11 +166,17 @@ namespace MediaFileManager.Desktop.Views
             UpdateTagsButton.IsEnabled = !string.IsNullOrEmpty((sender as RadWatermarkTextBox)?.Text);
         }
 
-        private async void SetTagsButton_Click(object sender, RoutedEventArgs e)
+        private void SetTagsButton_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(ArtistTextBox.Text) || string.IsNullOrEmpty(AlbumNameTextBox.Text))
             {
                 WriteOutput($"One of the required fields is empty.", OutputMessageLevel.Error);
+                return;
+            }
+
+            if (AudiobookFilesGridView.SelectedItems.Count == 0)
+            {
+                WriteOutput($"No selected files.", OutputMessageLevel.Error);
                 return;
             }
 
@@ -169,60 +185,92 @@ namespace MediaFileManager.Desktop.Views
             busyIndicator.IsIndeterminate = false;
             busyIndicator.ProgressValue = 0;
 
-            try
+            backgroundWorker.RunWorkerAsync(new TagWorkerParameters
             {
-                WriteOutput($"Updating MP3 tags...", OutputMessageLevel.Warning);
+                AudiobookFiles = AudiobookFilesGridView.SelectedItems.Cast<AudiobookFile>().ToList(),
+                UpdateAlbumName = SetAlbumNameCheckBox.IsChecked,
+                UpdateTitle = SetTitleCheckBox.IsChecked,
+                UpdateArtistName = SetArtistNameCheckBox.IsChecked
+            });
+        }
 
-                foreach (AudiobookFile audiobookFile in GridView.SelectedItems)
+        private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            if (e.Argument is TagWorkerParameters tagParams)
+            {
+                try
                 {
-                    var tagLibFile = TagLib.File.Create(audiobookFile.FilePath);
-
-                    if (tagLibFile != null)
+                    for (int i = 0; i < tagParams.AudiobookFiles.Count; i++)
                     {
-                        // Plex uses the audiobook's title for the Album
-                        if (SetAlbumNameCheckBox.IsChecked == true)
+                        var audiobookFile = tagParams.AudiobookFiles[i];
+
+                        var tagLibFile = TagLib.File.Create(audiobookFile.FilePath);
+
+                        if (tagLibFile != null)
                         {
-                            tagLibFile.Tag.Album = audiobookFile.Album;
+                            // Plex uses the audiobook's title for the Album
+                            if (tagParams.UpdateAlbumName == true)
+                            {
+                                tagLibFile.Tag.Album = audiobookFile.Album;
+                            }
+
+                            // Using the filename for titles in the 'album' helps keeps files in order
+                            if (tagParams.UpdateTitle == true)
+                            {
+                                tagLibFile.Tag.Title = Path.GetFileNameWithoutExtension(audiobookFile.FilePath);
+                            }
+
+                            // Author and Artist fields (Plex uses Artist and Album)
+                            if (tagParams.UpdateArtistName == true)
+                            {
+                                var author = new[] { audiobookFile.Artist };
+                                tagLibFile.Tag.Artists = author;
+                                tagLibFile.Tag.AlbumArtists = author;
+                                tagLibFile.Tag.Performers = author;
+                                tagLibFile.Tag.Composers = author;
+                            }
+
+                            tagLibFile.Save();
+
+                            // Report progress
+                            backgroundWorker.ReportProgress(i / tagParams.AudiobookFiles.Count * 100);
                         }
 
-                        // Using the filename for  titles in the 'album' helps keeps files in order
-                        if (SetTitleCheckBox.IsChecked == true)
+                        e.Result = new WorkerResult
                         {
-                            tagLibFile.Tag.Title = audiobookFile.FileName;
-                        }
-
-                        // Author and Artist fields (Plex uses Artist and Album)
-                        if (SetArtistNameCheckBox.IsChecked == true)
-                        {
-                            var author = new[] {audiobookFile.Artist};
-                            tagLibFile.Tag.Artists = author;
-                            tagLibFile.Tag.AlbumArtists = author;
-                            tagLibFile.Tag.Performers = author;
-                            tagLibFile.Tag.Composers = author;
-                        }
-
-                        tagLibFile.Save();
+                            FinalMessage = $"Complete, updated {tagParams.AudiobookFiles.Count} files.",
+                        };
                     }
-
-                    // Need to dispatch back to UI thread, variables to avoid access to modified closure problem
-                    var currentIndex = GridView.SelectedItems.IndexOf(audiobookFile);
-                    var progressComplete = currentIndex / GridView.SelectedItems.Count * 100;
-                    var progressText = $"Updating tags {progressComplete}% complete...";
-
-                    WriteOutput(progressText, OutputMessageLevel.Informational, true);
-
-                    busyIndicator.ProgressValue = progressComplete;
-                    busyIndicator.BusyContent = $"Completed {progressText}...";
                 }
-
-                WriteOutput("Tags updated!", OutputMessageLevel.Success);
+                catch (Exception ex)
+                {
+                    WriteOutput(ex.Message, OutputMessageLevel.Error);
+                }
             }
-            catch (Exception ex)
+        }
+
+        private void BackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            busyIndicator.ProgressValue = e.ProgressPercentage;
+            busyIndicator.BusyContent = $"Updating tags, {e.ProgressPercentage}%...";
+
+            // Also write to output, replacing the last line written.
+            WriteOutput($"Updating tags, {e.ProgressPercentage}%...", OutputMessageLevel.Informational, true);
+        }
+
+        private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Result == null)
             {
-                WriteOutput(ex.Message, OutputMessageLevel.Error);
+                MessageBox.Show("Something went wrong starting the background worker, try again.", "Worker parameter was null", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
-            RefreshFileList();
+            if (e.Result is WorkerResult resultParameter)
+            {
+                WriteOutput(resultParameter.FinalMessage, OutputMessageLevel.Success);
+
+                RefreshFileList();
+            }
 
             busyIndicator.BusyContent = "";
             busyIndicator.IsBusy = false;
@@ -231,14 +279,20 @@ namespace MediaFileManager.Desktop.Views
 
         private void RefreshFileList()
         {
-            Audiobooks.Clear();
+            AudiobookFiles.Clear();
 
-            foreach (string album in AlbumsListBox.SelectedItems)
+            foreach (string album in AudiobookTitlesListBox.SelectedItems)
             {
                 var filePaths = Directory.EnumerateFiles(album);
 
                 foreach (var filePath in filePaths)
                 {
+                    if (Path.GetExtension(filePath)?.ToLower().Contains("mp3") == false)
+                    {
+                        WriteOutput($"Skipping {Path.GetFileNameWithoutExtension(filePath)} (only MP3s allowed)...", OutputMessageLevel.Warning);
+                        continue;
+                    }
+
                     var audiobookFile = new AudiobookFile
                     {
                         FilePath = filePath
@@ -253,36 +307,29 @@ namespace MediaFileManager.Desktop.Views
 
                     var tagLibFile = TagLib.File.Create(filePath);
 
-                    if (tagLibFile != null)
+                    if (tagLibFile?.Tag != null)
                     {
                         audiobookFile.Title = tagLibFile.Tag.Title;
                         audiobookFile.Album = tagLibFile.Tag.Album;
-                        audiobookFile.Artist = tagLibFile.Tag.Artists.FirstOrDefault();
-                        audiobookFile.Performer = tagLibFile.Tag.Performers.FirstOrDefault();
-                    }
-                    else
-                    {
-                        audiobookFile.Title = "No Tag";
-                        audiobookFile.Album = "No Tag";
-                        audiobookFile.Artist = "No Tag";
-                        audiobookFile.Performer = "No Tag";
+                        audiobookFile.Artist = tagLibFile.Tag.Artists?.FirstOrDefault();
+                        audiobookFile.Performer = tagLibFile.Tag.Performers?.FirstOrDefault();
                     }
 
-                    Audiobooks.Add(audiobookFile);
+                    AudiobookFiles.Add(audiobookFile);
                 }
             }
 
-            if (AlbumsListBox.SelectedItems.Count == 0)
+            if (AudiobookTitlesListBox.SelectedItems.Count == 0)
             {
                 WriteOutput("Selections cleared.", OutputMessageLevel.Warning);
             }
-            else if (AlbumsListBox.SelectedItems.Count == 1)
+            else if (AudiobookTitlesListBox.SelectedItems.Count == 1)
             {
-                WriteOutput($"{System.IO.Path.GetFileName(openFolderDialog.FileName)} selected ({Audiobooks.Count} files).", OutputMessageLevel.Informational);
+                WriteOutput($"{Path.GetFileName(openFolderDialog.FileName)} selected ({AudiobookFiles.Count} files).", OutputMessageLevel.Informational);
             }
             else
             {
-                WriteOutput($"{AlbumsListBox.SelectedItems.Count} albums selected ({Audiobooks.Count} total files).", OutputMessageLevel.Informational);
+                WriteOutput($"{AudiobookTitlesListBox.SelectedItems.Count} selected ({AudiobookFiles.Count} total files).", OutputMessageLevel.Informational);
             }
         }
 
@@ -291,8 +338,13 @@ namespace MediaFileManager.Desktop.Views
             AlbumNameTextBox.Text = string.Empty;
             ArtistTextBox.Text = string.Empty;
 
-            Albums.Clear();
-            Audiobooks.Clear();
+            SetAlbumNameCheckBox.IsChecked = true;
+            SetTitleCheckBox.IsChecked = true;
+            SetArtistNameCheckBox.IsChecked = true;
+
+            AudiobookTitles.Clear();
+            AudiobookFiles.Clear();
+            StatusMessages.Clear();
         }
 
         private void WriteOutput(string text, OutputMessageLevel level, bool removeLastItem = false)
@@ -332,7 +384,7 @@ namespace MediaFileManager.Desktop.Views
                 };
 
                 StatusMessages.Add(message);
-                OutputListBox.ScrollIntoView(message);
+                StatusListBox.ScrollIntoView(message);
             }
             else
             {
@@ -350,7 +402,7 @@ namespace MediaFileManager.Desktop.Views
                     };
 
                     StatusMessages.Add(message);
-                    OutputListBox.ScrollIntoView(message);
+                    StatusListBox.ScrollIntoView(message);
                 });
             }
         }

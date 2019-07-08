@@ -15,33 +15,33 @@
                 <telerikDocking:RadSplitContainer>
                     <telerikDocking:RadPaneGroup x:Name="AlbumsPaneGroup"
                                                  telerikDocking:ProportionalStackPanel.RelativeSize="200, 200">
-                        <telerikDocking:RadPane Header="Folders">
-                            <ListBox x:Name="AlbumsListBox"
+                        <telerikDocking:RadPane Header="Audiobook Folders">
+                            <ListBox x:Name="AudiobookTitlesListBox"
                                      SelectionMode="Extended"
-                                     SelectionChanged="AlbumsListBox_SelectionChanged"
+                                     SelectionChanged="AudiobookTitlesListBox_SelectionChanged"
                                      Margin="5" />
                         </telerikDocking:RadPane>
                     </telerikDocking:RadPaneGroup>
                     <telerikDocking:RadPaneGroup x:Name="SongsPaneGroup"
                                                  telerikDocking:ProportionalStackPanel.RelativeSize="500, 200">
                         <telerikDocking:RadPane x:Name="DataGridPane"
-                                                Header="MP3s">
-                            <telerik:RadGridView x:Name="GridView"
+                                                Header="Audiobook Files">
+                            <telerik:RadGridView x:Name="AudiobookFilesGridView"
                                                  AutoGenerateColumns="False"
                                                  SelectionMode="Extended"
-                                                 SelectionChanged="GridView_OnSelectionChanged"
+                                                 SelectionChanged="AudiobookFilesGridView_OnSelectionChanged"
                                                  Margin="5">
                                 <telerik:RadGridView.Columns>
                                     <telerik:GridViewDataColumn DataMemberBinding="{Binding FileName}"
                                                                 Header="File Name" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding Title}"
+                                                                Header="Title" />
                                     <telerik:GridViewDataColumn DataMemberBinding="{Binding Album}"
                                                                 Header="Album" />
                                     <telerik:GridViewDataColumn DataMemberBinding="{Binding Artist}"
                                                                 Header="Artist" />
                                     <telerik:GridViewDataColumn DataMemberBinding="{Binding Performer}"
                                                                 Header="Performer" />
-                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding Title}"
-                                                                Header="Title" />
                                 </telerik:RadGridView.Columns>
                             </telerik:RadGridView>
                         </telerikDocking:RadPane>
@@ -51,19 +51,19 @@
 
             <telerikDocking:RadSplitContainer InitialPosition="DockedLeft">
                 <telerikDocking:RadPaneGroup>
-                    <telerikDocking:RadPane Header="Source">
+                    <telerikDocking:RadPane Header="Status">
                         <Grid Margin="5">
                             <Grid.RowDefinitions>
                                 <RowDefinition />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
-                            <ListBox x:Name="OutputListBox">
+                            <ListBox x:Name="StatusListBox">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Message}"
                                                    TextWrapping="Wrap"
-                                                   Width="{Binding Width, ElementName=OutputListBox}">
+                                                   Width="{Binding Width, ElementName=StatusListBox}">
                                             <TextBlock.Foreground>
                                                 <SolidColorBrush Color="{Binding MessageColor}" />
                                             </TextBlock.Foreground>
@@ -81,11 +81,11 @@
                             </ListBox>
 
                             <StackPanel Grid.Row="1">
-                                <Button Content="Open Folder"
+                                <Button Content="Open Author Folder"
                                         Click="SelectAuthorFolderButton_Click"
                                         Margin="5" />
 
-                                <Button Content="Start Over"
+                                <Button Content="Reset"
                                         Click="ResetButton_Click"
                                         Margin="5" />
                             </StackPanel>
@@ -96,7 +96,7 @@
 
             <telerikDocking:RadSplitContainer InitialPosition="DockedBottom">
                 <telerikDocking:RadPaneGroup>
-                    <telerikDocking:RadPane Header="MP3 Audiobook Tags">
+                    <telerikDocking:RadPane Header="Audiobook Files">
                         <Grid Margin="5">
                             <Grid.RowDefinitions>
                                 <RowDefinition />
@@ -123,7 +123,7 @@
                                       Grid.Row="0"/>
 
                             <telerik:RadWatermarkTextBox x:Name="ArtistTextBox"
-                                                         WatermarkContent="Artist - Performer Name (author)"
+                                                         WatermarkContent="Artist Name / Performer Name (author)"
                                                          TextChanged="ArtistTextBox_OnTextChanged"
                                                          Margin="3,5"
                                                          Grid.Column="0"
@@ -156,6 +156,7 @@
         </telerikDocking:RadDocking>
 
         <telerik:RadBusyIndicator x:Name="busyIndicator"
+                                  Background="#99000000"
                                   IsBusy="False" />
     </Grid>
 </UserControl>
