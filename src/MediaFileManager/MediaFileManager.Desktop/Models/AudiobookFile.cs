@@ -2,40 +2,47 @@
 {
     public class AudiobookFile : BindableBase
     {
-        private string _fileName;
-        private string _title;
-        private string _album;
-        private string _artist;
-        private string _filePath;
+        private string fileName;
+        private string title;
+        private string album;
+        private string artist;
+        private string performer;
+        private string filePath;
 
         public string FileName
         {
-            get => _fileName;
-            set => SetProperty(ref _fileName, value);
+            get => fileName;
+            set => SetProperty(ref fileName, value);
         }
 
         public string Title
         {
-            get => _title;
-            set => SetProperty(ref _title, value);
+            get => title;
+            set => SetProperty(ref title, value);
         }
 
         public string Album
         {
-            get => _album;
-            set => SetProperty(ref _album, value);
+            get => album;
+            set => SetProperty(ref album, value);
         }
 
         public string Artist
         {
-            get => _artist;
-            set => SetProperty(ref _artist, value);
+            get => artist;
+            set => SetProperty(ref artist, value);
+        }
+
+        public string Performer
+        {
+            get => performer;
+            set => SetProperty(ref performer, value);
         }
 
         public string FilePath
         {
-            get => _filePath;
-            set => SetProperty(ref _filePath, value);
+            get => filePath;
+            set => SetProperty(ref filePath, value);
         }
     }
 }

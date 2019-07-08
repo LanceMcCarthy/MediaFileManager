@@ -101,8 +101,11 @@
     <Compile Include="Models\WorkerProgress.cs" />
     <Compile Include="Models\WorkerResult.cs" />
     <Compile Include="Settings.cs" />
-    <Compile Include="Views\AudioFilesView.xaml.cs">
-      <DependentUpon>AudioFilesView.xaml</DependentUpon>
+    <Compile Include="Views\AudiobookFilesView.xaml.cs">
+      <DependentUpon>AudiobookFilesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MusicFilesView.xaml.cs">
+      <DependentUpon>MusicFilesView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\VideoFilesView.xaml.cs">
       <DependentUpon>VideoFilesView.xaml</DependentUpon>
@@ -118,7 +121,11 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Views\AudioFilesView.xaml">
+    <Page Include="Views\AudiobookFilesView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MusicFilesView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

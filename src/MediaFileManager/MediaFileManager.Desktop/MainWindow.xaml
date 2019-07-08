@@ -16,13 +16,9 @@
         </Grid.RowDefinitions>
 
         <telerik:RadComboBox x:Name="FileTypeComboBox" 
-                             SelectedIndex="1"
                              SelectionChanged="FileTypeComboBox_OnSelectionChanged"/>
 
         <Border x:Name="SelectedViewBorder"
-                Grid.Row="1">
-            <!--<views:AudioFilesView />
-            <views:VideoFilesView />-->
-        </Border>
+                Grid.Row="1"/>
     </Grid>
 </Window>
