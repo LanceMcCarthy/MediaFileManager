@@ -8,7 +8,7 @@ using System.Windows;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("MediaFileManager")]
-[assembly: AssemblyDescription("An applicaiotn that lets you quickly name and number your media files in batch operations")]
+[assembly: AssemblyDescription("An application that lets you perform tedious media file management tasks for better compatibility with media servers like Plex.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Lancelot Software LLC")]
 [assembly: AssemblyProduct("MediaFileManager.Desktop")]
@@ -51,5 +51,5 @@ using System.Windows;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2019.2.520.0")]
-[assembly: AssemblyFileVersion("209.2.520.0")]
+[assembly: AssemblyVersion("2019.708.1.0")]
+[assembly: AssemblyFileVersion("2019.708.1.0")]
