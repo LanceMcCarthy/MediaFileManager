@@ -17,7 +17,7 @@ namespace MediaFileManager.Desktop.Views
     {
         private readonly BackgroundWorker renumberWorker;
         private readonly RadOpenFolderDialog openFolderDialog;
-        private readonly ObservableCollection<OutputMessage> OutputMessages = new ObservableCollection<OutputMessage>();
+        private readonly ObservableCollection<OutputMessage> StatusMessages = new ObservableCollection<OutputMessage>();
 
         private readonly ObservableCollection<string> Seasons = new ObservableCollection<string>();
         private readonly ObservableCollection<string> Episodes = new ObservableCollection<string>();
@@ -32,7 +32,7 @@ namespace MediaFileManager.Desktop.Views
             SeasonsListBox.ItemsSource = Seasons;
             EpisodesListBox.ItemsSource = Episodes;
             EpisodeRenamedPreviewListBox.ItemsSource = RenamedEpisodesPreviewList;
-            OutputListBox.ItemsSource = OutputMessages;
+            StatusListBox.ItemsSource = StatusMessages;
 
             renumberWorker = new BackgroundWorker();
             renumberWorker.WorkerReportsProgress = true;
@@ -179,7 +179,7 @@ namespace MediaFileManager.Desktop.Views
         private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
             Reset();
-            WriteOutput("Reset complete.", OutputMessageLevel.Success);
+            WriteOutput("Reset complete! Open a folder to continue.", OutputMessageLevel.Success);
         }
 
         #endregion
@@ -584,7 +584,7 @@ namespace MediaFileManager.Desktop.Views
 
             Seasons.Clear();
             Episodes.Clear();
-
+            StatusMessages.Clear();
         }
 
         private void WriteOutput(string text, OutputMessageLevel level, bool removeLastItem = false)
@@ -612,9 +612,9 @@ namespace MediaFileManager.Desktop.Views
 
             if (this.Dispatcher.CheckAccess())
             {
-                if (removeLastItem && OutputMessages.Count > 0)
+                if (removeLastItem && StatusMessages.Count > 0)
                 {
-                    OutputMessages.Remove(OutputMessages.LastOrDefault());
+                    StatusMessages.Remove(StatusMessages.LastOrDefault());
                 }
 
                 var message = new OutputMessage
@@ -623,16 +623,16 @@ namespace MediaFileManager.Desktop.Views
                     MessageColor = messageColor
                 };
 
-                OutputMessages.Add(message);
-                OutputListBox.ScrollIntoView(message);
+                StatusMessages.Add(message);
+                StatusListBox.ScrollIntoView(message);
             }
             else
             {
                 this.Dispatcher.Invoke(() =>
                 {
-                    if (removeLastItem && OutputMessages.Count > 0)
+                    if (removeLastItem && StatusMessages.Count > 0)
                     {
-                        OutputMessages.Remove(OutputMessages.LastOrDefault());
+                        StatusMessages.Remove(StatusMessages.LastOrDefault());
                     }
 
                     var message = new OutputMessage
@@ -641,8 +641,8 @@ namespace MediaFileManager.Desktop.Views
                         MessageColor = messageColor
                     };
 
-                    OutputMessages.Add(message);
-                    OutputListBox.ScrollIntoView(message);
+                    StatusMessages.Add(message);
+                    StatusListBox.ScrollIntoView(message);
                 });
             }
         }

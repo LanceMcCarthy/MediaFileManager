@@ -72,19 +72,19 @@
 
             <telerikDocking:RadSplitContainer InitialPosition="DockedLeft">
                 <telerikDocking:RadPaneGroup>
-                    <telerikDocking:RadPane Header="Source">
+                    <telerikDocking:RadPane Header="Status">
                         <Grid Margin="5">
                             <Grid.RowDefinitions>
                                 <RowDefinition />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
-                            <ListBox x:Name="OutputListBox">
+                            <ListBox x:Name="StatusListBox">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Message}"
                                                    TextWrapping="Wrap"
-                                                   Width="{Binding Width, ElementName=OutputListBox}">
+                                                   Width="{Binding Width, ElementName=StatusListBox}">
                                             <TextBlock.Foreground>
                                                 <SolidColorBrush Color="{Binding MessageColor}" />
                                             </TextBlock.Foreground>
@@ -102,11 +102,11 @@
                             </ListBox>
 
                             <StackPanel Grid.Row="1">
-                                <Button Content="Open Folder"
+                                <Button Content="Open TV Show Folder"
                                         Click="SelectFolderButton_Click"
                                         Margin="5" />
 
-                                <Button Content="Start Over"
+                                <Button Content="Reset"
                                         Click="ResetButton_Click"
                                         Margin="5" />
                             </StackPanel>
@@ -238,6 +238,7 @@
         </telerik:RadDocking>
 
         <telerik:RadBusyIndicator x:Name="busyIndicator"
+                                  Background="#DDFFFFFF"
                                   IsBusy="False" />
     </Grid>
 </UserControl>
