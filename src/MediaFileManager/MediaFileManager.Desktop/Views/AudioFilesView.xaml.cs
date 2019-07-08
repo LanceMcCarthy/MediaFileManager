@@ -1,5 +1,4 @@
-﻿using Id3;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -8,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using MediaFileManager.Desktop.Models;
+using TagLib;
 using Telerik.Windows.Controls;
 
 namespace MediaFileManager.Desktop.Views
@@ -178,22 +178,17 @@ namespace MediaFileManager.Desktop.Views
 
                     foreach (AudiobookFile item in GridView.SelectedItems)
                     {
-                        using (var mp3 = new Mp3(item.FilePath, Mp3Permissions.ReadWrite))
+                        var tFile = TagLib.File.Create(item.FilePath);
+
+                        if (tFile != null)
                         {
-                            Id3Tag tag = mp3.GetTag(Id3TagFamily.Version2X);
+                            tFile.Tag.Title = item.Title;
+                            tFile.Tag.Album = item.Album;
+                            tFile.Tag.AlbumArtists = new [] { item.Artist };
+                            tFile.Tag.Composers = new[] { item.Artist };
+                            
 
-                            // Updating Artist value
-                            tag.Artists.Value.Clear();
-                            tag.Artists.Value.Add(ArtistTextBox.Text);
-
-                            tag.Album = AlbumNameTextBox.Text;
-
-                            if (SetTitleCheckBox.IsChecked == true)
-                            {
-                                tag.Title = AlbumNameTextBox.Text;
-                            }
-
-                            mp3.WriteTag(tag, WriteConflictAction.Replace);
+                            tFile.Save();
                         }
 
                         // Need to dispatch back to UI thread, variables to avoid access to modified closure problem
@@ -245,24 +240,19 @@ namespace MediaFileManager.Desktop.Views
                         song.FileName = fileName;
                     }
 
-                    using (var mp3 = new Mp3(filePath))
+                    var tFile = TagLib.File.Create(filePath);
+
+                    if (tFile != null)
                     {
-                        var availableVersions = mp3.AvailableTagVersions.ToList();
-
-                        if (availableVersions.Any())
-                        {
-                            Id3Tag tag = mp3.GetTag(availableVersions.FirstOrDefault());
-
-                            song.Title = tag.Title;
-                            song.Album = tag.Album;
-                            song.Artist = tag.Artists?.Value?.ToString();
-                        }
-                        else
-                        {
-                            song.Title = "No Tag";
-                            song.Album = "No Tag";
-                            song.Artist = "No Tag";
-                        }
+                        song.Title = tFile.Tag.Title;
+                        song.Album = tFile.Tag.Album;
+                        song.Artist = tFile.Tag.FirstAlbumArtist;
+                    }
+                    else
+                    {
+                        song.Title = "No Tag";
+                        song.Album = "No Tag";
+                        song.Artist = "No Tag";
                     }
 
                     Audiobooks.Add(song);

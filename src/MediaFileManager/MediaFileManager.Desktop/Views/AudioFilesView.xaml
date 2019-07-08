@@ -89,41 +89,6 @@
                             </StackPanel>
                         </Grid>
                     </telerikDocking:RadPane>
-                    <telerikDocking:RadPane Header="Help">
-                        <TextBlock TextWrapping="Wrap"
-                                   Margin="5">
-                            <Run Text="Getting Started"
-                                 FontWeight="Bold" />
-                            <LineBreak />
-                            <Run Text="1. Open a folder to fill the Seasons list. " />
-                            <LineBreak />
-                            <Run Text="2. Select season(s) to fill the Episodes list. " />
-                            <LineBreak />
-                            <Run Text="3. Select episode(s) to be edited." />
-                            <LineBreak />
-                            <LineBreak />
-                            <Run Text="Renaming"
-                                 FontWeight="Bold" />
-                            <LineBreak />
-                            <Run Text="1. In the episode name box, make a partial section of the file name text." />
-                            <LineBreak />
-                            <Run Text="2. Enter replacement text in the replacement text box." />
-                            <LineBreak />
-                            <Run Text="3. Click the 'Rename' button to update all the selected episodes file names with the text replacement." />
-                            <LineBreak />
-                            <LineBreak />
-                            <Run Text="Renumbering"
-                                 FontWeight="Bold" />
-                            <LineBreak />
-                            <Run Text="1. Select episodes in the EXACT order you want the episodes to be numbered." />
-                            <LineBreak />
-                            <Run Text="2. In the episode name box, select the area that will be replaced with the 'SxxExx' text." />
-                            <LineBreak />
-                            <Run Text="3. Click the 'Number Episodes' button to rename all the selected episodes with the season and episode number." />
-                            <LineBreak />
-                            <Run Text="Instructions here" />
-                        </TextBlock>
-                    </telerikDocking:RadPane>
                 </telerikDocking:RadPaneGroup>
             </telerikDocking:RadSplitContainer>
 
