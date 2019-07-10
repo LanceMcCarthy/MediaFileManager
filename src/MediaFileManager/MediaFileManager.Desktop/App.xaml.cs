@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using Telerik.Windows.Controls;
 
 namespace MediaFileManager.Desktop
 {
@@ -6,7 +7,8 @@ namespace MediaFileManager.Desktop
     {
         public App()
         {
-           this.InitializeComponent();
+            StyleManager.ApplicationTheme = new FluentTheme();
+            this.InitializeComponent();
         }
     }
 }
