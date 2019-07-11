@@ -1,6 +1,6 @@
 # MediaFileManager
 
-Here is a video of the application at runtime: https://www.screencast.com/t/84UQ7Vkv 
+[Media File Manager installable via Microsoft Store](https://www.microsoft.com/en-us/p/media-file-manager/9pd3jfk7w5mb) a UWP Packaged WPF application. [Watch a quick video demo](https://www.screencast.com/t/84UQ7Vkv) (< 1 minute).  
 
 ### Stage 1 - Choose a root folder for the TV Show / Series
 ![Stage 1](https://user-images.githubusercontent.com/3520532/58042684-56a3ac80-7b09-11e9-84d2-960619c96316.png)
