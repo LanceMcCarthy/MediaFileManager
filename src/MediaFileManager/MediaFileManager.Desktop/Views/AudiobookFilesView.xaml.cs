@@ -168,13 +168,13 @@ namespace MediaFileManager.Desktop.Views
 
         private void SetTagsButton_Click(object sender, RoutedEventArgs e)
         {
-            if (SetAlbumNameCheckBox.IsChecked.Value || string.IsNullOrEmpty(AlbumNameTextBox.Text))
+            if (SetAlbumNameCheckBox.IsChecked.Value && string.IsNullOrEmpty(AlbumNameTextBox.Text))
             {
                 WriteOutput($"Album (book title) is empty.", OutputMessageLevel.Error);
                 return;
             }
 
-            if (SetArtistNameCheckBox.IsChecked.Value || string.IsNullOrEmpty(ArtistTextBox.Text))
+            if (SetArtistNameCheckBox.IsChecked.Value && string.IsNullOrEmpty(ArtistTextBox.Text))
             {
                 WriteOutput($"Artist (author name) is empty.", OutputMessageLevel.Error);
                 return;
