@@ -168,15 +168,21 @@ namespace MediaFileManager.Desktop.Views
 
         private void SetTagsButton_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(ArtistTextBox.Text) || string.IsNullOrEmpty(AlbumNameTextBox.Text))
+            if (SetAlbumNameCheckBox.IsChecked.Value && string.IsNullOrEmpty(AlbumNameTextBox.Text))
             {
-                WriteOutput($"One of the required fields is empty.", OutputMessageLevel.Error);
+                WriteOutput($"Album (book title) is empty.", OutputMessageLevel.Error);
+                return;
+            }
+
+            if (SetArtistNameCheckBox.IsChecked.Value && string.IsNullOrEmpty(ArtistTextBox.Text))
+            {
+                WriteOutput($"Artist (author name) is empty.", OutputMessageLevel.Error);
                 return;
             }
 
             if (AudiobookFilesGridView.SelectedItems.Count == 0)
             {
-                WriteOutput($"No selected files.", OutputMessageLevel.Error);
+                WriteOutput($"No files have been selected.", OutputMessageLevel.Error);
                 return;
             }
 
@@ -204,36 +210,37 @@ namespace MediaFileManager.Desktop.Views
                     {
                         var audiobookFile = tagParams.AudiobookFiles[i];
 
-                        var tagLibFile = TagLib.File.Create(audiobookFile.FilePath);
-
-                        if (tagLibFile != null)
+                        using(var tagLibFile = TagLib.File.Create(audiobookFile.FilePath))
                         {
-                            // Plex uses the audiobook's title for the Album
-                            if (tagParams.UpdateAlbumName == true)
+                            if (tagLibFile != null)
                             {
-                                tagLibFile.Tag.Album = audiobookFile.Album;
+                                // Plex uses the audiobook's title for the Album
+                                if (tagParams.UpdateAlbumName == true)
+                                {
+                                    tagLibFile.Tag.Album = audiobookFile.Album;
+                                }
+
+                                // Using the filename for titles in the 'album' helps keeps files in order
+                                if (tagParams.UpdateTitle == true)
+                                {
+                                    tagLibFile.Tag.Title = Path.GetFileNameWithoutExtension(audiobookFile.FilePath);
+                                }
+
+                                // Author and Artist fields (Plex uses Artist and Album)
+                                if (tagParams.UpdateArtistName == true)
+                                {
+                                    var author = new[] { audiobookFile.Artist };
+                                    tagLibFile.Tag.Artists = author;
+                                    tagLibFile.Tag.AlbumArtists = author;
+                                    tagLibFile.Tag.Performers = author;
+                                    tagLibFile.Tag.Composers = author;
+                                }
+
+                                tagLibFile.Save();
+
+                                // Report progress
+                                backgroundWorker.ReportProgress(i / tagParams.AudiobookFiles.Count * 100);
                             }
-
-                            // Using the filename for titles in the 'album' helps keeps files in order
-                            if (tagParams.UpdateTitle == true)
-                            {
-                                tagLibFile.Tag.Title = Path.GetFileNameWithoutExtension(audiobookFile.FilePath);
-                            }
-
-                            // Author and Artist fields (Plex uses Artist and Album)
-                            if (tagParams.UpdateArtistName == true)
-                            {
-                                var author = new[] { audiobookFile.Artist };
-                                tagLibFile.Tag.Artists = author;
-                                tagLibFile.Tag.AlbumArtists = author;
-                                tagLibFile.Tag.Performers = author;
-                                tagLibFile.Tag.Composers = author;
-                            }
-
-                            tagLibFile.Save();
-
-                            // Report progress
-                            backgroundWorker.ReportProgress(i / tagParams.AudiobookFiles.Count * 100);
                         }
 
                         e.Result = new WorkerResult
