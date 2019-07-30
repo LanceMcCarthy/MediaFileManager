@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -7,7 +8,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using MediaFileManager.Desktop.Models;
+using Microsoft.AppCenter.Crashes;
 using Telerik.Windows.Controls;
+using Analytics = Microsoft.AppCenter.Analytics.Analytics;
 
 namespace MediaFileManager.Desktop.Views
 {
@@ -105,12 +108,22 @@ namespace MediaFileManager.Desktop.Views
                 {
                     WriteOutput($"Opened {Path.GetFileName(openFolderDialog.FileName)} ({AudiobookTitles.Count} titles).", OutputMessageLevel.Success);
                 }
+
+                Analytics.TrackEvent("Audiobook Folder Opened", new Dictionary<string, string>
+                {
+                    { "Audiobook Titles Loaded", AudiobookTitles.Count.ToString() }
+                });
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
 
                 WriteOutput(ex.Message, OutputMessageLevel.Error);
+
+                Crashes.TrackError(ex, new Dictionary<string, string>
+                {
+                    { "Folder Open", "Audiobook Author" }
+                });
             }
             finally
             {
@@ -154,6 +167,11 @@ namespace MediaFileManager.Desktop.Views
             Reset();
 
             WriteOutput("Reset complete! Open a folder to continue.", OutputMessageLevel.Success);
+
+            Analytics.TrackEvent("User Reset", new Dictionary<string, string>
+            {
+                { "View Type" , "Audiobooks" }
+            });
         }
 
         private void AlbumNameTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
@@ -185,6 +203,14 @@ namespace MediaFileManager.Desktop.Views
                 WriteOutput($"No files have been selected.", OutputMessageLevel.Error);
                 return;
             }
+
+            Analytics.TrackEvent("Set Tags started", new Dictionary<string, string>
+            {
+                { "Set Book Title Enabled", SetAlbumNameCheckBox.IsChecked.Value.ToString() },
+                { "Set Author Name Enabled", SetArtistNameCheckBox.IsChecked.Value.ToString() },
+                { "Selected Audiobook files", AudiobookFilesGridView.SelectedItems.Count.ToString() },
+                { "Authors", AudiobookTitles.Count.ToString() },
+            });
 
             busyIndicator.IsBusy = true;
             busyIndicator.BusyContent = "updating tags...";

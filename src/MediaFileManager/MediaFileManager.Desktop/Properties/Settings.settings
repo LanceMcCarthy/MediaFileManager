@@ -8,5 +8,8 @@
     <Setting Name="SelectedViewIndex" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
+    <Setting Name="AppCenterAnalyticsKey" Type="System.String" Scope="User">
+      <Value Profile="(Default)">d675d968-d698-4a38-832a-8b9db5d3764d</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
