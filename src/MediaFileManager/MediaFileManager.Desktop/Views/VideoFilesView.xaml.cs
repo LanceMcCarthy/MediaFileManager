@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -8,7 +9,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using MediaFileManager.Desktop.Models;
+using Microsoft.AppCenter.Crashes;
 using Telerik.Windows.Controls;
+using Analytics = Microsoft.AppCenter.Analytics.Analytics;
 
 // ReSharper disable InconsistentNaming
 namespace MediaFileManager.Desktop.Views
@@ -109,12 +112,22 @@ namespace MediaFileManager.Desktop.Views
                 {
                     WriteOutput($"Opened '{System.IO.Path.GetFileName(openFolderDialog.FileName)}' ({Seasons.Count} seasons).", OutputMessageLevel.Success);
                 }
+
+                Analytics.TrackEvent("Video Folder Opened", new Dictionary<string, string>
+                {
+                    { "Seasons", Seasons.Count.ToString() }
+                });
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
 
                 WriteOutput(ex.Message, OutputMessageLevel.Error);
+
+                Crashes.TrackError(ex, new Dictionary<string, string>
+                {
+                    { "Folder Open", "TV Show" }
+                });
             }
             finally
             {
@@ -150,6 +163,11 @@ namespace MediaFileManager.Desktop.Views
             {
                 WriteOutput($"{SeasonsListBox.SelectedItems.Count} seasons selected ({Episodes.Count} total episodes).", OutputMessageLevel.Informational);
             }
+
+            Analytics.TrackEvent("Season Selection", new Dictionary<string, string>
+            {
+                { "Selected Seasons", SeasonsListBox.SelectedItems.Count.ToString() }
+            });
         }
 
         private void EpisodesListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -180,6 +198,11 @@ namespace MediaFileManager.Desktop.Views
         {
             Reset();
             WriteOutput("Reset complete! Open a folder to continue.", OutputMessageLevel.Success);
+
+            Analytics.TrackEvent("User Reset", new Dictionary<string, string>
+            {
+                { "View Type" , "Videos" }
+            });
         }
 
         #endregion
@@ -265,10 +288,21 @@ namespace MediaFileManager.Desktop.Views
                 catch (Exception ex)
                 {
                     WriteOutput(ex.Message, OutputMessageLevel.Error);
+
+                    Crashes.TrackError(ex, new Dictionary<string, string>
+                    {
+                        { "Rename Episode", "TV Show" }
+                    });
                 }
             });
 
             RefreshEpisodesList();
+
+            Analytics.TrackEvent("Episode Renaming Complete", new Dictionary<string, string>
+            {
+                { "Total Episodes", Episodes.Count.ToString() },
+                { "Episodes Renamed", EpisodesListBox.SelectedItems.Count.ToString() }
+            });
 
             busyIndicator.BusyContent = "";
             busyIndicator.IsBusy = false;
@@ -430,6 +464,11 @@ namespace MediaFileManager.Desktop.Views
             catch (Exception ex)
             {
                 WriteOutput(ex.Message, OutputMessageLevel.Error);
+
+                Crashes.TrackError(ex, new Dictionary<string, string>
+                {
+                    { "Renumber Episode", "TV Show" }
+                });
             }
         }
 
@@ -453,6 +492,12 @@ namespace MediaFileManager.Desktop.Views
             if (e.Result is WorkerResult resultParameter)
             {
                 WriteOutput(resultParameter.FinalMessage, OutputMessageLevel.Success);
+
+                Analytics.TrackEvent("Episode Renumbering Complete", new Dictionary<string, string>
+                {
+                    { "Total Episodes", Episodes.Count.ToString() },
+                    { "Episodes Renumbered", EpisodesListBox.SelectedItems.Count.ToString() }
+                });
 
                 if (!resultParameter.IsPreview)
                 {
@@ -512,6 +557,8 @@ namespace MediaFileManager.Desktop.Views
                 return;
             }
 
+            Analytics.TrackEvent("Renumbering Preview Approved");
+
             busyIndicator.IsBusy = true;
             busyIndicator.BusyContent = "re-numbering and renaming files...";
             busyIndicator.IsIndeterminate = false;
@@ -535,6 +582,8 @@ namespace MediaFileManager.Desktop.Views
 
             ApproveResultButton.IsEnabled = false;
             CancelResultButton.IsEnabled = false;
+
+            Analytics.TrackEvent("Cancel Results Preview");
         }
 
         #endregion

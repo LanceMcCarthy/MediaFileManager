@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using MediaFileManager.Desktop.Views;
+using Microsoft.AppCenter.Analytics;
 
 // ReSharper disable InconsistentNaming
 namespace MediaFileManager.Desktop
@@ -39,6 +40,11 @@ namespace MediaFileManager.Desktop
                 this.Title = $"Media File Manager - {selectedItem}";
 
                 Properties.Settings.Default.SelectedViewIndex = FileTypeComboBox.SelectedIndex;
+
+                Analytics.TrackEvent("View Selected", new Dictionary<string, string>
+                {
+                    { "FileType", selectedItem }
+                });
             }
         }
     }
