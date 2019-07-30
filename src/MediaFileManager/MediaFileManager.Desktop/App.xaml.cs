@@ -8,7 +8,18 @@ namespace MediaFileManager.Desktop
         public App()
         {
             StyleManager.ApplicationTheme = new FluentTheme();
-            this.InitializeComponent();
+            InitializeComponent();
+        }
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+
+            // AppCenter
+            Microsoft.AppCenter.AppCenter.Start(
+                "d675d968-d698-4a38-832a-8b9db5d3764d",
+                typeof(Microsoft.AppCenter.Analytics.Analytics), 
+                typeof(Microsoft.AppCenter.Crashes.Crashes));
         }
     }
 }
