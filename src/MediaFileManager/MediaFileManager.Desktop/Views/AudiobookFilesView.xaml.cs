@@ -9,12 +9,13 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using MediaFileManager.Desktop.Models;
 using Microsoft.AppCenter.Crashes;
+using TagLib;
 using Telerik.Windows.Controls;
 using Analytics = Microsoft.AppCenter.Analytics.Analytics;
 
 namespace MediaFileManager.Desktop.Views
 {
-    public partial class AudiobookFilesView : UserControl
+    public partial class AudiobookFilesView : UserControl, IDisposable
     {
         private readonly BackgroundWorker backgroundWorker;
         private readonly RadOpenFolderDialog openFolderDialog;
@@ -344,7 +345,13 @@ namespace MediaFileManager.Desktop.Views
                     {
                         audiobookFile.Title = tagLibFile.Tag.Title;
                         audiobookFile.Album = tagLibFile.Tag.Album;
-                        audiobookFile.Artist = tagLibFile.Tag.Artists?.FirstOrDefault();
+
+                        try
+                        {
+                            audiobookFile.Artist = tagLibFile.Tag.Artists?.FirstOrDefault();
+                        }
+                        catch { }
+                        
                         audiobookFile.Performer = tagLibFile.Tag.Performers?.FirstOrDefault();
                     }
 
@@ -438,6 +445,11 @@ namespace MediaFileManager.Desktop.Views
                     StatusListBox.ScrollIntoView(message);
                 });
             }
+        }
+
+        public void Dispose()
+        {
+            backgroundWorker.Dispose();
         }
     }
 }
