@@ -3,23 +3,27 @@
 
 # This continuous integration pipeline is triggered anytime a user pushes code to the repo.
 # This pipeline builds the Wpf project, runs unit tests, then saves the MSIX build artifact.
-name:  Wpf Continuous Integration
+name:  WPF Continuous Integration
 
 # Trigger on every push
-on: [push]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
-
   build:
-
     strategy:
       matrix:
-        targetplatform: [x86, x64]
+        targetplatform: [x86]
 
     runs-on: windows-latest
 
     env:
-      SigningCertificate: GitHubActionsDemo.pfx
+      SigningCertificate: LancelotSoftwareLLC.pfx
       Solution_Path: src\MediaFileManager\MediaFileManager.sln
       Wpf_Project_Path: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       Wap_Project_Directory: src\MediaFileManager\PackageProject
@@ -40,6 +44,9 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.100
+
+    - name: NuGet Restore
+      run: dotnet restore $env:Solution_Path
 
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
@@ -66,14 +73,14 @@ jobs:
     # Decode the Base64 encoded Pfx
     - name: Decode the Pfx
       run: |
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
+        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
         $currentDirectory = Get-Location
         $certificatePath = Join-Path -Path $currentDirectory -ChildPath $env:Wap_Project_Directory -AdditionalChildPath $env:SigningCertificate
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
 
     # Build the Windows Application Packaging project
     - name: Build the Windows Application Packaging Project (wapproj) 
-      run: msbuild $env:Solution_Path /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=${{ secrets.Pfx_Key }}
+      run: msbuild $env:Solution_Path /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=${{ secrets.LancelotSoftwareCert_Key }}
       env:
         AppxBundle: Never
         BuildMode: SideLoadOnly
@@ -89,4 +96,4 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: MSIX Package
-        path: MyWpfApp.Package\AppPackages\
+        path: '$env:Wap_Project_Directory\AppPackages\'
