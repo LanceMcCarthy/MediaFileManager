@@ -24,21 +24,31 @@ jobs:
 
     env:
       SigningCertificate: LancelotSoftwareLLC.pfx
+      NuGetConfig_Path: src\nuget.config
       Solution_Path: src\MediaFileManager\MediaFileManager.sln
       Wpf_Project_Path: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       Wap_Project_Directory: src\MediaFileManager\PackageProject
       Wap_Project_Name: PackageProject.wapproj
+      TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
+      TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
 
     # Use Nerdbank.GitVersioning to set version variables: https://github.com/AArnott/nbgv
-    - name: Use Nerdbank.GitVersioning to set version variables
-      uses: aarnott/nbgv@v0.3
-      with:
-        setAllVars: true
-
+    #- name: Use Nerdbank.GitVersioning to set version variables
+    #  uses: aarnott/nbgv@v0.3
+    #  with:
+    #    setAllVars: true
+    
+    # Update the version before build
+    #- name: Update manifest version
+    #  run: |
+    #    [xml]$manifest = get-content ".\$env:Wap_Project_Directory\Package.appxmanifest"
+    #    $manifest.Package.Identity.Version = "$env:NBGV_SimpleVersion.0"
+    #    $manifest.save(".\$env:Wap_Project_Directory\Package.appxmanifest")
+      
     # Install the .NET Core workload
     - name: Install .NET Core
       uses: actions/setup-dotnet@v1
@@ -46,22 +56,11 @@ jobs:
         dotnet-version: 3.1.100
 
     - name: NuGet Restore
-      run: dotnet restore $env:Solution_Path
+      run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path --runtime win-${{ matrix.targetplatform }}
 
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.0
-
-    # Update the version before build
-    - name: Update manifest version
-      run: |
-        [xml]$manifest = get-content ".\$env:Wap_Project_Directory\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$env:NBGV_SimpleVersion.0"
-        $manifest.save(".\$env:Wap_Project_Directory\Package.appxmanifest")
-
-    # Test
-    #- name: Execute Unit Tests
-    #  run: dotnet test $env:Test_Project_Path
 
     # Restore the application
     - name:  Restore the Wpf application to populate the obj folder
