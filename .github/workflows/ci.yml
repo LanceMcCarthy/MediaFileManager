@@ -3,23 +3,27 @@
 
 # This continuous integration pipeline is triggered anytime a user pushes code to the repo.
 # This pipeline builds the Wpf project, runs unit tests, then saves the MSIX build artifact.
-name:  Wpf Continuous Integration
+name:  WPF Continuous Integration
 
 # Trigger on every push
-on: [push]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
-
   build:
-
     strategy:
       matrix:
-        targetplatform: [x86, x64]
+        targetplatform: [x86]
 
     runs-on: windows-latest
 
     env:
-      SigningCertificate: GitHubActionsDemo.pfx
+      SigningCertificate: LancelotSoftwareLLC.pfx
       Solution_Path: src\MediaFileManager\MediaFileManager.sln
       Wpf_Project_Path: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       Wap_Project_Directory: src\MediaFileManager\PackageProject
