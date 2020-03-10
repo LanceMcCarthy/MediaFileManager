@@ -42,7 +42,7 @@ jobs:
         dotnet-version: 3.1.100
 
     - name: NuGet Restore
-      run: nuget restore $env:Solution_Path
+      run: dotnet restore $env:Solution_Path
 
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
