@@ -92,6 +92,7 @@
       <HintPath>..\packages\System.Buffers.4.5.0\lib\netstandard2.0\System.Buffers.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Console, Version=4.0.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Console.4.3.1\lib\net46\System.Console.dll</HintPath>
@@ -108,6 +109,7 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Globalization.Calendars, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Globalization.Calendars.4.3.0\lib\net46\System.Globalization.Calendars.dll</HintPath>
       <Private>True</Private>
@@ -220,6 +222,7 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -237,33 +240,28 @@
       <HintPath>..\packages\taglib.2.1.0.0\lib\taglib-sharp.dll</HintPath>
     </Reference>
     <Reference Include="Telerik.Windows.Controls, Version=2020.1.218.45, Culture=neutral, PublicKeyToken=5803cfa389c90ce7, processorArchitecture=MSIL">
-      <HintPath>C:\Program Files (x86)\Progress\Telerik UI for WPF R1 2020\Binaries\WPF45\Telerik.Windows.Controls.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\Telerik.Windows.Controls.for.Wpf.Xaml.2020.1.218\lib\net45\Telerik.Windows.Controls.dll</HintPath>
     </Reference>
     <Reference Include="Telerik.Windows.Controls.Docking, Version=2020.1.218.45, Culture=neutral, PublicKeyToken=5803cfa389c90ce7, processorArchitecture=MSIL">
-      <HintPath>C:\Program Files (x86)\Progress\Telerik UI for WPF R1 2020\Binaries\WPF45\Telerik.Windows.Controls.Docking.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\Telerik.Windows.Controls.Docking.for.Wpf.Xaml.2020.1.218\lib\net45\Telerik.Windows.Controls.Docking.dll</HintPath>
     </Reference>
     <Reference Include="Telerik.Windows.Controls.FileDialogs, Version=2020.1.218.45, Culture=neutral, PublicKeyToken=5803cfa389c90ce7, processorArchitecture=MSIL">
-      <HintPath>C:\Program Files (x86)\Progress\Telerik UI for WPF R1 2020\Binaries\WPF45\Telerik.Windows.Controls.FileDialogs.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\Telerik.Windows.Controls.FileDialogs.for.Wpf.Xaml.2020.1.218\lib\net45\Telerik.Windows.Controls.FileDialogs.dll</HintPath>
     </Reference>
     <Reference Include="Telerik.Windows.Controls.GridView, Version=2020.1.218.45, Culture=neutral, PublicKeyToken=5803cfa389c90ce7, processorArchitecture=MSIL">
-      <HintPath>C:\Program Files (x86)\Progress\Telerik UI for WPF R1 2020\Binaries\WPF45\Telerik.Windows.Controls.GridView.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\Telerik.Windows.Controls.GridView.for.Wpf.Xaml.2020.1.218\lib\net45\Telerik.Windows.Controls.GridView.dll</HintPath>
     </Reference>
     <Reference Include="Telerik.Windows.Controls.Input, Version=2020.1.218.45, Culture=neutral, PublicKeyToken=5803cfa389c90ce7, processorArchitecture=MSIL">
-      <HintPath>C:\Program Files (x86)\Progress\Telerik UI for WPF R1 2020\Binaries\WPF45\Telerik.Windows.Controls.Input.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\Telerik.Windows.Controls.Input.for.Wpf.Xaml.2020.1.218\lib\net45\Telerik.Windows.Controls.Input.dll</HintPath>
     </Reference>
     <Reference Include="Telerik.Windows.Controls.Navigation, Version=2020.1.218.45, Culture=neutral, PublicKeyToken=5803cfa389c90ce7, processorArchitecture=MSIL">
-      <HintPath>C:\Program Files (x86)\Progress\Telerik UI for WPF R1 2020\Binaries\WPF45\Telerik.Windows.Controls.Navigation.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\Telerik.Windows.Controls.Navigation.for.Wpf.Xaml.2020.1.218\lib\net45\Telerik.Windows.Controls.Navigation.dll</HintPath>
     </Reference>
     <Reference Include="Telerik.Windows.Data, Version=2020.1.218.45, Culture=neutral, PublicKeyToken=5803cfa389c90ce7, processorArchitecture=MSIL">
-      <HintPath>C:\Program Files (x86)\Progress\Telerik UI for WPF R1 2020\Binaries\WPF45\Telerik.Windows.Data.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\Telerik.Windows.Data.for.Wpf.Xaml.2020.1.218\lib\net45\Telerik.Windows.Data.dll</HintPath>
     </Reference>
+    <Reference Include="UIAutomationProvider" />
+    <Reference Include="UIAutomationTypes" />
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
