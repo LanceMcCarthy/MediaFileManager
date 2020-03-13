@@ -35,19 +35,21 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+      with:
+        fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
 
     # Use Nerdbank.GitVersioning to set version variables: https://github.com/AArnott/nbgv
-    #- name: Use Nerdbank.GitVersioning to set version variables
-    #  uses: aarnott/nbgv@v0.3
-    #  with:
-    #    setAllVars: true
+    - name: Use Nerdbank.GitVersioning to set version variables
+      uses: aarnott/nbgv@v0.3
+      with:
+        setAllVars: true
     
     # Update the version before build
-    #- name: Update manifest version
-    #  run: |
-    #    [xml]$manifest = get-content ".\$env:Wap_Project_Directory\Package.appxmanifest"
-    #    $manifest.Package.Identity.Version = "$env:NBGV_SimpleVersion.0"
-    #    $manifest.save(".\$env:Wap_Project_Directory\Package.appxmanifest")
+    - name: Update manifest version
+      run: |
+        [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
+        $manifest.Package.Identity.Version = "$env:NBGV_SimpleVersion.0"
+        $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
       
     # Install the .NET Core workload
     - name: Install .NET Core
@@ -74,7 +76,7 @@ jobs:
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
         $currentDirectory = Get-Location
-        $certificatePath = Join-Path -Path $currentDirectory -ChildPath $env:Wap_Project_Directory -AdditionalChildPath $env:SigningCertificate
+        $certificatePath = Join-Path -Path $currentDirectory -ChildPath src\MediaFileManager\PackageProject -AdditionalChildPath $env:SigningCertificate
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
 
     # Build the Windows Application Packaging project
@@ -88,11 +90,11 @@ jobs:
 
     # Remove the .pfx
     - name: Remove the .pfx
-      run: Remove-Item -path $env:Wap_Project_Directory\$env:SigningCertificate
+      run: Remove-Item -path src\MediaFileManager\PackageProject\$env:SigningCertificate
 
     # Upload the MSIX package: https://github.com/marketplace/actions/upload-artifact
     - name: Upload build artifacts
       uses: actions/upload-artifact@v1
       with:
         name: MSIX Package
-        path: $env:Wap_Project_Directory\AppPackages\
+        path: src\MediaFileManager\PackageProject\AppPackages\
