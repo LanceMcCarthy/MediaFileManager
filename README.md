@@ -2,12 +2,15 @@
 
 [Media File Manager installable via Microsoft Store](https://www.microsoft.com/en-us/p/media-file-manager/9pd3jfk7w5mb) a UWP Packaged WPF application. [Watch a quick video demo](https://www.screencast.com/t/84UQ7Vkv) (< 1 minute).
 
-| Action       | Action Result                            |
+| Action       | Status                           |
 |--------------|------------------------------------------|
-| Master Build | ![Wpf Continuous Integration](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Wpf%20Continuous%20Integration/badge.svg?branch=master) |
+| WPF - CI | ![WPF Continuous Integration](https://github.com/LanceMcCarthy/MediaFileManager/workflows/WPF%20Continuous%20Integration/badge.svg)|
+| WPF - CD | TBD |
 
+## Getting Started - Video Files
 
 ### Stage 1 - Choose a root folder for the TV Show / Series
+
 ![Stage 1](https://user-images.githubusercontent.com/3520532/58042684-56a3ac80-7b09-11e9-84d2-960619c96316.png)
 
 ### Stage 2 - Select the Season, then the episodes
