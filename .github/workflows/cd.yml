@@ -66,6 +66,7 @@ jobs:
 
     env:
       SigningCertificate: LancelotSoftwareLLC.pfx
+      NuGetConfig_Path: src\nuget.config
       Solution_Path: src\MediaFileManager\MediaFileManager.sln
       Wpf_Project_Path: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       Wap_Project_Directory: src\MediaFileManager\PackageProject
