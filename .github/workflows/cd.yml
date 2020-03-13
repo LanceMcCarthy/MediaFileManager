@@ -71,6 +71,8 @@ jobs:
       Wpf_Project_Path: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       Wap_Project_Directory: src\MediaFileManager\PackageProject
       Wap_Project_Name: PackageProject.wapproj
+      TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
+      TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
 
     steps:
     - name: Checkout
