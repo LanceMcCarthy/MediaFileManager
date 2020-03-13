@@ -17,8 +17,8 @@ name:  WPF Continuous Delivery
 #   git push origin --tags
 on:
   push:
-    tags:
-      - '*'
+    branches:
+      - releases
 
 jobs:
   build:
@@ -115,7 +115,10 @@ jobs:
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
       if: matrix.ChannelName != 'Prod_Store'
 
-    # Restore the application
+    - name: NuGet Restore
+      run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path --runtime win-${{ matrix.targetplatform }}
+   
+   # Restore the application
     - name:  Restore the Wpf application to populate the obj folder
       run: msbuild $env:Solution_Path /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RuntimeIdentifier
       env:
