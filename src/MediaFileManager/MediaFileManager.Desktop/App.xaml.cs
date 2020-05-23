@@ -1,8 +1,12 @@
 ﻿using System.Globalization;
+using System.Threading;
 using System.Windows;
+using Telerik.Windows.Controls;
+using Telerik.Windows.Controls.SplashScreen;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Crashes;
-using Telerik.Windows.Controls;
+using Analytics =  Microsoft.AppCenter.Analytics.Analytics;
+using Settings = MediaFileManager.Desktop.Properties.Settings;
 
 namespace MediaFileManager.Desktop
 {
@@ -16,42 +20,68 @@ namespace MediaFileManager.Desktop
 
         protected override async void OnStartup(StartupEventArgs e)
         {
-            base.OnStartup(e);
+            var dataContext = (SplashScreenDataContext)RadSplashScreenManager.SplashScreenDataContext;
+            dataContext.ImagePath = "/MediaFileManager.Desktop;component/Images/Splashscreen Logo 100.png";
+            dataContext.Content = "Loading Media File Manager...";
+            
 
-            // AppCenter //AppCenterAnalyticsKey
-            Microsoft.AppCenter.AppCenter.Start(
-                MediaFileManager.Desktop.Properties.Settings.Default.AppCenterAnalyticsKey,
-                typeof(Microsoft.AppCenter.Analytics.Analytics), 
-                typeof(Microsoft.AppCenter.Crashes.Crashes));
+            dataContext.IsIndeterminate = false;
+            dataContext.MinValue = 0;
+            dataContext.MaxValue = 100;
+
+            RadSplashScreenManager.Show();
+
+            // AppCenter
+
+            AppCenter.Start(Settings.Default.AppCenterAnalyticsKey, typeof(Analytics), typeof(Crashes));
 
             // Just use general region, not actual location.
             AppCenter.SetCountryCode(RegionInfo.CurrentRegion.TwoLetterISORegionName);
 
-            // NOTE: The open source, beta version of this app will send crash data. Change this if you plan on using and redistributing.
-            Crashes.NotifyUserConfirmation(UserConfirmation.AlwaysSend);
+            // Option 1 (good for beta releases) - Hard coding the choice for beta release of the app
+            // Crashes.NotifyUserConfirmation(UserConfirmation.AlwaysSend);
 
-            // For example, the firts time the app launches after crashing, you can present with a prompt
-            //var hasCrashed = await Crashes.HasCrashedInLastSessionAsync();
+            // Option 2 (good for production releases) - Wait until first time it crashes, then ask user what they want to do.
+            var hasCrashed = await Crashes.HasCrashedInLastSessionAsync().ConfigureAwait(true);
 
-            //if (hasCrashed)
-            //{
-            //    var result = MessageBox.Show("The app crashed the last time you ran it. Would you like the app to automatically send errors to us?", 
-            //        "Oh no! I crashed :(", 
-            //        MessageBoxButton.YesNoCancel);
+            if (hasCrashed)
+            {
+                var result = MessageBox.Show("The app crashed the last time you ran it. Would you like the app to automatically send errors to us?",
+                    "Oh no! I crashed 😪", MessageBoxButton.YesNoCancel);
 
-            //    if (result == MessageBoxResult.Yes)
-            //    {
-            //        Crashes.NotifyUserConfirmation(UserConfirmation.AlwaysSend);
-            //    }
-            //    else if (result == MessageBoxResult.No)
-            //    {
-            //        Crashes.NotifyUserConfirmation(UserConfirmation.Send);
-            //    }
-            //    else
-            //    {
-            //        Crashes.NotifyUserConfirmation(UserConfirmation.DontSend);
-            //    }
-            //}
+                switch (result)
+                {
+                    case MessageBoxResult.Yes:
+                        Crashes.NotifyUserConfirmation(UserConfirmation.AlwaysSend);
+                        break;
+                    case MessageBoxResult.No:
+                        Crashes.NotifyUserConfirmation(UserConfirmation.Send);
+                        break;
+                    default:
+                        Crashes.NotifyUserConfirmation(UserConfirmation.DontSend);
+                        break;
+                }
+            }
+
+            // Faking the loading indicator
+            for (var i = 0; i < 100; i++)
+            {
+                dataContext.ProgressValue = i;
+                Thread.Sleep(30);
+
+                if (i < 50)
+                {
+                    dataContext.Footer = "Hi! Loading resources, this will be quick.";
+                }
+                else
+                {
+                    dataContext.Footer = "Just a little bit more...";
+                }
+            }
+
+            RadSplashScreenManager.Close();
+
+            base.OnStartup(e);
         }
     }
 }

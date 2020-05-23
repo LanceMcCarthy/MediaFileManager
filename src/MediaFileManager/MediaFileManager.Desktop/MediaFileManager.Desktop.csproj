@@ -11,6 +11,15 @@
     <RepositoryUrl>https://github.com/LanceMcCarthy/MediaFileManager/blob/master/LICENSE</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Images\Splashscreen Logo 100.png" />
+    <None Remove="Images\SplashscreenLogo200.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Images\Splashscreen Logo 100.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="3.2.1" />
