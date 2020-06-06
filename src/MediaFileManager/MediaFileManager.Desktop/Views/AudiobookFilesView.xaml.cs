@@ -9,7 +9,6 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using MediaFileManager.Desktop.Models;
 using Microsoft.AppCenter.Crashes;
-using TagLib;
 using Telerik.Windows.Controls;
 using Analytics = Microsoft.AppCenter.Analytics.Analytics;
 
@@ -19,7 +18,7 @@ namespace MediaFileManager.Desktop.Views
     {
         private readonly BackgroundWorker backgroundWorker;
         private readonly RadOpenFolderDialog openFolderDialog;
-
+        
         public readonly ObservableCollection<OutputMessage> StatusMessages = new ObservableCollection<OutputMessage>();
         public readonly ObservableCollection<string> AudiobookTitles = new ObservableCollection<string>();
         public readonly ObservableCollection<AudiobookFile> AudiobookFiles = new ObservableCollection<AudiobookFile>();

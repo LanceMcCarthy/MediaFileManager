@@ -5,9 +5,13 @@ using Telerik.Windows.Controls;
 using Telerik.Windows.Controls.SplashScreen;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Crashes;
+using System.Diagnostics.CodeAnalysis;
 using Analytics =  Microsoft.AppCenter.Analytics.Analytics;
 using Settings = MediaFileManager.Desktop.Properties.Settings;
 
+[assembly: SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "<Pending>", Scope = "member")]
+[assembly: SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>", Scope = "member")]
+[assembly: SuppressMessage("Design", "CA1063:Implement IDisposable Correctly", Justification = "<Pending>", Scope = "type")]
 namespace MediaFileManager.Desktop
 {
     public partial class App : Application
@@ -24,7 +28,6 @@ namespace MediaFileManager.Desktop
             dataContext.ImagePath = "/MediaFileManager.Desktop;component/Images/Splashscreen Logo 100.png";
             dataContext.Content = "Loading Media File Manager...";
             
-
             dataContext.IsIndeterminate = false;
             dataContext.MinValue = 0;
             dataContext.MaxValue = 100;
@@ -32,7 +35,6 @@ namespace MediaFileManager.Desktop
             RadSplashScreenManager.Show();
 
             // AppCenter
-
             AppCenter.Start(Settings.Default.AppCenterAnalyticsKey, typeof(Analytics), typeof(Crashes));
 
             // Just use general region, not actual location.
@@ -63,20 +65,13 @@ namespace MediaFileManager.Desktop
                 }
             }
 
-            // Faking the loading indicator
+            // Temporary faking the loading indicator
             for (var i = 0; i < 100; i++)
             {
                 dataContext.ProgressValue = i;
                 Thread.Sleep(30);
 
-                if (i < 50)
-                {
-                    dataContext.Footer = "Hi! Loading resources, this will be quick.";
-                }
-                else
-                {
-                    dataContext.Footer = "Just a little bit more...";
-                }
+                dataContext.Footer = i < 50 ? "Hi! Loading resources, this will be quick." : "Just a little bit more...";
             }
 
             RadSplashScreenManager.Close();
