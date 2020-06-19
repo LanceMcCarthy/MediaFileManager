@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -19,9 +20,9 @@ namespace MediaFileManager.Desktop.Views
         private readonly BackgroundWorker backgroundWorker;
         private readonly RadOpenFolderDialog openFolderDialog;
         
-        public readonly ObservableCollection<OutputMessage> StatusMessages = new ObservableCollection<OutputMessage>();
-        public readonly ObservableCollection<string> AudiobookTitles = new ObservableCollection<string>();
-        public readonly ObservableCollection<AudiobookFile> AudiobookFiles = new ObservableCollection<AudiobookFile>();
+        private readonly ObservableCollection<OutputMessage> StatusMessages = new ObservableCollection<OutputMessage>();
+        private readonly ObservableCollection<string> AudiobookTitles = new ObservableCollection<string>();
+        private readonly ObservableCollection<AudiobookFile> AudiobookFiles = new ObservableCollection<AudiobookFile>();
 
         public AudiobookFilesView()
         {
@@ -111,7 +112,7 @@ namespace MediaFileManager.Desktop.Views
 
                 Analytics.TrackEvent("Audiobook Folder Opened", new Dictionary<string, string>
                 {
-                    { "Audiobook Titles Loaded", AudiobookTitles.Count.ToString() }
+                    { "Audiobook Titles Loaded", AudiobookTitles.Count.ToString(CultureInfo.InvariantCulture) }
                 });
             }
             catch (Exception ex)
@@ -208,8 +209,8 @@ namespace MediaFileManager.Desktop.Views
             {
                 { "Set Book Title Enabled", SetAlbumNameCheckBox.IsChecked.Value.ToString() },
                 { "Set Author Name Enabled", SetArtistNameCheckBox.IsChecked.Value.ToString() },
-                { "Selected Audiobook files", AudiobookFilesGridView.SelectedItems.Count.ToString() },
-                { "Authors", AudiobookTitles.Count.ToString() },
+                { "Selected Audiobook files", AudiobookFilesGridView.SelectedItems.Count.ToString(CultureInfo.InvariantCulture) },
+                { "Authors", AudiobookTitles.Count.ToString(CultureInfo.InvariantCulture) },
             });
 
             busyIndicator.IsBusy = true;
@@ -256,7 +257,7 @@ namespace MediaFileManager.Desktop.Views
                                 if (tagParams.UpdateArtistName == true)
                                 {
                                     var author = new[] { audiobookFile.Artist };
-                                    tagLibFile.Tag.Artists = author;
+                                    tagLibFile.Tag.Performers = author;
                                     tagLibFile.Tag.AlbumArtists = author;
                                     tagLibFile.Tag.Performers = author;
                                     tagLibFile.Tag.Composers = author;
@@ -320,7 +321,7 @@ namespace MediaFileManager.Desktop.Views
 
                 foreach (var filePath in filePaths)
                 {
-                    if (Path.GetExtension(filePath)?.ToLower().Contains("mp3") == false)
+                    if (Path.GetExtension(filePath)?.ToLower().Contains("mp3", StringComparison.InvariantCulture) == false)
                     {
                         WriteOutput($"Skipping {Path.GetFileNameWithoutExtension(filePath)} (only MP3s allowed)...", OutputMessageLevel.Warning);
                         continue;
@@ -331,7 +332,7 @@ namespace MediaFileManager.Desktop.Views
                         FilePath = filePath
                     };
 
-                    var fileName = System.IO.Path.GetFileName(filePath);
+                    var fileName = Path.GetFileName(filePath);
 
                     if (!string.IsNullOrEmpty(fileName))
                     {
@@ -347,7 +348,7 @@ namespace MediaFileManager.Desktop.Views
 
                         try
                         {
-                            audiobookFile.Artist = tagLibFile.Tag.Artists?.FirstOrDefault();
+                            audiobookFile.Artist = tagLibFile.Tag.Performers?.FirstOrDefault();
                         }
                         catch { }
                         
@@ -355,6 +356,8 @@ namespace MediaFileManager.Desktop.Views
                     }
 
                     AudiobookFiles.Add(audiobookFile);
+
+                    tagLibFile.Dispose();
                 }
             }
 

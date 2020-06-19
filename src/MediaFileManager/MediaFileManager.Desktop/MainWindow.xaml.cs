@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using MediaFileManager.Desktop.Views;
-using Microsoft.AppCenter.Analytics;
+using Telerik.Windows.Controls;
 
 // ReSharper disable InconsistentNaming
 namespace MediaFileManager.Desktop
@@ -12,6 +12,8 @@ namespace MediaFileManager.Desktop
         public MainWindow()
         {
             InitializeComponent();
+
+            var rw = new RadWindow();
 
             FileTypeComboBox.ItemsSource = new List<string> {"Videos", "Audiobooks", "Music"};
 
@@ -41,7 +43,7 @@ namespace MediaFileManager.Desktop
 
                 Properties.Settings.Default.SelectedViewIndex = FileTypeComboBox.SelectedIndex;
 
-                Analytics.TrackEvent("View Selected", new Dictionary<string, string>
+                Microsoft.AppCenter.Analytics.Analytics.TrackEvent("View Selected", new Dictionary<string, string>
                 {
                     { "FileType", selectedItem }
                 });
