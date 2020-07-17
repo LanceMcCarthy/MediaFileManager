@@ -150,7 +150,6 @@
     <Content Include="Images\Wide310x150Logo.scale-125.png" />
     <Content Include="Images\Wide310x150Logo.scale-150.png" />
     <Content Include="Images\Wide310x150Logo.scale-200.png" />
-    <None Include="Lancelot Software CodeSign.pfx" />
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
 </Project>

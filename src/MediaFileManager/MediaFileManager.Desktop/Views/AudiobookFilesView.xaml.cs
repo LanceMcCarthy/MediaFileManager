@@ -18,14 +18,14 @@ namespace MediaFileManager.Desktop.Views
     {
         private readonly BackgroundWorker backgroundWorker;
         private readonly RadOpenFolderDialog openFolderDialog;
-        
-        public readonly ObservableCollection<OutputMessage> StatusMessages = new ObservableCollection<OutputMessage>();
-        public readonly ObservableCollection<string> AudiobookTitles = new ObservableCollection<string>();
-        public readonly ObservableCollection<AudiobookFile> AudiobookFiles = new ObservableCollection<AudiobookFile>();
 
         public AudiobookFilesView()
         {
             InitializeComponent();
+
+            StatusMessages = new ObservableCollection<OutputMessage>();
+            AudiobookTitles = new ObservableCollection<string>();
+            AudiobookFiles = new ObservableCollection<AudiobookFile>();
 
             openFolderDialog = new RadOpenFolderDialog { Owner = this, ExpandToCurrentDirectory = false };
 
@@ -41,6 +41,12 @@ namespace MediaFileManager.Desktop.Views
 
             WriteOutput($"Ready, open an author folder to begin.", OutputMessageLevel.Success);
         }
+
+        public ObservableCollection<OutputMessage> StatusMessages { get; }
+
+        public ObservableCollection<string> AudiobookTitles { get; }
+
+        public ObservableCollection<AudiobookFile> AudiobookFiles { get; }
 
         private void SelectAuthorFolderButton_Click(object sender, RoutedEventArgs e)
         {
@@ -111,7 +117,7 @@ namespace MediaFileManager.Desktop.Views
 
                 Analytics.TrackEvent("Audiobook Folder Opened", new Dictionary<string, string>
                 {
-                    { "Audiobook Titles Loaded", AudiobookTitles.Count.ToString() }
+                    { "Audiobook Titles Loaded", $"{AudiobookTitles.Count}" }
                 });
             }
             catch (Exception ex)
@@ -186,13 +192,13 @@ namespace MediaFileManager.Desktop.Views
 
         private void SetTagsButton_Click(object sender, RoutedEventArgs e)
         {
-            if (SetAlbumNameCheckBox.IsChecked.Value && string.IsNullOrEmpty(AlbumNameTextBox.Text))
+            if (SetAlbumNameCheckBox.IsChecked == true && string.IsNullOrEmpty(AlbumNameTextBox.Text))
             {
                 WriteOutput($"Album (book title) is empty.", OutputMessageLevel.Error);
                 return;
             }
 
-            if (SetArtistNameCheckBox.IsChecked.Value && string.IsNullOrEmpty(ArtistTextBox.Text))
+            if (SetArtistNameCheckBox.IsChecked == true && string.IsNullOrEmpty(ArtistTextBox.Text))
             {
                 WriteOutput($"Artist (author name) is empty.", OutputMessageLevel.Error);
                 return;
@@ -206,10 +212,10 @@ namespace MediaFileManager.Desktop.Views
 
             Analytics.TrackEvent("Set Tags started", new Dictionary<string, string>
             {
-                { "Set Book Title Enabled", SetAlbumNameCheckBox.IsChecked.Value.ToString() },
-                { "Set Author Name Enabled", SetArtistNameCheckBox.IsChecked.Value.ToString() },
-                { "Selected Audiobook files", AudiobookFilesGridView.SelectedItems.Count.ToString() },
-                { "Authors", AudiobookTitles.Count.ToString() },
+                { "Set Book Title Enabled", $"{SetAlbumNameCheckBox.IsChecked}" },
+                { "Set Author Name Enabled", $"{SetArtistNameCheckBox.IsChecked}" },
+                { "Selected Audiobook files", $"{AudiobookFilesGridView.SelectedItems.Count}" },
+                { "Authors", $"{AudiobookTitles.Count}" }
             });
 
             busyIndicator.IsBusy = true;
@@ -236,7 +242,7 @@ namespace MediaFileManager.Desktop.Views
                     {
                         var audiobookFile = tagParams.AudiobookFiles[i];
 
-                        using(var tagLibFile = TagLib.File.Create(audiobookFile.FilePath))
+                        using (var tagLibFile = TagLib.File.Create(audiobookFile.FilePath))
                         {
                             if (tagLibFile != null)
                             {
@@ -256,9 +262,9 @@ namespace MediaFileManager.Desktop.Views
                                 if (tagParams.UpdateArtistName == true)
                                 {
                                     var author = new[] { audiobookFile.Artist };
-                                    tagLibFile.Tag.Artists = author;
-                                    tagLibFile.Tag.AlbumArtists = author;
+                                    tagLibFile.Tag.Artists = author; // Plex uses Artists
                                     tagLibFile.Tag.Performers = author;
+                                    tagLibFile.Tag.AlbumArtists = author;
                                     tagLibFile.Tag.Composers = author;
                                 }
 
@@ -320,7 +326,7 @@ namespace MediaFileManager.Desktop.Views
 
                 foreach (var filePath in filePaths)
                 {
-                    if (Path.GetExtension(filePath)?.ToLower().Contains("mp3") == false)
+                    if (Path.GetExtension(filePath)?.Contains("mp3", StringComparison.InvariantCulture) == false)
                     {
                         WriteOutput($"Skipping {Path.GetFileNameWithoutExtension(filePath)} (only MP3s allowed)...", OutputMessageLevel.Warning);
                         continue;
@@ -350,9 +356,11 @@ namespace MediaFileManager.Desktop.Views
                             audiobookFile.Artist = tagLibFile.Tag.Artists?.FirstOrDefault();
                         }
                         catch { }
-                        
+
                         audiobookFile.Performer = tagLibFile.Tag.Performers?.FirstOrDefault();
                     }
+
+                    tagLibFile?.Dispose();
 
                     AudiobookFiles.Add(audiobookFile);
                 }
