@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,19 +17,19 @@ using Analytics = Microsoft.AppCenter.Analytics.Analytics;
 // ReSharper disable InconsistentNaming
 namespace MediaFileManager.Desktop.Views
 {
-    public partial class VideoFilesView : UserControl
+    public partial class VideoFilesView : UserControl, IDisposable
     {
         private readonly BackgroundWorker renumberWorker;
         private readonly RadOpenFolderDialog openFolderDialog;
         private readonly ObservableCollection<OutputMessage> StatusMessages = new ObservableCollection<OutputMessage>();
 
-        private readonly ObservableCollection<string> Seasons = new ObservableCollection<string>();
-        private readonly ObservableCollection<string> Episodes = new ObservableCollection<string>();
-        private readonly ObservableCollection<string> RenamedEpisodesPreviewList = new ObservableCollection<string>();
-
         public VideoFilesView()
         {
             InitializeComponent();
+
+            Seasons = new ObservableCollection<string>();
+            Episodes = new ObservableCollection<string>();
+            RenamedEpisodesPreviewList = new ObservableCollection<string>();
 
             openFolderDialog = new RadOpenFolderDialog { Owner = this, ExpandToCurrentDirectory = false };
 
@@ -37,14 +38,19 @@ namespace MediaFileManager.Desktop.Views
             EpisodeRenamedPreviewListBox.ItemsSource = RenamedEpisodesPreviewList;
             StatusListBox.ItemsSource = StatusMessages;
 
-            renumberWorker = new BackgroundWorker();
-            renumberWorker.WorkerReportsProgress = true;
+            renumberWorker = new BackgroundWorker { WorkerReportsProgress = true };
             renumberWorker.DoWork += RenumberWorker_DoWork;
             renumberWorker.ProgressChanged += RenumberWorker_ProgressChanged;
             renumberWorker.RunWorkerCompleted += RenumberWorker_RunWorkerCompleted;
 
             WriteOutput($"Ready, open a folder to begin.", OutputMessageLevel.Success);
         }
+
+        public ObservableCollection<string> Seasons { get; }
+
+        public ObservableCollection<string> Episodes { get; }
+
+        public ObservableCollection<string> RenamedEpisodesPreviewList { get; }
 
         #region Source operations
 
@@ -115,7 +121,7 @@ namespace MediaFileManager.Desktop.Views
 
                 Analytics.TrackEvent("Video Folder Opened", new Dictionary<string, string>
                 {
-                    { "Seasons", Seasons.Count.ToString() }
+                    { "Seasons", Seasons.Count.ToString(CultureInfo.InvariantCulture) }
                 });
             }
             catch (Exception ex)
@@ -166,7 +172,7 @@ namespace MediaFileManager.Desktop.Views
 
             Analytics.TrackEvent("Season Selection", new Dictionary<string, string>
             {
-                { "Selected Seasons", SeasonsListBox.SelectedItems.Count.ToString() }
+                { "Selected Seasons", SeasonsListBox.SelectedItems.Count.ToString(CultureInfo.InvariantCulture) }
             });
         }
 
@@ -223,12 +229,12 @@ namespace MediaFileManager.Desktop.Views
         {
             if (string.IsNullOrEmpty(OriginalTextBox_Renaming.Text))
             {
-                WriteOutput($"No text selected, aborting file name update.", OutputMessageLevel.Error);
+                WriteOutput("No text selected, aborting file name update.", OutputMessageLevel.Error);
                 return;
             }
             else
             {
-                WriteOutput($"Renaming operation starting...", OutputMessageLevel.Warning);
+                WriteOutput("Renaming operation starting...", OutputMessageLevel.Warning);
             }
 
             // variables for background thread access
@@ -250,7 +256,7 @@ namespace MediaFileManager.Desktop.Views
                         var episodeFilePath = selectedItems[i];
 
                         // Need to separate name and path in order to prefix the file name
-                        string curDir = System.IO.Path.GetDirectoryName(episodeFilePath);
+                        string curDir = Path.GetDirectoryName(episodeFilePath);
 
                         if (string.IsNullOrEmpty(curDir))
                         {
@@ -258,7 +264,7 @@ namespace MediaFileManager.Desktop.Views
                             continue;
                         }
 
-                        string curName = System.IO.Path.GetFileName(episodeFilePath);
+                        string curName = Path.GetFileName(episodeFilePath);
 
                         if (string.IsNullOrEmpty(curName))
                         {
@@ -267,16 +273,16 @@ namespace MediaFileManager.Desktop.Views
                         }
 
                         // Replace the selected text with the new text (support empty replacement to remove text)
-                        string newName = curName.Replace(selectedText, replacementText);
+                        string newName = curName.Replace(selectedText, replacementText, StringComparison.InvariantCulture);
 
                         // Rename the file
-                        File.Move(episodeFilePath, System.IO.Path.Combine(curDir, newName));
+                        File.Move(episodeFilePath, Path.Combine(curDir, newName));
 
                         // Need to dispatch back to UI thread, variables to avoid access to modified closure problem
                         var progressComplete = i / selectedItems.Count * 100;
                         var progressText = $"Renaming - '{selectedText}' to '{replacementText}'...";
 
-                        this.Dispatcher.Invoke(() =>
+                        Dispatcher.Invoke(() =>
                         {
                             busyIndicator.ProgressValue = progressComplete;
                             busyIndicator.BusyContent = $"Completed {progressText}...";
@@ -294,14 +300,14 @@ namespace MediaFileManager.Desktop.Views
                         { "Rename Episode", "TV Show" }
                     });
                 }
-            });
+            }).ConfigureAwait(true);
 
             RefreshEpisodesList();
 
             Analytics.TrackEvent("Episode Renaming Complete", new Dictionary<string, string>
             {
-                { "Total Episodes", Episodes.Count.ToString() },
-                { "Episodes Renamed", EpisodesListBox.SelectedItems.Count.ToString() }
+                { "Total Episodes", Episodes.Count.ToString(CultureInfo.InvariantCulture) },
+                { "Episodes Renamed", EpisodesListBox.SelectedItems.Count.ToString(CultureInfo.InvariantCulture) }
             });
 
             busyIndicator.BusyContent = "";
@@ -347,32 +353,32 @@ namespace MediaFileManager.Desktop.Views
         {
             if (string.IsNullOrEmpty(OriginalTextBox_Renumbering?.Text))
             {
-                WriteOutput($"You must selected text that will be replaced by the season and episode number.", OutputMessageLevel.Error);
+                WriteOutput("You must selected text that will be replaced by the season and episode number.", OutputMessageLevel.Error);
                 return;
             }
 
             if (string.IsNullOrEmpty(SeasonNumberTextBox?.Text) || !int.TryParse(SeasonNumberTextBox?.Text, out int seasonNumber))
             {
-                WriteOutput($"You must enter a valid two-digit number for the season.", OutputMessageLevel.Error);
+                WriteOutput("You must enter a valid two-digit number for the season.", OutputMessageLevel.Error);
                 return;
             }
 
             if (string.IsNullOrEmpty(EpisodeStartTextBox?.Text) || string.IsNullOrEmpty(EpisodeEndTextBox?.Text))
             {
-                WriteOutput($"You must enter a first and last episode number.", OutputMessageLevel.Error);
+                WriteOutput("You must enter a first and last episode number.", OutputMessageLevel.Error);
                 return;
             }
 
             if (!int.TryParse(EpisodeStartTextBox?.Text, out int startingEpisodeNumber) || !int.TryParse(EpisodeEndTextBox?.Text, out int lastEpisodeNumber))
             {
-                WriteOutput($"You must use a valid two-digit value for the start and end episode number.", OutputMessageLevel.Error);
+                WriteOutput("You must use a valid two-digit value for the start and end episode number.", OutputMessageLevel.Error);
                 return;
             }
 
             // Make sure the user has entered the correct number of episodes
             if (lastEpisodeNumber - startingEpisodeNumber + 1 != EpisodesListBox.SelectedItems.Count)
             {
-                WriteOutput($"The episode numbers do not match the total selected episodes, you need to have the same number of episode number as selected episodes.", OutputMessageLevel.Error);
+                WriteOutput("The episode numbers do not match the total selected episodes, you need to have the same number of episode number as selected episodes.", OutputMessageLevel.Error);
                 return;
             }
 
@@ -399,7 +405,8 @@ namespace MediaFileManager.Desktop.Views
 
         private void RenumberWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            var workerParameter = e.Argument as WorkerParameters;
+            if(!(e.Argument is WorkerParameters workerParameter))
+                return;
 
             try
             {
@@ -413,7 +420,7 @@ namespace MediaFileManager.Desktop.Views
 
                     if (string.IsNullOrEmpty(curDir))
                     {
-                        WriteOutput($"Could not find directory, skipping.", OutputMessageLevel.Error);
+                        WriteOutput("Could not find directory, skipping.", OutputMessageLevel.Error);
                         continue;
                     }
 
@@ -421,7 +428,7 @@ namespace MediaFileManager.Desktop.Views
 
                     if (string.IsNullOrEmpty(curName))
                     {
-                        WriteOutput($"Could not find file, skipping.", OutputMessageLevel.Error);
+                        WriteOutput("Could not find file, skipping.", OutputMessageLevel.Error);
                         continue;
                     }
 
@@ -432,7 +439,7 @@ namespace MediaFileManager.Desktop.Views
                     var showName = Directory.GetParent(episodeFilePath)?.Parent?.Name;
 
                     // Prefix the name name with the Show, then the season, then the episode number
-                    string newName = curName.Replace(selectedText, $"{showName} - S{workerParameter.SeasonNumber}E{currentEpisodeNumber:00} -");
+                    string newName = curName.Replace(selectedText, $"{showName} - S{workerParameter.SeasonNumber}E{currentEpisodeNumber:00} -", StringComparison.InvariantCulture);
 
                     // If this is not a preview run, invoke the file rename
                     if (!workerParameter.IsPreview)
@@ -495,8 +502,8 @@ namespace MediaFileManager.Desktop.Views
 
                 Analytics.TrackEvent("Episode Renumbering Complete", new Dictionary<string, string>
                 {
-                    { "Total Episodes", Episodes.Count.ToString() },
-                    { "Episodes Renumbered", EpisodesListBox.SelectedItems.Count.ToString() }
+                    { "Total Episodes", Episodes.Count.ToString(CultureInfo.InvariantCulture) },
+                    { "Episodes Renumbered", EpisodesListBox.SelectedItems.Count.ToString(CultureInfo.InvariantCulture) }
                 });
 
                 if (!resultParameter.IsPreview)
@@ -694,6 +701,11 @@ namespace MediaFileManager.Desktop.Views
                     StatusListBox.ScrollIntoView(message);
                 });
             }
+        }
+
+        public void Dispose()
+        {
+            renumberWorker.Dispose();
         }
     }
 }
