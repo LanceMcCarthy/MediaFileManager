@@ -31,6 +31,8 @@ jobs:
       Wap_Project_Name: PackageProject.wapproj
       TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
       TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+      Configuration: Debug
+      RuntimeIdentifier: win-${{ matrix.targetplatform }}
 
     steps:
     - name: Checkout
@@ -45,11 +47,11 @@ jobs:
         setAllVars: true
     
     # Update the version before build
-    - name: Update manifest version
-      run: |
-        [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$env:NBGV_SimpleVersion.0"
-        $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
+    #- name: Update manifest version
+    #  run: |
+    #    [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
+    #    $manifest.Package.Identity.Version = "$env:NBGV_SimpleVersion.0"
+    #    $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
       
     # Install the .NET Core workload
     - name: Install .NET Core
@@ -58,45 +60,54 @@ jobs:
         dotnet-version: 3.1.100
 
     - name: NuGet Restore
-      run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path --runtime win-${{ matrix.targetplatform }}
+      run: dotnet restore $env:Wpf_Project_Path --configfile = $env:NuGetConfig_Path --runtime $env:RuntimeIdentifier
+    #  env:
+    #    Configuration: Debug
+    #    RuntimeIdentifier: win-${{ matrix.targetplatform }}
 
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.0
 
-    # Restore the application
-    - name:  Restore the Wpf application to populate the obj folder
-      run: msbuild $env:Solution_Path /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RuntimeIdentifier
-      env:
-        Configuration: Debug
-        RuntimeIdentifier: win-${{ matrix.targetplatform }}
+    # Restore WPF project
+    - name: Restore the Wpf application to populate the obj folder
+      run: msbuild $env:Wpf_Project_Path /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RuntimeIdentifier
+    #  env:
+    #    Configuration: Debug
+    #    RuntimeIdentifier: win-${{ matrix.targetplatform }}
 
+    # Build the WPF project
+    - name: Restore the Wpf application to populate the obj folder
+      run: msbuild $env:Wpf_Project_Path /t:build /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RuntimeIdentifier
+    #  env:
+    #    Configuration: Debug
+    #    RuntimeIdentifier: win-${{ matrix.targetplatform }}
+
+    # moved to CD workflow only, there is not need to package the UWP project in CI workflow
     # Decode the Base64 encoded Pfx
-    - name: Decode the Pfx
-      run: |
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
-        $currentDirectory = Get-Location
-        $certificatePath = Join-Path -Path $currentDirectory -ChildPath src\MediaFileManager\PackageProject -AdditionalChildPath $env:SigningCertificate
-        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
+    #- name: Decode the Pfx
+    #  run: |
+    #    $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
+    #    $currentDirectory = Get-Location
+    #    $certificatePath = Join-Path -Path $currentDirectory -ChildPath src\MediaFileManager\PackageProject -AdditionalChildPath $env:SigningCertificate
+    #    [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
 
     # Build the Windows Application Packaging project
-    - name: Build the Windows Application Packaging Project (wapproj) 
-      run: msbuild $env:Solution_Path /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificateThumbprint=$env:CertThumbprint /p:PackageCertificatePassword=$env:CertPrivateKey
-      env:
-        AppxBundle: Never
-        BuildMode: SideloadOnly
-        Configuration: Debug
-        TargetPlatform: ${{ matrix.targetplatform }}
-        CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
-        CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
+    #- name: Build the Windows Application Packaging Project (wapproj) 
+    #  run: msbuild $env:Solution_Path /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateThumbprint=${{ secrets.LancelotSoftwareCert_Thumbprint }} /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=${{ secrets.LancelotSoftwareCert_Key }}
+    #  env:
+    #    AppxBundle: Never
+    #    BuildMode: SideLoadOnly
+    #    Configuration: Debug
+    #    TargetPlatform: ${{ matrix.targetplatform }}
 
     # Remove the .pfx
-    - name: Remove the .pfx
-      run: Remove-Item -path src\MediaFileManager\PackageProject\$env:SigningCertificate
+    #- name: Remove the .pfx
+    #  run: Remove-Item -path src\MediaFileManager\PackageProject\$env:SigningCertificate
 
     # Upload the MSIX package: https://github.com/marketplace/actions/upload-artifact
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v1
-      with:
-        name: MSIX Package
-        path: src\MediaFileManager\PackageProject\AppPackages\
+    #- name: Upload build artifacts
+    #  uses: actions/upload-artifact@v1
+    #  with:
+    #    name: MSIX Package
+    #    path: src\MediaFileManager\PackageProject\AppPackages\
