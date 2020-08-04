@@ -58,7 +58,7 @@ jobs:
         dotnet-version: 3.1.100
 
     - name: NuGet Restore
-      run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path --runtime win-${{ matrix.targetplatform }}
+      run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path --runtime win-x86
 
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
@@ -66,10 +66,7 @@ jobs:
 
     # Restore and Build the WPF project
     - name:  Restore the Wpf application to populate the obj folder
-      run: msbuild $env:Solution_Path /t:build /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RuntimeIdentifier
-      env:
-        Configuration: Debug
-        RuntimeIdentifier: win-${{ matrix.targetplatform }}
+      run: msbuild $env:Solution_Path /t:build /t:Restore /p:Configuration=Debug /p:RuntimeIdentifier=win-x86
 
     # moved to CD workflow only, there is not need to package the UWP project in CI workflow
     # Decode the Base64 encoded Pfx
