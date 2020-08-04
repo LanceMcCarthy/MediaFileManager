@@ -64,37 +64,38 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.0
 
-    # Restore the application
+    # Restore and Build the WPF project
     - name:  Restore the Wpf application to populate the obj folder
-      run: msbuild $env:Solution_Path /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RuntimeIdentifier
+      run: msbuild $env:Solution_Path /t:build /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RuntimeIdentifier
       env:
         Configuration: Debug
         RuntimeIdentifier: win-${{ matrix.targetplatform }}
 
+    # moved to CD workflow only, there is not need to package the UWP project in CI workflow
     # Decode the Base64 encoded Pfx
-    - name: Decode the Pfx
-      run: |
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
-        $currentDirectory = Get-Location
-        $certificatePath = Join-Path -Path $currentDirectory -ChildPath src\MediaFileManager\PackageProject -AdditionalChildPath $env:SigningCertificate
-        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
+    #- name: Decode the Pfx
+    #  run: |
+    #    $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
+    #    $currentDirectory = Get-Location
+    #    $certificatePath = Join-Path -Path $currentDirectory -ChildPath src\MediaFileManager\PackageProject -AdditionalChildPath $env:SigningCertificate
+    #    [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
 
     # Build the Windows Application Packaging project
-    - name: Build the Windows Application Packaging Project (wapproj) 
-      run: msbuild $env:Solution_Path /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateThumbprint=${{ secrets.LancelotSoftwareCert_Thumbprint }} /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=${{ secrets.LancelotSoftwareCert_Key }}
-      env:
-        AppxBundle: Never
-        BuildMode: SideLoadOnly
-        Configuration: Debug
-        TargetPlatform: ${{ matrix.targetplatform }}
+    #- name: Build the Windows Application Packaging Project (wapproj) 
+    #  run: msbuild $env:Solution_Path /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateThumbprint=${{ secrets.LancelotSoftwareCert_Thumbprint }} /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=${{ secrets.LancelotSoftwareCert_Key }}
+    #  env:
+    #    AppxBundle: Never
+    #    BuildMode: SideLoadOnly
+    #    Configuration: Debug
+    #    TargetPlatform: ${{ matrix.targetplatform }}
 
     # Remove the .pfx
-    - name: Remove the .pfx
-      run: Remove-Item -path src\MediaFileManager\PackageProject\$env:SigningCertificate
+    #- name: Remove the .pfx
+    #  run: Remove-Item -path src\MediaFileManager\PackageProject\$env:SigningCertificate
 
     # Upload the MSIX package: https://github.com/marketplace/actions/upload-artifact
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v1
-      with:
-        name: MSIX Package
-        path: src\MediaFileManager\PackageProject\AppPackages\
+    #- name: Upload build artifacts
+    #  uses: actions/upload-artifact@v1
+    #  with:
+    #    name: MSIX Package
+    #    path: src\MediaFileManager\PackageProject\AppPackages\
