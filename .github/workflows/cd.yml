@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 
-name:  WPF Continuous Delivery
+name: WPF CD
 
 on:
   push:
