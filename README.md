@@ -2,10 +2,10 @@
 
 [Media File Manager installable via Microsoft Store](https://www.microsoft.com/en-us/p/media-file-manager/9pd3jfk7w5mb) a UWP Packaged WPF application. [Watch a quick video demo](https://www.screencast.com/t/84UQ7Vkv) (< 1 minute).
 
-| Action       | Status                           |
+| Branch       | Status                           |
 |--------------|------------------------------------------|
-| WPF - CI | ![WPF Continuous Integration](https://github.com/LanceMcCarthy/MediaFileManager/workflows/WPF%20Continuous%20Integration/badge.svg)|
-| WPF - CD | TBD |
+| master | ![WPF Continuous Integration](https://github.com/LanceMcCarthy/MediaFileManager/workflows/WPF%20Continuous%20Integration/badge.svg)|
+| releases | ![WPF Continuous Delivery](https://github.com/LanceMcCarthy/MediaFileManager/workflows/WPF%20Continuous%20Delivery/badge.svg?branch=releases) |
 
 ## Getting Started - Video Files
 
