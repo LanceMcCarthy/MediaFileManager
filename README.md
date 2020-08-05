@@ -4,8 +4,8 @@
 
 | Branch       | Status                           |
 |--------------|------------------------------------------|
-| master | ![WPF Continuous Integration](https://github.com/LanceMcCarthy/MediaFileManager/workflows/WPF%20Continuous%20Integration/badge.svg)|
-| releases | ![WPF Continuous Delivery](https://github.com/LanceMcCarthy/MediaFileManager/workflows/WPF%20Continuous%20Delivery/badge.svg?branch=releases) |
+| master | ![WPF CI](https://github.com/LanceMcCarthy/MediaFileManager/workflows/WPF%20CI/badge.svg)|
+| releases | ![WPF CD](https://github.com/LanceMcCarthy/MediaFileManager/workflows/WPF%20CD/badge.svg) |
 
 ## Getting Started - Video Files
 
