@@ -60,14 +60,15 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
+        fetch-depth: 0
 
-    # Use Nerdbank.GitVersioning to set version variables: https://github.com/AArnott/nbgv
-    # Migrated to dotnet/nbgv https://github.com/dotnet/nbgv
-    - name: Nerdbank.GitVersioning
-      uses: dotnet/nbgv@v0.3.1
+    - uses: Amadevus/pwsh-script@v1
+      id: version-creator
       with:
-        setAllVars: true
+        script: |
+          $buildDay = Get-Date -Format "yyyy.Mdd"
+          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+          Set-ActionVariable UWP_VERSION $ver
 
     # Install the .NET Core workload
     - name: Install .NET Core
@@ -84,7 +85,7 @@ jobs:
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$env:NBGV_SimpleVersion.0"
+        $manifest.Package.Identity.Version = "$env:UWP_VERSION"
         $manifest.Package.Identity.Name = "${{ matrix.MsixPackageId }}"
         $manifest.Package.Identity.Publisher = "${{ matrix.MsixPublisherId }}"
         $manifest.Package.Properties.DisplayName = "${{ matrix.MsixPackageDisplayName }}"
@@ -150,8 +151,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
       with:
-        tag_name: ${{ github.ref}}.${{matrix.ChannelName}}.${{ matrix.targetplatform }}
-        release_name:  ${{ github.ref }}.${{ matrix.ChannelName }}.${{ matrix.targetplatform }}
+        tag_name: $env:UWP_VERSION_${{ matrix.targetplatform }}
+        release_name: $env:UWP_VERSION_${{ matrix.targetplatform }}
         draft: false
         prerelease: false
 
