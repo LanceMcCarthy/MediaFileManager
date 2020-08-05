@@ -150,9 +150,11 @@ jobs:
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        TAGNAME: $env:UWP_VERSION.${{matrix.ChannelName}}.${{ matrix.targetplatform }}
+        RELEASENAME: $env:UWP_VERSION.${{matrix.ChannelName}}.${{ matrix.targetplatform }}
       with:
-        tag_name: ${{ github.ref}}.${{matrix.ChannelName}}.${{ matrix.targetplatform }}
-        release_name: ${{ github.ref}}.${{matrix.ChannelName}}.${{ matrix.targetplatform }}
+        tag_name: $env:TAGNAME
+        release_name: $env:RELEASENAME
         draft: false
         prerelease: false
 
