@@ -144,14 +144,16 @@ jobs:
     # Archive the package
     - name: Create archive
       run: Compress-Archive -Path src\MediaFileManager\PackageProject\AppPackages\* -DestinationPath src\MediaFileManager\PackageProject\AppPackages\AppPackages.zip
-
-    - name: Prep Release
-      id: prep
-      run: |
-        $VERSION=$env:UWP_VERSION.${{matrix.ChannelName}}.${{ matrix.targetplatform }}
-        echo "Setting release version to $VERSION"
-        echo "::set-env name=RELEASE_VERSION::$VERSION"
-
+    
+    # Prepare tag and release names
+    - uses: Amadevus/pwsh-script@v1
+      id: preprelease
+      with:
+        script: |
+          $dateprefix = Get-Date -Format "yyyy.Mdd"
+          $releasename = $dateprefix + "." + $env:GITHUB_RUN_NUMBER + ".0." + ${{matrix.ChannelName}} + "." + ${{ matrix.targetplatform }}
+          Set-ActionVariable RELEASE_VERSION $releasename
+          
     # Create the release:  https://github.com/actions/create-release
     - name: Create release
       id: create_release
