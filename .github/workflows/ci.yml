@@ -38,15 +38,14 @@ jobs:
       with:
         script: |
           $buildDay = Get-Date -Format "yyyy.Mdd"
-          $version = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
-          echo $version
-          return $version
+          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+          Set-ActionVariable UWP_VERSION $ver
 
     # Update the UWP package version
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "${{ steps.version-creator.outputs.result }}"
+        $manifest.Package.Identity.Version = "$env:UWP_VERSION"
         $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
 
     - name: NuGet Restore
