@@ -23,13 +23,13 @@ namespace MediaFileManager.Desktop.Views
         private readonly RadOpenFolderDialog openFolderDialog;
         private readonly ObservableCollection<OutputMessage> StatusMessages = new ObservableCollection<OutputMessage>();
 
-        private readonly ObservableCollection<string> Seasons = new ObservableCollection<string>();
-        private readonly ObservableCollection<string> Episodes = new ObservableCollection<string>();
-        private readonly ObservableCollection<string> RenamedEpisodesPreviewList = new ObservableCollection<string>();
-
         public VideoFilesView()
         {
             InitializeComponent();
+
+            Seasons = new ObservableCollection<string>();
+            Episodes = new ObservableCollection<string>();
+            RenamedEpisodesPreviewList = new ObservableCollection<string>();
 
             openFolderDialog = new RadOpenFolderDialog { Owner = this, ExpandToCurrentDirectory = false };
 
@@ -38,14 +38,19 @@ namespace MediaFileManager.Desktop.Views
             EpisodeRenamedPreviewListBox.ItemsSource = RenamedEpisodesPreviewList;
             StatusListBox.ItemsSource = StatusMessages;
 
-            renumberWorker = new BackgroundWorker();
-            renumberWorker.WorkerReportsProgress = true;
+            renumberWorker = new BackgroundWorker { WorkerReportsProgress = true };
             renumberWorker.DoWork += RenumberWorker_DoWork;
             renumberWorker.ProgressChanged += RenumberWorker_ProgressChanged;
             renumberWorker.RunWorkerCompleted += RenumberWorker_RunWorkerCompleted;
 
             WriteOutput($"Ready, open a folder to begin.", OutputMessageLevel.Success);
         }
+
+        public ObservableCollection<string> Seasons { get; }
+
+        public ObservableCollection<string> Episodes { get; }
+
+        public ObservableCollection<string> RenamedEpisodesPreviewList { get; }
 
         #region Source operations
 
@@ -400,7 +405,8 @@ namespace MediaFileManager.Desktop.Views
 
         private void RenumberWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            var workerParameter = e.Argument as WorkerParameters;
+            if(!(e.Argument is WorkerParameters workerParameter))
+                return;
 
             try
             {
@@ -433,7 +439,7 @@ namespace MediaFileManager.Desktop.Views
                     var showName = Directory.GetParent(episodeFilePath)?.Parent?.Name;
 
                     // Prefix the name name with the Show, then the season, then the episode number
-                    string newName = curName.Replace(selectedText, $"{showName} - S{workerParameter.SeasonNumber}E{currentEpisodeNumber:00} -");
+                    string newName = curName.Replace(selectedText, $"{showName} - S{workerParameter.SeasonNumber}E{currentEpisodeNumber:00} -", StringComparison.InvariantCulture);
 
                     // If this is not a preview run, invoke the file rename
                     if (!workerParameter.IsPreview)

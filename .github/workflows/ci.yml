@@ -1,34 +1,19 @@
-# Copyright (c) Microsoft Corporation.
-# Licensed under the MIT license.
+name:  WPF CI
 
-# This continuous integration pipeline is triggered anytime a user pushes code to the repo.
-# This pipeline builds the Wpf project, runs unit tests, then saves the MSIX build artifact.
-name:  WPF Continuous Integration
-
-# Trigger on every push
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   build:
-    strategy:
-      matrix:
-        targetplatform: [x86]
-
     runs-on: windows-latest
 
     env:
-      SigningCertificate: LancelotSoftwareLLC.pfx
-      NuGetConfig_Path: src\nuget.config
-      Solution_Path: src\MediaFileManager\MediaFileManager.sln
-      Wpf_Project_Path: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
-      Wap_Project_Directory: src\MediaFileManager\PackageProject
-      Wap_Project_Name: PackageProject.wapproj
+      CERTIFICATE_FILENAME: LancelotSoftwareLLC.pfx
       TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
       TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
 
@@ -36,61 +21,66 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
-
-    # Use Nerdbank.GitVersioning to set version variables: https://github.com/AArnott/nbgv
-    - name: Use Nerdbank.GitVersioning to set version variables
-      uses: aarnott/nbgv@v0.3
-      with:
-        setAllVars: true
+        fetch-depth: 0 # avoids shallow clone if using actions/checkout@v2 (required for nbgv)
     
-    # Update the version before build
-    - name: Update manifest version
-      run: |
-        [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$env:NBGV_SimpleVersion.0"
-        $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
-      
     # Install the .NET Core workload
-    - name: Install .NET Core
+    - name: Install .NET Core 3.1
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.100
-
-    - name: NuGet Restore
-      run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path --runtime win-${{ matrix.targetplatform }}
+        dotnet-version: '3.1.x'
 
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.0
 
-    # Restore the application
-    - name:  Restore the Wpf application to populate the obj folder
-      run: msbuild $env:Solution_Path /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RuntimeIdentifier
-      env:
-        Configuration: Debug
-        RuntimeIdentifier: win-${{ matrix.targetplatform }}
+    - uses: Amadevus/pwsh-script@v1
+      id: version-creator
+      with:
+        script: |
+          $buildDay = Get-Date -Format "yyyy.Mdd"
+          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+          Set-ActionVariable UWP_VERSION $ver
 
-    # Decode the Base64 encoded Pfx
-    - name: Decode the Pfx
+    # Update the UWP package version
+    - name: Update manifest version
+      run: |
+        [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
+        $manifest.Package.Identity.Version = "$env:UWP_VERSION"
+        $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
+
+    - name: NuGet Restore
+      run: dotnet restore src\MediaFileManager\MediaFileManager.sln --configfile src\nuget.config --runtime $env:RID
+      env:
+        # https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
+        RID: win-x86
+
+    # Restore WPF project
+    - name: Restore the Wpf application to populate the obj folder
+      run: msbuild src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj /t:Restore /p:Configuration=Debug /p:RuntimeIdentifier=$env:RID
+      env:
+        # https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
+        RID: win-x86
+
+    # Decode the Base64 encoded certificate, save it as a PFX file and install it
+    - name: Decode and Install the Signing Certificate
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
         $currentDirectory = Get-Location
-        $certificatePath = Join-Path -Path $currentDirectory -ChildPath src\MediaFileManager\PackageProject -AdditionalChildPath $env:SigningCertificate
+        $certificatePath = Join-Path -Path $currentDirectory -ChildPath src\MediaFileManager\PackageProject -AdditionalChildPath $env:CERTIFICATE_FILENAME
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
 
-    # Build the Windows Application Packaging project
+    # Build the WAP project
     - name: Build the Windows Application Packaging Project (wapproj) 
-      run: msbuild $env:Solution_Path /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateThumbprint=${{ secrets.LancelotSoftwareCert_Thumbprint }} /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=${{ secrets.LancelotSoftwareCert_Key }}
+      run: msbuild src\MediaFileManager\MediaFileManager.sln /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateThumbprint=${{ secrets.LancelotSoftwareCert_Thumbprint }} /p:PackageCertificateKeyFile=$env:CERTIFICATE_FILENAME /p:PackageCertificatePassword=${{ secrets.LancelotSoftwareCert_Key }}
       env:
         AppxBundle: Never
         BuildMode: SideLoadOnly
         Configuration: Debug
-        TargetPlatform: ${{ matrix.targetplatform }}
+        TargetPlatform: x86
 
-    # Remove the .pfx
-    - name: Remove the .pfx
-      run: Remove-Item -path src\MediaFileManager\PackageProject\$env:SigningCertificate
+    # Delete the .pfx
+    - name: Uninstall the Signing Certificate
+      run: Remove-Item -path src\MediaFileManager\PackageProject\$env:CERTIFICATE_FILENAME
 
     # Upload the MSIX package: https://github.com/marketplace/actions/upload-artifact
     - name: Upload build artifacts

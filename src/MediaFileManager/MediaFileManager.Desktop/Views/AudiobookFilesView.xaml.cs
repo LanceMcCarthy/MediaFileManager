@@ -28,6 +28,10 @@ namespace MediaFileManager.Desktop.Views
         {
             InitializeComponent();
 
+            StatusMessages = new ObservableCollection<OutputMessage>();
+            AudiobookTitles = new ObservableCollection<string>();
+            AudiobookFiles = new ObservableCollection<AudiobookFile>();
+
             openFolderDialog = new RadOpenFolderDialog { Owner = this, ExpandToCurrentDirectory = false };
 
             StatusListBox.ItemsSource = StatusMessages;
@@ -42,6 +46,12 @@ namespace MediaFileManager.Desktop.Views
 
             WriteOutput($"Ready, open an author folder to begin.", OutputMessageLevel.Success);
         }
+
+        public ObservableCollection<OutputMessage> StatusMessages { get; }
+
+        public ObservableCollection<string> AudiobookTitles { get; }
+
+        public ObservableCollection<AudiobookFile> AudiobookFiles { get; }
 
         private void SelectAuthorFolderButton_Click(object sender, RoutedEventArgs e)
         {
@@ -187,13 +197,13 @@ namespace MediaFileManager.Desktop.Views
 
         private void SetTagsButton_Click(object sender, RoutedEventArgs e)
         {
-            if (SetAlbumNameCheckBox.IsChecked.Value && string.IsNullOrEmpty(AlbumNameTextBox.Text))
+            if (SetAlbumNameCheckBox.IsChecked == true && string.IsNullOrEmpty(AlbumNameTextBox.Text))
             {
                 WriteOutput($"Album (book title) is empty.", OutputMessageLevel.Error);
                 return;
             }
 
-            if (SetArtistNameCheckBox.IsChecked.Value && string.IsNullOrEmpty(ArtistTextBox.Text))
+            if (SetArtistNameCheckBox.IsChecked == true && string.IsNullOrEmpty(ArtistTextBox.Text))
             {
                 WriteOutput($"Artist (author name) is empty.", OutputMessageLevel.Error);
                 return;
@@ -237,7 +247,7 @@ namespace MediaFileManager.Desktop.Views
                     {
                         var audiobookFile = tagParams.AudiobookFiles[i];
 
-                        using(var tagLibFile = TagLib.File.Create(audiobookFile.FilePath))
+                        using (var tagLibFile = TagLib.File.Create(audiobookFile.FilePath))
                         {
                             if (tagLibFile != null)
                             {
@@ -260,6 +270,7 @@ namespace MediaFileManager.Desktop.Views
                                     tagLibFile.Tag.Performers = author;
                                     tagLibFile.Tag.AlbumArtists = author;
                                     tagLibFile.Tag.Performers = author;
+                                    tagLibFile.Tag.AlbumArtists = author;
                                     tagLibFile.Tag.Composers = author;
                                 }
 
@@ -351,9 +362,11 @@ namespace MediaFileManager.Desktop.Views
                             audiobookFile.Artist = tagLibFile.Tag.Performers?.FirstOrDefault();
                         }
                         catch { }
-                        
+
                         audiobookFile.Performer = tagLibFile.Tag.Performers?.FirstOrDefault();
                     }
+
+                    tagLibFile?.Dispose();
 
                     AudiobookFiles.Add(audiobookFile);
 

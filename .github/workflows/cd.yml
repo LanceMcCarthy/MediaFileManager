@@ -1,24 +1,14 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 
-# This continuous delivery pipeline is meant to be triggered on release, anytime a user pushes code associated to a git tag,
-# and will run against multiple configurations and production environments.
-# This pipeline builds the Wpf project based upon the configuration matrix below.  In order to
-# create different channels of the application, the pipeline uses the Package.Identity.Name defined in the
-# Package.appxmanifest in the Windows Application Packaging Project to uniquely identify the application,
-# depending on which channel is being built.
-# Once the MSIX is created for each channel configuration, the agent archives the AppPackages folder, then creates
-# a Release with the specified git release tag. The archive is uploaded to the release as an asset for storage or distribution.
-name:  WPF Continuous Delivery
+name: WPF CD
 
-# Trigger on any push with a git tag
-# To create a git tag, run the following commands on the branch you wish to release:
-#   git tag 1.0.0.0
-#   git push origin --tags
 on:
   push:
     branches:
       - releases
+    tags:
+      - '*'
 
 jobs:
   build:
@@ -28,19 +18,9 @@ jobs:
     # development, production for sideload applications and production for the Microsoft store.
     # For more information, see https://help.github.com/en/actions/configuring-and-managing-workflows/configuring-a-workflow#configuring-a-build-matrix
       matrix:
-        channel: [Dev, Prod_Sideload, Prod_Store]
+        channel: [Prod_Sideload, Prod_Store]
         targetPlatform: [x86]
         include:
-
-          # includes the following variables for the matrix leg matching Dev
-          - channel: Dev
-            ChannelName: Dev
-            Configuration: Debug
-            DistributionUrl: https://lancemccarthy.github.io/MediaFileManager/
-            MsixPackageId: 61469LanceLotSoftware.MediaFileManager
-            MsixPublisherId: CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02
-            MsixPublisherDisplayName: Lancelot Software
-            MsixPackageDisplayName: Media File Manager (Dev)
 
           # includes the following variables for the matrix leg matching Prod_Sideload
           - channel: Prod_Sideload
@@ -66,28 +46,35 @@ jobs:
 
     env:
       SigningCertificate: LancelotSoftwareLLC.pfx
+      NuGetConfig_Path: src\nuget.config
       Solution_Path: src\MediaFileManager\MediaFileManager.sln
       Wpf_Project_Path: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       Wap_Project_Directory: src\MediaFileManager\PackageProject
       Wap_Project_Name: PackageProject.wapproj
+      TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
+      TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+      CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
+      CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
+        fetch-depth: 0
 
-    # Use Nerdbank.GitVersioning to set version variables: https://github.com/AArnott/nbgv
-    - name: Use Nerdbank.GitVersioning to set version variables
-      uses: aarnott/nbgv@v0.3
+    - uses: Amadevus/pwsh-script@v1
+      id: version-creator
       with:
-        setAllVars: true
+        script: |
+          $buildDay = Get-Date -Format "yyyy.Mdd"
+          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+          Set-ActionVariable UWP_VERSION $ver
 
     # Install the .NET Core workload
     - name: Install .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.100
+        dotnet-version: '3.1.x'
 
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
@@ -98,7 +85,7 @@ jobs:
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$env:NBGV_SimpleVersion.0"
+        $manifest.Package.Identity.Version = "$env:UWP_VERSION"
         $manifest.Package.Identity.Name = "${{ matrix.MsixPackageId }}"
         $manifest.Package.Identity.Publisher = "${{ matrix.MsixPublisherId }}"
         $manifest.Package.Properties.DisplayName = "${{ matrix.MsixPackageDisplayName }}"
@@ -113,8 +100,8 @@ jobs:
         $currentDirectory = Get-Location
         $certificatePath = Join-Path -Path $currentDirectory -ChildPath src\MediaFileManager\PackageProject -AdditionalChildPath $env:SigningCertificate
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
-      if: matrix.ChannelName != 'Prod_Store'
 
+    # Restore NuGet packages using the nuget config (private server uses credentials from secrets)
     - name: NuGet Restore
       run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path --runtime win-${{ matrix.targetplatform }}
    
@@ -125,26 +112,26 @@ jobs:
         Configuration: ${{ matrix.Configuration }}
         RuntimeIdentifier: win-${{ matrix.targetplatform }}
 
-    # Build the Windows Application Packaging project for Dev and Prod_Sideload
+    # Build the Windows Application Packaging project for Prod_Sideload
     - name: Build the Windows Application Packaging Project (wapproj) for ${{ matrix.ChannelName }}
-      run: msbuild $env:Solution_Path /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=${{ secrets.LancelotSoftwareCert_Key }}
-      if: matrix.ChannelName != 'Prod_Store'
+      run: msbuild $env:Solution_Path /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
+      if: matrix.ChannelName == 'Prod_Sideload'
       env:
-        AppxBundle: Never
-        AppInstallerUri: ${{ matrix.DistributionUrl }}
-        BuildMode: SideLoadOnly
-        Configuration: ${{ matrix.Configuration }}
+        AppxBundle: Always
         GenerateAppInstallerFile: True
+        AppInstallerUri: ${{ matrix.DistributionUrl }}
+        BuildMode: SideloadOnly
+        Configuration: ${{ matrix.Configuration }}
         TargetPlatform: ${{ matrix.targetplatform }}
         
     # Build the Windows Application Packaging project for Prod_Store
     - name: Build the Windows Application Packaging Project (wapproj) for ${{ matrix.ChannelName }}
-      run: msbuild $env:Solution_Path /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:GenerateAppInstallerFile=$env:GenerateAppInstallerFile /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled
+      run: msbuild $env:Solution_Path /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
       if: matrix.ChannelName == 'Prod_Store'
       env:
-        AppxBundle: Never
-        AppxPackageSigningEnabled: False
-        BuildMode: StoreOnly
+        AppxBundle: Always
+        AppxPackageSigningEnabled: True
+        BuildMode: StoreUpload
         Configuration: ${{ matrix.Configuration }}
         GenerateAppInstallerFile: False
         TargetPlatform: ${{ matrix.targetplatform }}
@@ -152,7 +139,6 @@ jobs:
     # Remove the .pfx
     - name: Remove the .pfx
       run: Remove-Item -path src\MediaFileManager\PackageProject\$env:SigningCertificate
-      if: matrix.ChannelName != 'Prod_Store'
 
     # Archive the package
     - name: Create archive
@@ -165,8 +151,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
       with:
-        tag_name: ${{ github.ref}}.${{matrix.ChannelName}}.${{ matrix.targetplatform }}
-        release_name:  ${{ github.ref }}.${{ matrix.ChannelName }}.${{ matrix.targetplatform }}
+        tag_name: $env:UWP_VERSION.${{ matrix.targetplatform }}
+        release_name: $env:UWP_VERSION.${{ matrix.targetplatform }}
         draft: false
         prerelease: false
 
