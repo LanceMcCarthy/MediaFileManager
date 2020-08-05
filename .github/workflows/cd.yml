@@ -152,7 +152,9 @@ jobs:
         script: |
           $dateprefix = Get-Date -Format "yyyy.Mdd"
           $uwpManifestVersion = $dateprefix + "." + $env:GITHUB_RUN_NUMBER + ".0"
-          $releasename = $uwpManifestVersion + "." + ${{matrix.ChannelName}} + "." + ${{ matrix.targetplatform }}
+          $channelName = ${{ matrix.ChannelName }}
+          $targetPlatform = ${{ matrix.targetplatform }}
+          $releasename = "$uwpManifestVersion.$channelName.$targetPlatform"
           Set-ActionVariable RELEASE_VERSION $releasename
           
     # Create the release:  https://github.com/actions/create-release
