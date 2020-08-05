@@ -33,15 +33,20 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.0
 
+    - uses: Amadevus/pwsh-script@v1
+      id: version-creator
+      with:
+        script: |
+          $buildDay = Get-Date -Format "yyyy.Mdd"
+          $version = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+          echo $version
+          return $version
+
     # Update the UWP package version
     - name: Update manifest version
       run: |
-        $prefix = Get-Date -Format "yyyy.Mdd"
-        $suffix = $env:GITHUB_RUN_NUMBER
-        $version = $prefix + "." + $suffix + ".0"
-        echo $version
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$env:version"
+        $manifest.Package.Identity.Version = "${{ steps.version-creator.outputs.result }}"
         $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
 
     - name: NuGet Restore
