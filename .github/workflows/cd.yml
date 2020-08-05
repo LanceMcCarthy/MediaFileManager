@@ -1,24 +1,14 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 
-# This continuous delivery pipeline is meant to be triggered on release, anytime a user pushes code associated to a git tag,
-# and will run against multiple configurations and production environments.
-# This pipeline builds the Wpf project based upon the configuration matrix below.  In order to
-# create different channels of the application, the pipeline uses the Package.Identity.Name defined in the
-# Package.appxmanifest in the Windows Application Packaging Project to uniquely identify the application,
-# depending on which channel is being built.
-# Once the MSIX is created for each channel configuration, the agent archives the AppPackages folder, then creates
-# a Release with the specified git release tag. The archive is uploaded to the release as an asset for storage or distribution.
-name:  WPF Continuous Delivery
+name: WPF CD
 
-# Trigger on any push with a git tag
-# To create a git tag, run the following commands on the branch you wish to release:
-#   git tag 1.0.0.0
-#   git push origin --tags
 on:
   push:
     branches:
       - releases
+    tags:
+      - '*'
 
 jobs:
   build:
@@ -73,8 +63,9 @@ jobs:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
 
     # Use Nerdbank.GitVersioning to set version variables: https://github.com/AArnott/nbgv
-    - name: Use Nerdbank.GitVersioning to set version variables
-      uses: aarnott/nbgv@v0.3
+    # Migrated to dotnet/nbgv https://github.com/dotnet/nbgv
+    - name: Nerdbank.GitVersioning
+      uses: dotnet/nbgv@v0.3.1
       with:
         setAllVars: true
 
@@ -82,7 +73,7 @@ jobs:
     - name: Install .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.100
+        dotnet-version: '3.1.x'
 
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
