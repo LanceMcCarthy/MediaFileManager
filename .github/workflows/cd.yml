@@ -62,6 +62,7 @@ jobs:
       with:
         fetch-depth: 0
 
+    # Create my own version number with a specific format using date. ex: 2020.805.1.0
     - uses: Amadevus/pwsh-script@v1
       id: version-creator
       with:
@@ -149,12 +150,10 @@ jobs:
       id: create_release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-        TAGNAME: $env:UWP_VERSION.${{matrix.ChannelName}}.${{ matrix.targetplatform }}
-        RELEASENAME: $env:UWP_VERSION.${{matrix.ChannelName}}.${{ matrix.targetplatform }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: $env:TAGNAME
-        release_name: $env:RELEASENAME
+        tag_name: ${{ env:UWP_VERSION }}.${{matrix.ChannelName}}.${{ matrix.targetplatform }}
+        release_name: ${{ env:UWP_VERSION }}.${{matrix.ChannelName}}.${{ matrix.targetplatform }}
         draft: false
         prerelease: false
 
