@@ -33,20 +33,18 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.0
     
-    - name: Get current date
+    - name: Set Version Variable
       id: date
-      run: echo "::set-output name=date::$(date +'%Y.%m.%d')"
+      run: echo "::set-output name=prefix::Get-Date -Format "yyyy.Mdd""
 
     # Update the UWP package version
     - name: Update manifest version
       env:
-        date_stamp: ${{steps.date.outputs.date}}
-        run_number: $env:GITHUB_RUN_NUMBER
-        ver:  "$env:date_stamp.$env:run_number"
+        version_full: ${{steps.date.prefix}}.$env:GITHUB_RUN_NUMBER
       run: |
-        echo $env:ver
+        echo $env:version_full
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$env:ver"
+        $manifest.Package.Identity.Version = "$env:version_full"
         $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
 
     - name: NuGet Restore
