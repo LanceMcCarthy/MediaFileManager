@@ -20,10 +20,6 @@ jobs:
       Wpf_Project_Path: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       Wap_Project_Directory: src\MediaFileManager\PackageProject
       Wap_Project_Name: PackageProject.wapproj
-      SideLoadPackagesPath: src\MediaFileManager\PackageProject\SideLoadPackages
-      SideLoadArchiveName: SideLoadPackages.zip
-      StoreUploadPackagesPath: src\MediaFileManager\PackageProject\StoreUploadPackages
-      StoreUploadArchiveName: StoreUploadPackages.zip
       TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
       TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
       CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
@@ -85,21 +81,23 @@ jobs:
 
     # Build the Windows Application Packaging project for Sideload
     - name: Build wapproj for Sideloading
-      run: msbuild $env:Solution_Path /p:AppxPackageDir=$env:SideLoadPackagesPath /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
+      run: msbuild $env:Solution_Path /p:AppxPackageDir=$env:PackageDir /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
       env:
         AppxBundle: Always
         GenerateAppInstallerFile: True
         AppInstallerUri: https://lancemccarthy.github.io/MediaFileManager/
         BuildMode: SideloadOnly
+        PackageDir: src\MediaFileManager\PackageProject\SideLoadPackages
       
     # Build the Windows Application Packaging project for Store
     - name: Build wapproj for Microsoft Store
-      run: msbuild $env:Solution_Path /p:AppxPackageDir=$env:StoreUploadPackagesPath /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
+      run: msbuild $env:Solution_Path /p:AppxPackageDir=$env:PackageDir /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
       env:
         AppxBundle: Always
         AppxPackageSigningEnabled: True
         BuildMode: StoreUpload
         GenerateAppInstallerFile: False
+        PackageDir: src\MediaFileManager\PackageProject\StoreUploadPackages
 
     # Remove the .pfx now that we're done signing
     - name: Remove the .pfx
@@ -107,11 +105,11 @@ jobs:
     
     # ZIP up the sideload packages using Powershell
     - name: Create SideLoadPackages.zip
-      run: Compress-Archive -Path $env:SideLoadPackagesPath\* -DestinationPath $env:SideLoadPackagesPath\$env:SideLoadArchiveName
+      run: Compress-Archive -Path src\MediaFileManager\PackageProject\SideLoadPackages\* -DestinationPath src\MediaFileManager\PackageProject\SideLoadPackages\SideLoadPackages.zip
 
     # ZIP up the store upload packages using Powershell
     - name: Create StoreUploadPackages.zip
-      run: Compress-Archive $env:StoreUploadPackagesPath\* -DestinationPath $env:StoreUploadPackagesPath\$env:StoreUploadArchiveName
+      run: Compress-Archive src\MediaFileManager\PackageProject\StoreUploadPackages\* -DestinationPath src\MediaFileManager\PackageProject\StoreUploadPackages\StoreUploadPackages.zip
 
     # Create the release: https://github.com/actions/create-release
     - name: Create GitHub Release
@@ -134,8 +132,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ env:SideLoadPackagesPath }}\${{ env:SideLoadArchiveName }}
-        asset_name: ${{ env:SideLoadArchiveName }}
+        asset_path: src\MediaFileManager\PackageProject\SideLoadPackages\SideLoadPackages.zip
+        asset_name: SideLoadPackages.zip
         asset_content_type: application/zip
 
     # Upload release asset: https://github.com/actions/upload-release-asset
@@ -146,6 +144,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ env:StoreUploadPackagesPath }}\${{ env:StoreUploadArchiveName }}
-        asset_name: ${{ env:StoreUploadArchiveName }}
+        asset_path: src\MediaFileManager\PackageProject\StoreUploadPackages\StoreUploadPackages.zip
+        asset_name: StoreUploadPackages.zip
         asset_content_type: application/zip
