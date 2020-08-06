@@ -146,14 +146,14 @@ jobs:
       run: Compress-Archive -Path src\MediaFileManager\PackageProject\AppPackages\* -DestinationPath src\MediaFileManager\PackageProject\AppPackages\AppPackages.zip
     
     # Prepare tag and release names
-    - uses: Amadevus/pwsh-script@v1
-      id: preprelease
-      with:
-        script: |
-          $dateprefix = Get-Date -Format "yyyy.Mdd"
-          $uwpManifestVersion = $dateprefix + "." + $env:GITHUB_RUN_NUMBER + ".0"
-          $releasename = $uwpManifestVersion.${{ matrix.ChannelName }}.${{ matrix.targetplatform }}
-          Set-ActionVariable RELEASE_VERSION $releasename
+    #- uses: Amadevus/pwsh-script@v1
+    #  id: preprelease
+    #  with:
+    #    script: |
+    #      $dateprefix = Get-Date -Format "yyyy.Mdd"
+    #      $uwpManifestVersion = $dateprefix + "." + $env:GITHUB_RUN_NUMBER + ".0"
+    #      $releasename = $uwpManifestVersion.${{ matrix.ChannelName }}.${{ matrix.targetplatform }}
+    #      Set-ActionVariable RELEASE_VERSION $releasename
           
     # Create the release:  https://github.com/actions/create-release
     - name: Create release
@@ -162,11 +162,11 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: $env:RELEASE_VERSION
-        release_name: $env:RELEASE_VERSION
+        tag_name: ${{ matrix.ChannelName }}.${{ matrix.targetplatform }}.$env:GITHUB_RUN_ID
+        release_name: ${{ matrix.ChannelName }}.${{ matrix.targetplatform }}.$env:GITHUB_RUN_ID
         draft: false
         prerelease: false
-        body: This is the ${{matrix.ChannelName}} package for ${{ matrix.targetplatform }}
+        body: This is v. $env:UWP_VERSION the ${{matrix.ChannelName}} package for ${{ matrix.targetplatform }}
 
     # Upload release asset:   https://github.com/actions/upload-release-asset
     - name: Update release asset
