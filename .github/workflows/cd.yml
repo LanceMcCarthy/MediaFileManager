@@ -78,7 +78,7 @@ jobs:
     - name:  Restore the Wpf application to populate the obj folder
       run: msbuild $env:Solution_Path /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RuntimeIdentifier
       env:
-        RuntimeIdentifier: any  #RIDs reference https://github.com/dotnet/runtime/blob/master/src/libraries/pkg/Microsoft.NETCore.Platforms/readme.md
+        RuntimeIdentifier: win-x86  #RIDs reference https://github.com/dotnet/runtime/blob/master/src/libraries/pkg/Microsoft.NETCore.Platforms/readme.md
 
     # Build the Windows Application Packaging project for Sideload
     - name: Build wapproj for Sideloading
