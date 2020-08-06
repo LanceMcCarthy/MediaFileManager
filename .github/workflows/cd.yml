@@ -73,7 +73,7 @@ jobs:
 
     # Restore NuGet packages using the nuget config (private server uses credentials from secrets)
     - name: NuGet Restore
-      run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path --runtimeidentifier=$env:RuntimeIdentifier
+      run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path --runtime $env:RuntimeIdentifier
    
    # Restore the application
     - name:  Restore the Wpf application to populate the obj folder
