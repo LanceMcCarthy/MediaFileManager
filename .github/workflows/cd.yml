@@ -12,7 +12,8 @@ jobs:
 
     env:
       Configuration: Release
-      UwpPlatformBundle: x86|x64|arm|arm64
+      RuntimeIdentifier: win-x86 #RIDs reference https://github.com/dotnet/runtime/blob/master/src/libraries/pkg/Microsoft.NETCore.Platforms/readme.md
+      UwpBundlePlatform: x86 #package bundles, eg. x86|x64|arm|arm64
       SigningCertificate: LancelotSoftwareLLC.pfx
       NuGetConfig_Path: src\nuget.config
       Solution_Path: src\MediaFileManager\MediaFileManager.sln
@@ -72,17 +73,15 @@ jobs:
 
     # Restore NuGet packages using the nuget config (private server uses credentials from secrets)
     - name: NuGet Restore
-      run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path
+      run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path --runtimeidentifier=$env:RuntimeIdentifier
    
    # Restore the application
     - name:  Restore the Wpf application to populate the obj folder
       run: msbuild $env:Solution_Path /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RuntimeIdentifier
-      env:
-        RuntimeIdentifier: win-x86  #RIDs reference https://github.com/dotnet/runtime/blob/master/src/libraries/pkg/Microsoft.NETCore.Platforms/readme.md
 
     # Build the Windows Application Packaging project for Sideload
     - name: Build wapproj for Sideloading
-      run: msbuild $env:Solution_Path /p:AppxPackageDir=$env:PackagesDir /p:Platform=$env:UwpPlatformBundle /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
+      run: msbuild $env:Solution_Path /p:AppxPackageDir=$env:PackagesDir /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
       env:
         AppxBundle: Always
         GenerateAppInstallerFile: True
@@ -92,7 +91,7 @@ jobs:
       
     # Build the Windows Application Packaging project for Store
     - name: Build wapproj for Microsoft Store
-      run: msbuild $env:Solution_Path /p:AppxPackageDir=$env:PackagesDir /p:Platform=$env:UwpPlatformBundle /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
+      run: msbuild $env:Solution_Path /p:AppxPackageDir=$env:PackagesDir /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
       env:
         AppxBundle: Always
         AppxPackageSigningEnabled: True
