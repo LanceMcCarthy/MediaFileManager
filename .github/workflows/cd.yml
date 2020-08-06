@@ -31,6 +31,7 @@ jobs:
             MsixPublisherId: CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02
             MsixPublisherDisplayName: Lancelot Software
             MsixPackageDisplayName: Media File Manager (ProdSideload)
+            ReleaseName: SideLoad_x86
 
           # includes the following variables for the matrix leg matching Prod_Store
           - channel: Prod_Store
@@ -41,6 +42,7 @@ jobs:
             MsixPublisherId: CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02
             MsixPublisherDisplayName: Lancelot Software
             MsixPackageDisplayName: Media File Manager
+            ReleaseType: Store_x86
 
     runs-on: windows-latest
 
@@ -161,12 +163,13 @@ jobs:
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        RunID:  $env.GITHUB_RUN_ID
       with:
-        tag_name: ${{ matrix.ChannelName }}.${{ matrix.targetplatform }}.${{ env:GITHUB_RUN_ID }}
-        release_name: ${{ matrix.ChannelName }}.${{ matrix.targetplatform }}.${{ env:GITHUB_RUN_ID }}
+        tag_name: ${{ matrix.ReleaseType }}.$env.RunID
+        release_name: ${{ matrix.ReleaseType }}.$env.RunID
         draft: false
         prerelease: false
-        body: This is v. ${{ env:UWP_VERSION }} the ${{ matrix.ChannelName }} package for ${{ matrix.targetplatform }}
+        body: This is v. $env:UWP_VERSION for ${{ matrix.ReleaseType }}
 
     # Upload release asset:   https://github.com/actions/upload-release-asset
     - name: Update release asset
