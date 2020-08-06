@@ -1,50 +1,18 @@
-# Copyright (c) Microsoft Corporation.
-# Licensed under the MIT license.
-
+# If you are looking for guidance for your builds, see https://github.com/microsoft/github-actions-for-desktop-apps
 name: WPF CD
 
 on:
   push:
     branches:
       - releases
-    tags:
-      - '*'
 
 jobs:
   build:
-    strategy:
-
-    # The following build matrix allows builds across multiple configurations (Debug and Release) and production environments such as
-    # development, production for sideload applications and production for the Microsoft store.
-    # For more information, see https://help.github.com/en/actions/configuring-and-managing-workflows/configuring-a-workflow#configuring-a-build-matrix
-      matrix:
-        channel: [Prod_Sideload, Prod_Store]
-        targetPlatform: [x86]
-        include:
-
-          # includes the following variables for the matrix leg matching Prod_Sideload
-          - channel: Prod_Sideload
-            Configuration: Release
-            ChannelName: Prod_Sideload
-            DistributionUrl: https://lancemccarthy.github.io/MediaFileManager/
-            MsixPackageId: 61469LanceLotSoftware.MediaFileManager
-            MsixPublisherId: CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02
-            MsixPublisherDisplayName: Lancelot Software
-            MsixPackageDisplayName: Media File Manager (ProdSideload)
-
-          # includes the following variables for the matrix leg matching Prod_Store
-          - channel: Prod_Store
-            Configuration: Release
-            ChannelName: Prod_Store
-            DistributionUrl: ''
-            MsixPackageId: 61469LanceLotSoftware.MediaFileManager
-            MsixPublisherId: CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02
-            MsixPublisherDisplayName: Lancelot Software
-            MsixPackageDisplayName: Media File Manager
-
     runs-on: windows-latest
 
     env:
+      Configuration: Release
+      UwpPlatformBundle: x86|x64|arm|arm64
       SigningCertificate: LancelotSoftwareLLC.pfx
       NuGetConfig_Path: src\nuget.config
       Solution_Path: src\MediaFileManager\MediaFileManager.sln
@@ -63,7 +31,8 @@ jobs:
         fetch-depth: 0
 
     # Create my own version number with a specific format using date. ex: 2020.805.1.0
-    - uses: Amadevus/pwsh-script@v1
+    - name: Generate version number
+      uses: Amadevus/pwsh-script@v1
       id: version-creator
       with:
         script: |
@@ -81,17 +50,16 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.0
 
-    # Update the appxmanifest before build by setting the per-channel values set in the matrix such as
-    # the Package.Identity.Version or the Package.Identity.Name, which allows multiple channels to be built.
+    # Update the appxmanifest with the new verison number, app identity and publisher details.
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
         $manifest.Package.Identity.Version = "$env:UWP_VERSION"
-        $manifest.Package.Identity.Name = "${{ matrix.MsixPackageId }}"
-        $manifest.Package.Identity.Publisher = "${{ matrix.MsixPublisherId }}"
-        $manifest.Package.Properties.DisplayName = "${{ matrix.MsixPackageDisplayName }}"
-        $manifest.Package.Properties.PublisherDisplayName = "${{ matrix.MsixPublisherDisplayName }}"
-        $manifest.Package.Applications.Application.VisualElements.DisplayName = "${{ matrix.MsixPackageDisplayName }}"
+        $manifest.Package.Identity.Name = "61469LanceLotSoftware.MediaFileManager"
+        $manifest.Package.Identity.Publisher = "CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02"
+        $manifest.Package.Properties.DisplayName = "Media File Manager"
+        $manifest.Package.Properties.PublisherDisplayName = "Lancelot Software"
+        $manifest.Package.Applications.Application.VisualElements.DisplayName = "Media File Manager"
         $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
         
     # Decode the Base64 encoded Pfx
@@ -104,75 +72,79 @@ jobs:
 
     # Restore NuGet packages using the nuget config (private server uses credentials from secrets)
     - name: NuGet Restore
-      run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path --runtime win-${{ matrix.targetplatform }}
+      run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path
    
    # Restore the application
     - name:  Restore the Wpf application to populate the obj folder
       run: msbuild $env:Solution_Path /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RuntimeIdentifier
       env:
-        Configuration: ${{ matrix.Configuration }}
-        RuntimeIdentifier: win-${{ matrix.targetplatform }}
+        RuntimeIdentifier: win  #RIDs reference https://github.com/dotnet/runtime/blob/master/src/libraries/pkg/Microsoft.NETCore.Platforms/readme.md
 
-    # Build the Windows Application Packaging project for Prod_Sideload
-    - name: Build the Windows Application Packaging Project (wapproj) for ${{ matrix.ChannelName }}
-      run: msbuild $env:Solution_Path /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
-      if: matrix.ChannelName == 'Prod_Sideload'
+    # Build the Windows Application Packaging project for Sideload
+    - name: Build wapproj for Sideloading
+      run: msbuild $env:Solution_Path /p:AppxPackageDir=$env:PackagesDir /p:Platform=$env:UwpPlatformBundle /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
       env:
         AppxBundle: Always
         GenerateAppInstallerFile: True
-        AppInstallerUri: ${{ matrix.DistributionUrl }}
+        AppInstallerUri: https://lancemccarthy.github.io/MediaFileManager/
         BuildMode: SideloadOnly
-        Configuration: ${{ matrix.Configuration }}
-        TargetPlatform: ${{ matrix.targetplatform }}
-        
-    # Build the Windows Application Packaging project for Prod_Store
-    - name: Build the Windows Application Packaging Project (wapproj) for ${{ matrix.ChannelName }}
-      run: msbuild $env:Solution_Path /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
-      if: matrix.ChannelName == 'Prod_Store'
+        PackagesDir: src\MediaFileManager\PackageProject\AppPackages\Sideload\
+      
+    # Build the Windows Application Packaging project for Store
+    - name: Build wapproj for Microsoft Store
+      run: msbuild $env:Solution_Path /p:AppxPackageDir=$env:PackagesDir /p:Platform=$env:UwpPlatformBundle /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
       env:
         AppxBundle: Always
         AppxPackageSigningEnabled: True
         BuildMode: StoreUpload
-        Configuration: ${{ matrix.Configuration }}
         GenerateAppInstallerFile: False
-        TargetPlatform: ${{ matrix.targetplatform }}
+        PackagesDir: src\MediaFileManager\PackageProject\AppPackages\StoreUpload\
 
-    # Remove the .pfx
+    # Remove the .pfx now that we're done signing
     - name: Remove the .pfx
       run: Remove-Item -path src\MediaFileManager\PackageProject\$env:SigningCertificate
-
-    # Archive the package
-    - name: Create archive
-      run: Compress-Archive -Path src\MediaFileManager\PackageProject\AppPackages\* -DestinationPath src\MediaFileManager\PackageProject\AppPackages\AppPackages.zip
-
-    - name: Prep Release
-      id: prep
-      run: |
-        $VERSION=$env:UWP_VERSION.${{matrix.ChannelName}}.${{ matrix.targetplatform }}
-        echo "Setting release version to $VERSION"
-        echo "::set-env name=RELEASE_VERSION::$VERSION"
-
-    # Create the release:  https://github.com/actions/create-release
-    - name: Create release
+    
+    # Create the release: https://github.com/actions/create-release
+    - name: Create GitHub Release
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: $env:RELEASE_VERSION
-        release_name: $env:RELEASE_VERSION
+        tag_name: v.${{ env.UWP_VERSION }}
+        release_name: Media File Manager v.${{ env.UWP_VERSION }}
         draft: false
         prerelease: false
-        body: This is the ${{matrix.ChannelName}} package for ${{ matrix.targetplatform }}
+        body: This release contains both SideLoad AppInstaller and StoreUpload app packages for v.${{ env.UWP_VERSION }} of Media File Manager.
 
-    # Upload release asset:   https://github.com/actions/upload-release-asset
-    - name: Update release asset
-      id: upload-release-asset
+    # ZIP up the sideload packages using Powershell
+    - name: Create SideLoadPackages.zip
+      run: Compress-Archive -Path src\MediaFileManager\PackageProject\AppPackages\Sideload\* -DestinationPath src\MediaFileManager\PackageProject\AppPackages\SideLoadPackages.zip
+      
+    # Upload release asset: https://github.com/actions/upload-release-asset
+    - name: Uploading SideLoad Release asset
+      id: upload-sideload-asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}  # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: src\MediaFileManager\PackageProject\AppPackages\AppPackages.zip
-        asset_name: AppPackages.zip
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: src\MediaFileManager\PackageProject\AppPackages\SideLoadPackages.zip
+        asset_name: SideLoadPackages.zip
+        asset_content_type: application/zip
+
+     # ZIP up the store upload packages using Powershell
+    - name: Create StoreUploadPackages.zip
+      run: Compress-Archive -Path src\MediaFileManager\PackageProject\AppPackages\StoreUpload\* -DestinationPath src\MediaFileManager\PackageProject\AppPackages\StoreUploadPackages.zip
+        
+    # Upload release asset: https://github.com/actions/upload-release-asset
+    - name: Uploading StoreUpload Release asset
+      id: upload-storeupload-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: src\MediaFileManager\PackageProject\AppPackages\StoreUploadPackages.zip
+        asset_name: StoreUploadPackages.zip
         asset_content_type: application/zip
