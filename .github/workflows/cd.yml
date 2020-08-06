@@ -42,7 +42,7 @@ jobs:
             MsixPublisherDisplayName: Lancelot Software
             MsixPackageDisplayName: Media File Manager
             ReleaseName: Store_x86
-            ReleaseRunId: $env.RunID
+            ReleaseRunId: $env.GITHUB_RUN_NUMBER
 
     runs-on: windows-latest
 
@@ -165,8 +165,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         RunID:  $env.GITHUB_RUN_ID
       with:
-        tag_name: ${{ matrix.ReleaseName }}.${{ matrix.ReleaseName }}
-        release_name: ${{ matrix.ReleaseName }}.${{ matrix.ReleaseName }}
+        tag_name: ${{ matrix.ReleaseName }}.${{ matrix.ReleaseRunId }}
+        release_name: ${{ matrix.ReleaseName }}.${{ matrix.ReleaseRunId }}
         draft: false
         prerelease: false
         body: This release contains packages for ${{ matrix.ReleaseName }}
