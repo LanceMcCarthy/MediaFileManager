@@ -22,13 +22,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        fetch-depth: 0 # avoids shallow clone if using actions/checkout@v2 (required for nbgv)
-
-    # Use Nerdbank.GitVersioning to set version variables: https://github.com/AArnott/nbgv
-    - name: Use Nerdbank.GitVersioning to set version variables
-      uses: aarnott/nbgv@v0.3
-      with:
-        setAllVars: true
+        fetch-depth: 0
     
     # Install the .NET Core workload
     - name: Install .NET Core 3.1
@@ -40,11 +34,20 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.0
 
+    # Create my own version number with a specific format using date. ex: 2020.805.1.0
+    - uses: Amadevus/pwsh-script@v1
+      id: version-creator
+      with:
+        script: |
+          $buildDay = Get-Date -Format "yyyy.Mdd"
+          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+          Set-ActionVariable UWP_VERSION $ver
+
     # Update the UWP package version
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$env:NBGV_SimpleVersion.0"
+        $manifest.Package.Identity.Version = "$env:UWP_VERSION"
         $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
 
     - name: NuGet Restore
