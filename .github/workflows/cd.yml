@@ -30,7 +30,6 @@ jobs:
             MsixPublisherDisplayName: Lancelot Software
             MsixPackageDisplayName: Media File Manager (Sideload)
             ReleaseName: SideLoad_x86
-            ReleaseRunId: $env.RunID
 
           # includes the following variables for the matrix leg matching Prod_Store
           - channel: Store
@@ -42,7 +41,6 @@ jobs:
             MsixPublisherDisplayName: Lancelot Software
             MsixPackageDisplayName: Media File Manager
             ReleaseName: Store_x86
-            ReleaseRunId: $env.GITHUB_RUN_NUMBER
 
     runs-on: windows-latest
 
@@ -148,28 +146,27 @@ jobs:
       run: Compress-Archive -Path src\MediaFileManager\PackageProject\AppPackages\* -DestinationPath src\MediaFileManager\PackageProject\AppPackages\AppPackages.zip
     
     # Prepare tag and release names
-    #- uses: Amadevus/pwsh-script@v1
-    #  id: preprelease
-    #  with:
-    #    script: |
-    #      $dateprefix = Get-Date -Format "yyyy.Mdd"
-    #      $uwpManifestVersion = $dateprefix + "." + $env:GITHUB_RUN_NUMBER + ".0"
-    #      $releasename = $uwpManifestVersion.${{ matrix.ChannelName }}.${{ matrix.targetplatform }}
-    #      Set-ActionVariable RELEASE_VERSION $releasename
-          
+    - uses: Amadevus/pwsh-script@v1
+      id: preprelease
+      with:
+        script: |
+          $dateprefix = Get-Date -Format "yyyy.Mdd"
+          $ver = $dateprefix + "." + $env:GITHUB_RUN_NUMBER + ".0"
+          Set-ActionVariable RELEASE_VERSION $ver
+        
     # Create the release:  https://github.com/actions/create-release
     - name: Create release
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        RunID:  $env.GITHUB_RUN_ID
+        TAG_RELEASE_NAME: $env:RELEASE_VERSION
       with:
-        tag_name: ${{ matrix.ReleaseName }}.${{ matrix.ReleaseRunId }}
-        release_name: ${{ matrix.ReleaseName }}.${{ matrix.ReleaseRunId }}
+        tag_name: ${{ env.TAG_RELEASE_NAME }}.${{ matrix.ChannelName }}.${{ matrix.targetplatform }}
+        release_name: ${{ env.TAG_RELEASE_NAME }}.${{ matrix.ChannelName }}.${{ matrix.targetplatform }}
         draft: false
         prerelease: false
-        body: This release contains packages for ${{ matrix.ReleaseName }}
+        body: This release contains packages for ${{ matrix.ChannelName }} built for ${{ matrix.targetplatform }}
 
     # Upload release asset:   https://github.com/actions/upload-release-asset
     - name: Update release asset
