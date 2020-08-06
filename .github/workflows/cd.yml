@@ -7,8 +7,6 @@ on:
   push:
     branches:
       - releases
-    tags:
-      - '*'
 
 jobs:
   build:
@@ -18,29 +16,31 @@ jobs:
     # development, production for sideload applications and production for the Microsoft store.
     # For more information, see https://help.github.com/en/actions/configuring-and-managing-workflows/configuring-a-workflow#configuring-a-build-matrix
       matrix:
-        channel: [Prod_Sideload, Prod_Store]
+        channel: [Sideload, Store]
         targetPlatform: [x86]
         include:
 
           # includes the following variables for the matrix leg matching Prod_Sideload
-          - channel: Prod_Sideload
+          - channel: Sideload
             Configuration: Release
-            ChannelName: Prod_Sideload
+            ChannelName: Sideload
             DistributionUrl: https://lancemccarthy.github.io/MediaFileManager/
             MsixPackageId: 61469LanceLotSoftware.MediaFileManager
             MsixPublisherId: CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02
             MsixPublisherDisplayName: Lancelot Software
-            MsixPackageDisplayName: Media File Manager (ProdSideload)
+            MsixPackageDisplayName: Media File Manager (Sideload)
+            ReleaseName: SideLoad_x86
 
           # includes the following variables for the matrix leg matching Prod_Store
-          - channel: Prod_Store
+          - channel: Store
             Configuration: Release
-            ChannelName: Prod_Store
+            ChannelName: Store
             DistributionUrl: ''
             MsixPackageId: 61469LanceLotSoftware.MediaFileManager
             MsixPublisherId: CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02
             MsixPublisherDisplayName: Lancelot Software
             MsixPackageDisplayName: Media File Manager
+            ReleaseName: Store_x86
 
     runs-on: windows-latest
 
@@ -60,14 +60,16 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
+        fetch-depth: 0
 
-    # Use Nerdbank.GitVersioning to set version variables: https://github.com/AArnott/nbgv
-    # Migrated to dotnet/nbgv https://github.com/dotnet/nbgv
-    - name: Nerdbank.GitVersioning
-      uses: dotnet/nbgv@v0.3.1
+    # Create my own version number with a specific format using date. ex: 2020.805.1.0
+    - uses: Amadevus/pwsh-script@v1
+      id: version-creator
       with:
-        setAllVars: true
+        script: |
+          $buildDay = Get-Date -Format "yyyy.Mdd"
+          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+          Set-ActionVariable UWP_VERSION $ver
 
     # Install the .NET Core workload
     - name: Install .NET Core
@@ -84,7 +86,7 @@ jobs:
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$env:NBGV_SimpleVersion.0"
+        $manifest.Package.Identity.Version = "$env:UWP_VERSION"
         $manifest.Package.Identity.Name = "${{ matrix.MsixPackageId }}"
         $manifest.Package.Identity.Publisher = "${{ matrix.MsixPublisherId }}"
         $manifest.Package.Properties.DisplayName = "${{ matrix.MsixPackageDisplayName }}"
@@ -111,10 +113,10 @@ jobs:
         Configuration: ${{ matrix.Configuration }}
         RuntimeIdentifier: win-${{ matrix.targetplatform }}
 
-    # Build the Windows Application Packaging project for Prod_Sideload
-    - name: Build the Windows Application Packaging Project (wapproj) for ${{ matrix.ChannelName }}
+    # Build the Windows Application Packaging project for Sideload
+    - name: Build wapproj for ${{ matrix.ChannelName }}
       run: msbuild $env:Solution_Path /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
-      if: matrix.ChannelName == 'Prod_Sideload'
+      if: matrix.ChannelName == 'Sideload'
       env:
         AppxBundle: Always
         GenerateAppInstallerFile: True
@@ -123,10 +125,10 @@ jobs:
         Configuration: ${{ matrix.Configuration }}
         TargetPlatform: ${{ matrix.targetplatform }}
         
-    # Build the Windows Application Packaging project for Prod_Store
-    - name: Build the Windows Application Packaging Project (wapproj) for ${{ matrix.ChannelName }}
+    # Build the Windows Application Packaging project for Store
+    - name: Build wapproj for ${{ matrix.ChannelName }}
       run: msbuild $env:Solution_Path /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
-      if: matrix.ChannelName == 'Prod_Store'
+      if: matrix.ChannelName == 'Store'
       env:
         AppxBundle: Always
         AppxPackageSigningEnabled: True
@@ -142,18 +144,19 @@ jobs:
     # Archive the package
     - name: Create archive
       run: Compress-Archive -Path src\MediaFileManager\PackageProject\AppPackages\* -DestinationPath src\MediaFileManager\PackageProject\AppPackages\AppPackages.zip
-
+        
     # Create the release:  https://github.com/actions/create-release
     - name: Create release
       id: create_release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref}}.${{matrix.ChannelName}}.${{ matrix.targetplatform }}
-        release_name:  ${{ github.ref }}.${{ matrix.ChannelName }}.${{ matrix.targetplatform }}
+        tag_name: ${{ env.UWP_VERSION }}.${{ matrix.ChannelName }}.${{ matrix.targetplatform }}
+        release_name: ${{ env.UWP_VERSION }}.${{ matrix.ChannelName }}.${{ matrix.targetplatform }}
         draft: false
         prerelease: false
+        body: This release contains packages for ${{ matrix.ChannelName }} built for ${{ matrix.targetplatform }}
 
     # Upload release asset:   https://github.com/actions/upload-release-asset
     - name: Update release asset
