@@ -20,14 +20,14 @@ jobs:
       Wpf_Project_Path: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       Wap_Project_Directory: src\MediaFileManager\PackageProject
       Wap_Project_Name: PackageProject.wapproj
+      SideLoadPackagesPath: src\MediaFileManager\PackageProject\SideLoadPackages
+      SideLoadArchiveName: SideLoadPackages.zip
+      StoreUploadPackagesPath: src\MediaFileManager\PackageProject\StoreUploadPackages
+      StoreUploadArchiveName: StoreUploadPackages.zip
       TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
       TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
       CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
       CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
-      StoreUploadPackagesPath: src\MediaFileManager\PackageProject\StoreUploadPackages
-      StoreUploadArchiveName: StoreUploadPackages.zip
-      SideLoadPackagesPath: src\MediaFileManager\PackageProject\SideLoadPackages
-      SideLoadArchiveName: SideLoadPackages.zip
 
     steps:
     - name: Checkout
@@ -146,6 +146,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ env:StoreUploadPackagesPath\}}${{ env:StoreUploadArchiveName }}
+        asset_path: ${{ env:StoreUploadPackagesPath }}\${{ env:StoreUploadArchiveName }}
         asset_name: ${{ env:StoreUploadArchiveName }}
         asset_content_type: application/zip
