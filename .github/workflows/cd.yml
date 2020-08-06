@@ -144,15 +144,6 @@ jobs:
     # Archive the package
     - name: Create archive
       run: Compress-Archive -Path src\MediaFileManager\PackageProject\AppPackages\* -DestinationPath src\MediaFileManager\PackageProject\AppPackages\AppPackages.zip
-    
-    # Prepare tag and release names
-    - uses: Amadevus/pwsh-script@v1
-      id: preprelease
-      with:
-        script: |
-          $dateprefix = Get-Date -Format "yyyy.Mdd"
-          $ver = $dateprefix + "." + $env:GITHUB_RUN_NUMBER + ".0"
-          Set-ActionVariable RELEASE_VERSION $ver
         
     # Create the release:  https://github.com/actions/create-release
     - name: Create release
@@ -160,10 +151,9 @@ jobs:
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        TAG_RELEASE_NAME: $env:RELEASE_VERSION
       with:
-        tag_name: ${{ env.TAG_RELEASE_NAME }}.${{ matrix.ChannelName }}.${{ matrix.targetplatform }}
-        release_name: ${{ env.TAG_RELEASE_NAME }}.${{ matrix.ChannelName }}.${{ matrix.targetplatform }}
+        tag_name: ${{ env.UWP_VERSION }}.${{ matrix.ChannelName }}.${{ matrix.targetplatform }}
+        release_name: ${{ env.UWP_VERSION }}.${{ matrix.ChannelName }}.${{ matrix.targetplatform }}
         draft: false
         prerelease: false
         body: This release contains packages for ${{ matrix.ChannelName }} built for ${{ matrix.targetplatform }}
