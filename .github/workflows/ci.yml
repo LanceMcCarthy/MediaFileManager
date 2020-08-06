@@ -1,3 +1,4 @@
+# If you are looking for guidance for your builds, see https://github.com/microsoft/github-actions-for-desktop-apps
 name:  WPF CI
 
 on:
@@ -21,7 +22,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        fetch-depth: 0 # avoids shallow clone if using actions/checkout@v2 (required for nbgv)
+        fetch-depth: 0
     
     # Install the .NET Core workload
     - name: Install .NET Core 3.1
@@ -33,6 +34,7 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.0
 
+    # Create my own version number with a specific format using date. ex: 2020.805.1.0
     - uses: Amadevus/pwsh-script@v1
       id: version-creator
       with:
