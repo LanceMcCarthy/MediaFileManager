@@ -162,11 +162,11 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ matrix.ChannelName }}.${{ matrix.targetplatform }}.$env:GITHUB_RUN_ID
-        release_name: ${{ matrix.ChannelName }}.${{ matrix.targetplatform }}.$env:GITHUB_RUN_ID
+        tag_name: ${{ matrix.ChannelName }}.${{ matrix.targetplatform }}.${{ $env:GITHUB_RUN_ID }}
+        release_name: ${{ matrix.ChannelName }}.${{ matrix.targetplatform }}.${{ $env:GITHUB_RUN_ID }}
         draft: false
         prerelease: false
-        body: This is v. $env:UWP_VERSION the ${{matrix.ChannelName}} package for ${{ matrix.targetplatform }}
+        body: This is v. ${{ $env:UWP_VERSION }} the ${{ matrix.ChannelName }} package for ${{ matrix.targetplatform }}
 
     # Upload release asset:   https://github.com/actions/upload-release-asset
     - name: Update release asset
