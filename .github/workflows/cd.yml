@@ -1,6 +1,4 @@
-# Copyright (c) Microsoft Corporation.
-# Licensed under the MIT license.
-
+# If you are looking for guidance for your builds, see https://github.com/microsoft/github-actions-for-desktop-apps
 name: WPF CD
 
 on:
@@ -11,16 +9,12 @@ on:
 jobs:
   build:
     strategy:
-
-    # The following build matrix allows builds across multiple configurations (Debug and Release) and production environments such as
-    # development, production for sideload applications and production for the Microsoft store.
-    # For more information, see https://help.github.com/en/actions/configuring-and-managing-workflows/configuring-a-workflow#configuring-a-build-matrix
       matrix:
         channel: [Sideload, Store]
-        targetPlatform: [x86]
+        targetPlatform: [x86, x64, ARM, ARM64]
         include:
 
-          # includes the following variables for the matrix leg matching Prod_Sideload
+          # Sideload matrix leg variables (sideload.x86, sidload.x64, etc)
           - channel: Sideload
             Configuration: Release
             ChannelName: Sideload
@@ -29,9 +23,8 @@ jobs:
             MsixPublisherId: CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02
             MsixPublisherDisplayName: Lancelot Software
             MsixPackageDisplayName: Media File Manager (Sideload)
-            ReleaseName: SideLoad_x86
 
-          # includes the following variables for the matrix leg matching Prod_Store
+          # Store matrix leg variables (store.x86, store.x64, etc)
           - channel: Store
             Configuration: Release
             ChannelName: Store
@@ -40,7 +33,6 @@ jobs:
             MsixPublisherId: CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02
             MsixPublisherDisplayName: Lancelot Software
             MsixPackageDisplayName: Media File Manager
-            ReleaseName: Store_x86
 
     runs-on: windows-latest
 
@@ -114,7 +106,7 @@ jobs:
         RuntimeIdentifier: win-${{ matrix.targetplatform }}
 
     # Build the Windows Application Packaging project for Sideload
-    - name: Build wapproj for ${{ matrix.ChannelName }}
+    - name: Build wapproj for Sideloading
       run: msbuild $env:Solution_Path /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
       if: matrix.ChannelName == 'Sideload'
       env:
@@ -126,7 +118,7 @@ jobs:
         TargetPlatform: ${{ matrix.targetplatform }}
         
     # Build the Windows Application Packaging project for Store
-    - name: Build wapproj for ${{ matrix.ChannelName }}
+    - name: Build wapproj for Microsoft Store
       run: msbuild $env:Solution_Path /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
       if: matrix.ChannelName == 'Store'
       env:
