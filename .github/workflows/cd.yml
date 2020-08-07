@@ -94,7 +94,7 @@ jobs:
       env:
         AppxBundle: Always
         GenerateAppInstallerFile: True
-        AppInstallerUri: https://lancemccarthy.github.io/MediaFileManager/
+        AppInstallerUri: '.\'
         BuildMode: SideloadOnly
       
     # Build the Windows Application Packaging project for Store
