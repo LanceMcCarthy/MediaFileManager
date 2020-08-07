@@ -90,12 +90,12 @@ jobs:
 
     # Build the Windows Application Packaging project for Sideload
     - name: Build wapproj for Sideloading
-      run: msbuild $env:Solution_Path /p:GenerateAppInstallerFile=True /p:HoursBetweenUpdateChecks=6 /p:AppInstallerUri=$env:AppInstallerUri /p:AppxPackageDir=D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\ /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
+      run: msbuild $env:Solution_Path /p:GenerateAppInstallerFile=True /p:AppInstallerUri=$env:AppInstUri /p:HoursBetweenUpdateChecks=6 /p:AppxPackageDir=D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\ /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
       env:
         AppxBundle: Always
         GenerateAppInstallerFile: True
-        AppInstallerUri: '.\'
         BuildMode: SideloadOnly
+        AppInstUri: https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/PackageProject.appinstaller
       
     # Build the Windows Application Packaging project for Store
     - name: Build wapproj for Microsoft Store
@@ -107,6 +107,18 @@ jobs:
         GenerateAppInstallerFile: False
 
 
+    # *****************  UPLOAD TO AZURE BLOB (for SideLoad package's AppInstaller) ************************ #
+
+    # Upload SideLoad AppInstaller and Package files (for automatic AppInstaller support)
+    - name: Uploading appInstaller to Azure Blob
+      uses: bacongobbler/azure-blob-storage-upload@v1.1.0
+      with:
+        connection_string: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
+        container_name: general-app-files
+        source_dir: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\
+        extra_args: --desintationPath=/Installers/MediaFileManager/
+
+
     # ********************* ARCHIVE BUILD ARTIFACTS ************************ #
 
     # ZIP up the sideload packages using Powershell
@@ -116,6 +128,9 @@ jobs:
     # ZIP up the store upload packages using Powershell
     - name: Create StoreUploadPackages.zip
       run: Compress-Archive D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\* -DestinationPath D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\StoreUploadPackages.zip
+
+
+    # ****************** CREATE RELEASE and UPLOAD ASSETS ******************** #
 
     # Create the release: https://github.com/actions/create-release
     - name: Create GitHub Release
@@ -129,9 +144,6 @@ jobs:
         draft: false
         prerelease: false
         body_path: .github\other\releasebody.md
-
-
-    # ****************** CREATE RELEASE and UPLOAD ASSETS ******************** #
 
     # Upload release asset: https://github.com/actions/upload-release-asset
     - name: Uploading SideLoad Release asset
