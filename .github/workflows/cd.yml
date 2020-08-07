@@ -90,7 +90,7 @@ jobs:
 
     # Build the Windows Application Packaging project for Sideload
     - name: Build wapproj for Sideloading
-      run: msbuild $env:Solution_Path /p:AppxPackageDir=D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\ /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
+      run: msbuild $env:Solution_Path /p:GenerateAppInstallerFile=True /p:HoursBetweenUpdateChecks=6 /p:AppInstallerUri=$env:AppInstallerUri /p:AppxPackageDir=D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\ /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
       env:
         AppxBundle: Always
         GenerateAppInstallerFile: True
@@ -128,7 +128,7 @@ jobs:
         release_name: Media File Manager v.${{ env.UWP_VERSION }}
         draft: false
         prerelease: false
-        body: This release contains both SideLoad AppInstaller and StoreUpload app packages for v.${{ env.UWP_VERSION }} of Media File Manager.
+        body_path: .github\other\releasebody.md
 
 
     # ****************** CREATE RELEASE and UPLOAD ASSETS ******************** #
