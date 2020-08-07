@@ -14,16 +14,16 @@ jobs:
       Configuration: Release
       RuntimeIdentifier: win-x86 #RIDs reference https://github.com/dotnet/runtime/blob/master/src/libraries/pkg/Microsoft.NETCore.Platforms/readme.md
       UwpBundlePlatform: x86 #package bundles, eg. x86|x64|arm|arm64
-      SigningCertificate: LancelotSoftwareLLC.pfx
-      NuGetConfig_Path: src\nuget.config
       Solution_Path: src\MediaFileManager\MediaFileManager.sln
       Wpf_Project_Path: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       Wap_Project_Directory: src\MediaFileManager\PackageProject
       Wap_Project_Name: PackageProject.wapproj
-      TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-      TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
-      CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
-      CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
+      NuGetConfig_Path: src\nuget.config
+      TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }} # this env variable is used in the nuget.config
+      TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }} # this env variable is used in the nuget.config
+      SigningCertificate: LancelotSoftwareLLC.pfx # For UWP package signing
+      CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}  # For UWP package signing
+      CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }} # For UWP package signing
 
     steps:
     - name: Checkout
@@ -31,15 +31,7 @@ jobs:
       with:
         fetch-depth: 0
 
-    # Create my own version number with a specific format using date. ex: 2020.805.1.0
-    - name: Generate version number
-      uses: Amadevus/pwsh-script@v1
-      id: version-creator
-      with:
-        script: |
-          $buildDay = Get-Date -Format "yyyy.Mdd"
-          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
-          Set-ActionVariable UWP_VERSION $ver
+    # ****************** TOOL INSTALL and DEPENDENCY RESTORE ********************* #
 
     # Install the .NET Core workload
     - name: Install .NET Core
@@ -51,6 +43,36 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.0
 
+    # Restore NuGet packages using the nuget config (package sources authenticate using environment variable and nuget.config)
+    - name: NuGet Restore
+      run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path --runtime $env:RuntimeIdentifier
+   
+    # Restore the application
+    - name:  Restore the Wpf application to populate the obj folder
+      run: msbuild $env:Solution_Path /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RuntimeIdentifier
+
+
+    # ********************* BUILD PREPARATION ************************ #
+
+    # Create my own version number with a specific format using date. 
+    # ex: 2020.805.1.0
+    - name: Generate version number
+      uses: Amadevus/pwsh-script@v1
+      id: version-creator
+      with:
+        script: |
+          $buildDay = Get-Date -Format "yyyy.Mdd"
+          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+          Set-ActionVariable UWP_VERSION $ver
+
+    # Decode the Base64 encoded Pfx
+    - name: Decode the Pfx
+      run: |
+        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
+        $currentDirectory = Get-Location
+        $certificatePath = Join-Path -Path $currentDirectory -ChildPath D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject -AdditionalChildPath $env:SigningCertificate
+        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
+    
     # Update the appxmanifest with the new verison number, app identity and publisher details.
     - name: Update manifest version
       run: |
@@ -62,54 +84,38 @@ jobs:
         $manifest.Package.Properties.PublisherDisplayName = "Lancelot Software"
         $manifest.Package.Applications.Application.VisualElements.DisplayName = "Media File Manager"
         $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
-        
-    # Decode the Base64 encoded Pfx
-    - name: Decode the Pfx
-      run: |
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
-        $currentDirectory = Get-Location
-        $certificatePath = Join-Path -Path $currentDirectory -ChildPath src\MediaFileManager\PackageProject -AdditionalChildPath $env:SigningCertificate
-        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
+    
 
-    # Restore NuGet packages using the nuget config (private server uses credentials from secrets)
-    - name: NuGet Restore
-      run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path --runtime $env:RuntimeIdentifier
-   
-   # Restore the application
-    - name:  Restore the Wpf application to populate the obj folder
-      run: msbuild $env:Solution_Path /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RuntimeIdentifier
+    # ************************* UWP WAP PACKAGE BUILDS ************************* #
 
     # Build the Windows Application Packaging project for Sideload
     - name: Build wapproj for Sideloading
-      run: msbuild $env:Solution_Path /p:AppxPackageDir=$env:PackageDir /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
+      run: msbuild $env:Solution_Path /p:AppxPackageDir=D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\ /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
       env:
         AppxBundle: Always
         GenerateAppInstallerFile: True
         AppInstallerUri: https://lancemccarthy.github.io/MediaFileManager/
         BuildMode: SideloadOnly
-        PackageDir: \SideLoadPackages\
       
     # Build the Windows Application Packaging project for Store
     - name: Build wapproj for Microsoft Store
-      run: msbuild $env:Solution_Path /p:AppxPackageDir=$env:PackageDir /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
+      run: msbuild $env:Solution_Path /p:AppxPackageDir=D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\ /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
       env:
         AppxBundle: Always
         AppxPackageSigningEnabled: True
         BuildMode: StoreUpload
         GenerateAppInstallerFile: False
-        PackageDir: \StoreUploadPackages\
 
-    # Remove the .pfx now that we're done signing
-    - name: Remove the .pfx
-      run: Remove-Item -path $env:Wap_Project_Directory\$env:SigningCertificate
-    
+
+    # ********************* ARCHIVE BUILD ARTIFACTS ************************ #
+
     # ZIP up the sideload packages using Powershell
     - name: Create SideLoadPackages.zip
-      run: Compress-Archive -Path src\MediaFileManager\PackageProject\SideLoadPackages\* -DestinationPath src\MediaFileManager\PackageProject\SideLoadPackages\SideLoadPackages.zip
+      run: Compress-Archive -Path D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\* -DestinationPath D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\SideLoadPackages.zip
 
     # ZIP up the store upload packages using Powershell
     - name: Create StoreUploadPackages.zip
-      run: Compress-Archive src\MediaFileManager\PackageProject\StoreUploadPackages\* -DestinationPath src\MediaFileManager\PackageProject\StoreUploadPackages\StoreUploadPackages.zip
+      run: Compress-Archive D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\* -DestinationPath D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\StoreUploadPackages.zip
 
     # Create the release: https://github.com/actions/create-release
     - name: Create GitHub Release
@@ -124,6 +130,9 @@ jobs:
         prerelease: false
         body: This release contains both SideLoad AppInstaller and StoreUpload app packages for v.${{ env.UWP_VERSION }} of Media File Manager.
 
+
+    # ****************** CREATE RELEASE and UPLOAD ASSETS ******************** #
+
     # Upload release asset: https://github.com/actions/upload-release-asset
     - name: Uploading SideLoad Release asset
       id: upload-sideload-asset
@@ -132,7 +141,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: src\MediaFileManager\PackageProject\SideLoadPackages\SideLoadPackages.zip
+        asset_path: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\SideLoadPackages.zip
         asset_name: SideLoadPackages.zip
         asset_content_type: application/zip
 
@@ -144,6 +153,13 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: src\MediaFileManager\PackageProject\StoreUploadPackages\StoreUploadPackages.zip
+        asset_path: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\StoreUploadPackages.zip
         asset_name: StoreUploadPackages.zip
         asset_content_type: application/zip
+
+
+    # ******************************** CLEAN-UP ******************************* #
+
+    # Remove the .pfx now that we're done signing
+    - name: Remove the .pfx
+      run: Remove-Item -path $env:Wap_Project_Directory\$env:SigningCertificate
