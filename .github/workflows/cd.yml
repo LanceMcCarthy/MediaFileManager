@@ -87,7 +87,7 @@ jobs:
         GenerateAppInstallerFile: True
         AppInstallerUri: https://lancemccarthy.github.io/MediaFileManager/
         BuildMode: SideloadOnly
-        PackageDir: src\MediaFileManager\PackageProject\SideLoadPackages\
+        PackageDir: \SideLoadPackages\
       
     # Build the Windows Application Packaging project for Store
     - name: Build wapproj for Microsoft Store
@@ -97,7 +97,7 @@ jobs:
         AppxPackageSigningEnabled: True
         BuildMode: StoreUpload
         GenerateAppInstallerFile: False
-        PackageDir: src\MediaFileManager\PackageProject\StoreUploadPackages\
+        PackageDir: \StoreUploadPackages\
 
     # Remove the .pfx now that we're done signing
     - name: Remove the .pfx
