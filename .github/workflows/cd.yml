@@ -110,13 +110,13 @@ jobs:
     # *****************  UPLOAD TO AZURE BLOB (for SideLoad package's AppInstaller) ************************ #
 
     # Upload SideLoad AppInstaller and Package files (for automatic AppInstaller support)
-    - name: Uploading appInstaller to Azure Blob
-      uses: runlyio/azure-versioned-storage@v2
-      with:
-        sourceDir: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\
-        version: /Installers/MediaFileManager/
-        container: general-app-files
-        connectionString: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
+    #- name: Uploading appInstaller to Azure Blob
+    #  uses: runlyio/azure-versioned-storage@v2
+    #  with:
+    #    sourceDir: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\
+    #    version: /Installers/MediaFileManager/
+    #    container: general-app-files
+    #    connectionString: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
 
 
     # ********************* ARCHIVE BUILD ARTIFACTS ************************ #
