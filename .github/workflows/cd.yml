@@ -116,7 +116,7 @@ jobs:
         connection_string: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
         container_name: general-app-files
         source_folder: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\
-        destination_folder: /Installers/MediaFileManager
+        destination_folder: Installers/MediaFileManager
         clean_destination_folder: true
 
     # ********************* ARCHIVE BUILD ARTIFACTS ************************ #
