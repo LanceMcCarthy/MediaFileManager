@@ -118,6 +118,14 @@ jobs:
     #    container: general-app-files
     #    connectionString: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
 
+    - name: Uploading appInstaller to Azure Blob
+      uses: LanceMcCarthy/Action-AzureBlobUpload
+      with:
+        connection_string: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
+        container_name: general-app-files
+        source_folder: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\
+        destination_folder: /Installers/MediaFileManager
+        clean_destination_folder: true
 
     # ********************* ARCHIVE BUILD ARTIFACTS ************************ #
 
