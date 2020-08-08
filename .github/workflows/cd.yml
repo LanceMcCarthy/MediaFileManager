@@ -119,7 +119,7 @@ jobs:
     #    connectionString: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
 
     - name: Uploading appInstaller to Azure Blob
-      uses: LanceMcCarthy/Action-AzureBlobUpload
+      uses: LanceMcCarthy/Action-AzureBlobUpload@v1
       with:
         connection_string: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
         container_name: general-app-files
