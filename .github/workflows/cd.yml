@@ -109,17 +109,9 @@ jobs:
 
     # *****************  UPLOAD TO AZURE BLOB (for SideLoad package's AppInstaller) ************************ #
 
-    # Upload SideLoad AppInstaller and Package files (for automatic AppInstaller support)
-    #- name: Uploading appInstaller to Azure Blob
-    #  uses: runlyio/azure-versioned-storage@v2
-    #  with:
-    #    sourceDir: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\
-    #    version: /Installers/MediaFileManager/
-    #    container: general-app-files
-    #    connectionString: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
-
+    # This is my custom GitHub Action, available in the GitHub Marketplace for anyone to use :)
     - name: Uploading appInstaller to Azure Blob
-      uses: LanceMcCarthy/Action-AzureBlobUpload@v1
+      uses: LanceMcCarthy/Action-AzureBlobUpload@v1.1
       with:
         connection_string: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
         container_name: general-app-files
