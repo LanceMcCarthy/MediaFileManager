@@ -119,6 +119,15 @@ jobs:
         destination_folder: Installers/MediaFileManager
         clean_destination_folder: true
 
+    - name: Generate version number
+      uses: Amadevus/pwsh-script@v1
+      id: version-creator
+      with:
+        script: |
+          $buildDay = Get-Date -Format "yyyy.Mdd"
+          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+          Set-ActionVariable UWP_VERSION $ver
+
     # ********************* ARCHIVE BUILD ARTIFACTS ************************ #
 
     # ZIP up the sideload packages using Powershell
@@ -168,6 +177,37 @@ jobs:
         asset_path: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\StoreUploadPackages.zip
         asset_name: StoreUploadPackages.zip
         asset_content_type: application/zip
+
+    # *****************  UPLOAD TO MICROSOFT STORE ************************ #
+
+    - name: Upload the Store build to Microsoft Partner Center (aka DevCenter)
+      uses: Amadevus/pwsh-script@v1
+      id: version-creator
+      with:
+        script: |
+          $appxfolder = D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\
+          $appxuploadfilename = "PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload";
+          $uploadPackage = $appxfolder + $appxuploadfilename
+          $storeId = 9PD3JFK7W5MB
+          $cred = New-Object System.Management.Automation.PSCredential ${{ secrets.PARTNER_CENTER_CLIENT_ID }}, ${{ secrets.PARTNER_CENTER_CLIENT_SECRET }}
+          $installPath = (Join-Path -Path ([System.Environment]::GetFolderPath('MyDocuments')) -ChildPath 'WindowsPowerShell\Modules\StoreBroker')
+          $submissionConfigFile = (Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json')
+
+          Set-ExecutionPolicy RemoteSigned -Force
+          
+          New-Item -Type Directory -Force -Path $installPath
+
+          git clone https://github.com/Microsoft/StoreBroker.git $installPath
+
+          Push-Location -Path $installPath
+          git pull
+          Pop-Location
+
+          Set-StoreBrokerAuthentication -TenantId ${{ secrets.PARTNER_CENTER_TENANT_ID }} -Credential $cred
+          
+          New-StoreBrokerConfigFile -Path $submissionConfigFile -AppId $storeId
+          
+          Update-ApplicationSubmission -ReplacePackages -AppId $storeId -SubmissionDataPath $submissionConfigFile -PackagePath $uploadPackage -AutoCommit -Force
 
 
     # ******************************** CLEAN-UP ******************************* #
