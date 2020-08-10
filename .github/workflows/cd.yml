@@ -177,13 +177,10 @@ jobs:
       id: store-upload
       with:
         script: |
-          $appxfolder = D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\
-          $appxuploadfilename = "PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload";
-          $uploadPackage = $appxfolder + $appxuploadfilename
-          $storeId = 9PD3JFK7W5MB
+          $uploadPackage = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload";
           $cred = New-Object System.Management.Automation.PSCredential ${{ secrets.PARTNER_CENTER_CLIENT_ID }}, ${{ secrets.PARTNER_CENTER_CLIENT_SECRET }}
-          $installPath = (Join-Path -Path ([System.Environment]::GetFolderPath('MyDocuments')) -ChildPath 'WindowsPowerShell\Modules\StoreBroker')
-          $submissionConfigFile = (Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json')
+          $installPath = Join-Path -Path ([System.Environment]::GetFolderPath('MyDocuments')) -ChildPath 'WindowsPowerShell\Modules\StoreBroker'
+          $submissionConfigFile = Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json'
 
           Set-ExecutionPolicy RemoteSigned -Force
           
@@ -197,9 +194,9 @@ jobs:
 
           Set-StoreBrokerAuthentication -TenantId ${{ secrets.PARTNER_CENTER_TENANT_ID }} -Credential $cred
           
-          New-StoreBrokerConfigFile -Path $submissionConfigFile -AppId $storeId
+          New-StoreBrokerConfigFile -Path $submissionConfigFile -AppId "9PD3JFK7W5MB"
           
-          Update-ApplicationSubmission -ReplacePackages -AppId $storeId -SubmissionDataPath $submissionConfigFile -PackagePath $uploadPackage -AutoCommit -Force
+          Update-ApplicationSubmission -ReplacePackages -AppId "9PD3JFK7W5MB" -SubmissionDataPath $submissionConfigFile -PackagePath $uploadPackage -AutoCommit -Force
 
 
     # ******************************** CLEAN-UP ******************************* #
