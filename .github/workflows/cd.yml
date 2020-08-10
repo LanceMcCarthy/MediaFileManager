@@ -119,14 +119,6 @@ jobs:
         destination_folder: Installers/MediaFileManager
         clean_destination_folder: true
 
-    - name: Generate version number
-      uses: Amadevus/pwsh-script@v1
-      id: version-creator
-      with:
-        script: |
-          $buildDay = Get-Date -Format "yyyy.Mdd"
-          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
-          Set-ActionVariable UWP_VERSION $ver
 
     # ********************* ARCHIVE BUILD ARTIFACTS ************************ #
 
