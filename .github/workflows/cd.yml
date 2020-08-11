@@ -131,7 +131,9 @@ jobs:
       with:
         script: |
           $uploadPackage = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
-          $cred = New-Object System.Management.Automation.PSCredential ($env:PartnerCenterClientId, $env:PartnerCenterClientSecret)
+          $username = $env:PartnerCenterClientId
+          $password = ConvertTo-SecureString $env:PartnerCenterClientSecret -AsPlainText -Force
+          $cred = New-Object System.Management.Automation.PSCredential ($username, $password)
           $installPath = "D:\a\MediaFileManager\MediaFileManager\MsStoreBroker"
           $modulePath = "D:\a\MediaFileManager\MediaFileManager\MsStoreBroker\StoreBroker"
           $submissionConfigFile = "D:\a\MediaFileManager\MediaFileManager\MsStoreBroker\BrokerConfig.json"
