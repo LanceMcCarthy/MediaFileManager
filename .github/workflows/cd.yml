@@ -24,6 +24,10 @@ jobs:
       SigningCertificate: LancelotSoftwareLLC.pfx # For UWP package signing
       CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}  # For UWP package signing
       CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }} # For UWP package signing
+      PartnerCenterTenantId: ${{ secrets.PARTNER_CENTER_TENANT_ID }}
+      PartnerCenterClientId: ${{ secrets.PARTNER_CENTER_CLIENT_ID }}
+      PartnerCenterClientSecret: ${{ secrets.PARTNER_CENTER_CLIENT_SECRET }}
+      PartnerCenterStoreId: 9PD3JFK7W5MB
 
     steps:
     - name: Checkout
@@ -109,7 +113,7 @@ jobs:
 
     # *****************  UPLOAD TO AZURE BLOB (for SideLoad package's AppInstaller) ************************ #
 
-    # This is my custom GitHub Action, available in the GitHub Marketplace for anyone to use :)
+    # This automatically distributes the sideLoad package (enables automatic updates for sideload!)
     - name: Uploading appInstaller to Azure Blob
       uses: LanceMcCarthy/Action-AzureBlobUpload@v1.3
       with:
@@ -118,6 +122,45 @@ jobs:
         source_folder: src\MediaFileManager\PackageProject\SideLoadPackages\
         destination_folder: Installers/MediaFileManager
         clean_destination_folder: true
+
+    # *****************  UPLOAD TO MICROSOFT STORE ************************ #
+
+    - name: Upload the Store build to Microsoft Partner Center (aka DevCenter)
+      uses: Amadevus/pwsh-script@v1
+      id: store-upload
+      with:
+        script: |
+          $uploadPackage = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
+          $username = $env:PartnerCenterClientId
+          $password = ConvertTo-SecureString $env:PartnerCenterClientSecret -AsPlainText -Force
+          $cred = New-Object System.Management.Automation.PSCredential ($username, $password)
+          
+          
+          
+          
+          # install StoreBroker
+          Set-ExecutionPolicy RemoteSigned -Force
+          git clone https://github.com/Microsoft/StoreBroker.git 'D:\a\MediaFileManager\MediaFileManager\broker\'
+          Import-Module -Force 'D:\a\MediaFileManager\MediaFileManager\broker\StoreBroker'
+         
+          # Authenticating with DevCenter
+          Set-StoreBrokerAuthentication -TenantId $env:PartnerCenterTenantId -Credential $cred
+          
+          # Generating PDP
+          $pdpFolderPath = [System.Environment]::GetFolderPath('Desktop')
+          $pdpFileName = 'Pdp.xml' 
+          D:\a\MediaFileManager\MediaFileManager\broker\\Extensions\ConvertFrom-ExistingSubmission.ps1 -AppId $env:PartnerCenterStoreId -Release $env:UWP_VERSION -PdpFileName $pdpFileName -OutPath $pdpFolderPath
+          
+          # Generating SBConfig file
+          $brokerConfigFilePath = Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json'
+          New-StoreBrokerConfigFile -AppId $env:PartnerCenterStoreId -Path $brokerConfigFilePath
+          
+          # Generate submission Data package
+          $submissionDataFilePath = Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'submission.json'
+          New-SubmissionPackage -ConfigPath (Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json') -PDPRootPath ([System.Environment]::GetFolderPath('Desktop')) -PDPInclude 'Pdp.xml' -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath $pdpFolderPath -OutName $submissionDataFilePath
+          
+          # submitting app
+          Update-ApplicationSubmission -ReplacePackages -AppId $env:PartnerCenterStoreId -SubmissionDataPath $submissionDataFilePath -PackagePath $uploadPackage -AutoCommit -Force
 
 
     # ********************* ARCHIVE BUILD ARTIFACTS ************************ #
@@ -169,34 +212,6 @@ jobs:
         asset_path: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\StoreUploadPackages.zip
         asset_name: StoreUploadPackages.zip
         asset_content_type: application/zip
-
-    # *****************  UPLOAD TO MICROSOFT STORE ************************ #
-
-    - name: Upload the Store build to Microsoft Partner Center (aka DevCenter)
-      uses: Amadevus/pwsh-script@v1
-      id: store-upload
-      with:
-        script: |
-          $uploadPackage = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload";
-          $cred = New-Object System.Management.Automation.PSCredential ${{ secrets.PARTNER_CENTER_CLIENT_ID }}, ${{ secrets.PARTNER_CENTER_CLIENT_SECRET }}
-          $installPath = Join-Path -Path ([System.Environment]::GetFolderPath('MyDocuments')) -ChildPath 'WindowsPowerShell\Modules\StoreBroker'
-          $submissionConfigFile = Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json'
-
-          Set-ExecutionPolicy RemoteSigned -Force
-          
-          New-Item -Type Directory -Force -Path $installPath
-
-          git clone https://github.com/Microsoft/StoreBroker.git $installPath
-
-          Push-Location -Path $installPath
-          git pull
-          Pop-Location
-
-          Set-StoreBrokerAuthentication -TenantId ${{ secrets.PARTNER_CENTER_TENANT_ID }} -Credential $cred
-          
-          New-StoreBrokerConfigFile -Path $submissionConfigFile -AppId "9PD3JFK7W5MB"
-          
-          Update-ApplicationSubmission -ReplacePackages -AppId "9PD3JFK7W5MB" -SubmissionDataPath $submissionConfigFile -PackagePath $uploadPackage -AutoCommit -Force
 
 
     # ******************************** CLEAN-UP ******************************* #
