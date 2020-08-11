@@ -153,7 +153,7 @@ jobs:
           $copiedPdpScriptPath = Join-Path -Path "D:\a\MediaFileManager\MediaFileManager\" -ChildPath 'ConvertFrom-ExistingSubmission.ps1'
           Copy-Item -Path $downloadedPdpScriptPath -Destination $scriptPath
           
-          "D:\a\MediaFileManager\MediaFileManager\ConvertFrom-ExistingSubmission.ps1" -AppId $env:PartnerCenterStoreId -Release $env:UWP_VERSION -PdpFileName Pdp.xml -OutPath ([System.Environment]::GetFolderPath('Desktop'))
+          D:\a\MediaFileManager\MediaFileManager\ConvertFrom-ExistingSubmission.ps1 -AppId $env:PartnerCenterStoreId -Release $env:UWP_VERSION -PdpFileName Pdp.xml -OutPath ([System.Environment]::GetFolderPath('Desktop'))
           
           # Generating SBConfig file
           New-StoreBrokerConfigFile -AppId $env:PartnerCenterStoreId -Path $brokerConfigFilePath
