@@ -146,7 +146,8 @@ jobs:
           Set-StoreBrokerAuthentication -TenantId $env:PartnerCenterTenantId -Credential $cred
           
           # Generating PDP
-          $installPath\Extensions\ConvertFrom-ExistingSubmission.ps1 -AppId $env:PartnerCenterStoreId -Release $env:UWP_VERSION -PdpFileName Pdp.xml -OutPath ([System.Environment]::GetFolderPath('Desktop'))
+          Copy-Item -Path (Join-Path $installPath, '\Extensions\ConvertFrom-ExistingSubmission.ps1') -Destination (Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'ConvertFrom-ExistingSubmission.ps1')
+          .\ConvertFrom-ExistingSubmission.ps1 -AppId $env:PartnerCenterStoreId -Release $env:UWP_VERSION -PdpFileName Pdp.xml -OutPath ([System.Environment]::GetFolderPath('Desktop'))
           
           # Generating SBConfig file
           New-StoreBrokerConfigFile -AppId $env:PartnerCenterStoreId -Path $brokerConfigFilePath
