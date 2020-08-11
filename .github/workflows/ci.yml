@@ -28,11 +28,11 @@ jobs:
     - name: Install .NET Core 3.1
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '3.1.x'
+        dotnet-version: '3.1.302'
 
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1.0.0
+      uses: microsoft/setup-msbuild@v1.0.1
 
     # Create my own version number with a specific format using date. ex: 2020.805.1.0
     - uses: Amadevus/pwsh-script@v1
