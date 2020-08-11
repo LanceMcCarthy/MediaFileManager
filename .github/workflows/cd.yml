@@ -126,8 +126,11 @@ jobs:
       id: store-upload
       with:
         script: |
+          $appStoreId = "9PD3JFK7W5MB"
           $uploadPackage = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
-          $cred = New-Object System.Management.Automation.PSCredential (${{ secrets.PARTNER_CENTER_CLIENT_ID }}, ${{ secrets.PARTNER_CENTER_CLIENT_SECRET }})
+          $pwd = ConvertTo-SecureString ${{ secrets.PARTNER_CENTER_CLIENT_SECRET }} -AsPlainText -Force
+          $usrname = ${{ secrets.PARTNER_CENTER_CLIENT_ID }}
+          $cred = New-Object System.Management.Automation.PSCredential ($usrname, $pwd)
           $installPath = "D:\a\MediaFileManager\MediaFileManager\MsStoreBroker"
           $modulePath = "D:\a\MediaFileManager\MediaFileManager\MsStoreBroker\StoreBroker"
           $submissionConfigFile = "D:\a\MediaFileManager\MediaFileManager\MsStoreBroker\BrokerConfig.json"
@@ -139,8 +142,8 @@ jobs:
           Pop-Location
           Import-Module -Force $modulePath
           Set-StoreBrokerAuthentication -TenantId ${{ secrets.PARTNER_CENTER_TENANT_ID }} -Credential $cred
-          New-StoreBrokerConfigFile -Path $submissionConfigFile -AppId "9PD3JFK7W5MB"
-          Update-ApplicationSubmission -ReplacePackages -AppId "9PD3JFK7W5MB" -SubmissionDataPath $submissionConfigFile -PackagePath $uploadPackage -AutoCommit -Force
+          New-StoreBrokerConfigFile -Path $submissionConfigFile -AppId $appStoreId
+          Update-ApplicationSubmission -ReplacePackages -AppId $appStoreId -SubmissionDataPath $submissionConfigFile -PackagePath $uploadPackage -AutoCommit -Force
 
 
     # ********************* ARCHIVE BUILD ARTIFACTS ************************ #
