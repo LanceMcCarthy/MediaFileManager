@@ -134,19 +134,28 @@ jobs:
           $username = $env:PartnerCenterClientId
           $password = ConvertTo-SecureString $env:PartnerCenterClientSecret -AsPlainText -Force
           $cred = New-Object System.Management.Automation.PSCredential ($username, $password)
-          $installPath = "D:\a\MediaFileManager\MediaFileManager\MsStoreBroker"
-          $modulePath = "D:\a\MediaFileManager\MediaFileManager\MsStoreBroker\StoreBroker"
-          $submissionConfigFile = "D:\a\MediaFileManager\MediaFileManager\MsStoreBroker\BrokerConfig.json"
+          $brokerConfigFilePath = Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json'
+          $pdpFolderPath = [System.Environment]::GetFolderPath('Desktop')
+          $submissionDataFilePath = Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'submission.json'
+          
           Set-ExecutionPolicy RemoteSigned -Force
-          New-Item -Type Directory -Force -Path $installPath
+          $installPath = New-Item -Type Directory -Force -Path (Join-Path -Path ([System.Environment]::GetFolderPath('MyDocuments')) -ChildPath 'WindowsPowerShell\Modules\StoreBroker')
           git clone https://github.com/Microsoft/StoreBroker.git $installPath
-          Push-Location -Path $installPath
-          git pull
-          Pop-Location
-          Import-Module -Force $modulePath
+         
+          # Authenticating with DevCenter
           Set-StoreBrokerAuthentication -TenantId $env:PartnerCenterTenantId -Credential $cred
-          New-StoreBrokerConfigFile -Path $submissionConfigFile -AppId $env:PartnerCenterStoreId
-          Update-ApplicationSubmission -ReplacePackages -AppId $env:PartnerCenterStoreId -SubmissionDataPath $submissionConfigFile -PackagePath $uploadPackage -AutoCommit -Force
+          
+          # Generating PDP
+          $installPath\Extensions\ConvertFrom-ExistingSubmission.ps1 -AppId $env:PartnerCenterStoreId -Release $env:UWP_VERSION -PdpFileName Pdp.xml -OutPath ([System.Environment]::GetFolderPath('Desktop'))
+          
+          # Generating SBConfig file
+          New-StoreBrokerConfigFile -AppId $env:PartnerCenterStoreId -Path $brokerConfigFilePath
+          
+          # Generate submission Data package
+          New-SubmissionPackage -ConfigPath (Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json') -PDPRootPath ([System.Environment]::GetFolderPath('Desktop')) -PDPInclude 'Pdp.xml' -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath $pdpFolderPath -OutName $submissionDataFilePath
+          
+          # submitting app
+          Update-ApplicationSubmission -ReplacePackages -AppId $env:PartnerCenterStoreId -SubmissionDataPath $submissionDataFilePath -PackagePath $uploadPackage -AutoCommit -Force
 
 
     # ********************* ARCHIVE BUILD ARTIFACTS ************************ #
