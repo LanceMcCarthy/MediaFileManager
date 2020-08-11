@@ -24,6 +24,10 @@ jobs:
       SigningCertificate: LancelotSoftwareLLC.pfx # For UWP package signing
       CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}  # For UWP package signing
       CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }} # For UWP package signing
+      PartnerCenterTenantId: ${{ secrets.PARTNER_CENTER_TENANT_ID }}
+      PartnerCenterClientId: ${{ secrets.PARTNER_CENTER_CLIENT_ID }}
+      PartnerCenterClientSecret: ${{ secrets.PARTNER_CENTER_CLIENT_SECRET }}
+      PartnerCenterStoreId: 9PD3JFK7W5MB
 
     steps:
     - name: Checkout
@@ -126,11 +130,8 @@ jobs:
       id: store-upload
       with:
         script: |
-          $appStoreId = "9PD3JFK7W5MB"
           $uploadPackage = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
-          $pwd = ConvertTo-SecureString ${{ secrets.PARTNER_CENTER_CLIENT_SECRET }} -AsPlainText -Force
-          $usrname = ${{ secrets.PARTNER_CENTER_CLIENT_ID }}
-          $cred = New-Object System.Management.Automation.PSCredential ($usrname, $pwd)
+          $cred = New-Object System.Management.Automation.PSCredential ($PartnerCenterClientId, $PartnerCenterClientSecret)
           $installPath = "D:\a\MediaFileManager\MediaFileManager\MsStoreBroker"
           $modulePath = "D:\a\MediaFileManager\MediaFileManager\MsStoreBroker\StoreBroker"
           $submissionConfigFile = "D:\a\MediaFileManager\MediaFileManager\MsStoreBroker\BrokerConfig.json"
@@ -141,9 +142,9 @@ jobs:
           git pull
           Pop-Location
           Import-Module -Force $modulePath
-          Set-StoreBrokerAuthentication -TenantId ${{ secrets.PARTNER_CENTER_TENANT_ID }} -Credential $cred
-          New-StoreBrokerConfigFile -Path $submissionConfigFile -AppId $appStoreId
-          Update-ApplicationSubmission -ReplacePackages -AppId $appStoreId -SubmissionDataPath $submissionConfigFile -PackagePath $uploadPackage -AutoCommit -Force
+          Set-StoreBrokerAuthentication -TenantId $PartnerCenterTenantId -Credential $cred
+          New-StoreBrokerConfigFile -Path $submissionConfigFile -AppId $PartnerCenterStoreId
+          Update-ApplicationSubmission -ReplacePackages -AppId $PartnerCenterStoreId -SubmissionDataPath $submissionConfigFile -PackagePath $uploadPackage -AutoCommit -Force
 
 
     # ********************* ARCHIVE BUILD ARTIFACTS ************************ #
