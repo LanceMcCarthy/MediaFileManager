@@ -41,13 +41,11 @@ jobs:
     - name: Install .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '3.1.x'
-
+        dotnet-version: '3.1.302'
+    
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.1
-      with:
-        vs-version: '16.7'
 
     # Restore NuGet packages using the nuget config (package sources authenticate using environment variable and nuget.config)
     - name: NuGet Restore
