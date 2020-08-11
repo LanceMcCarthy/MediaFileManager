@@ -131,7 +131,7 @@ jobs:
       with:
         script: |
           $uploadPackage = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
-          $cred = New-Object System.Management.Automation.PSCredential ($PartnerCenterClientId, $PartnerCenterClientSecret)
+          $cred = New-Object System.Management.Automation.PSCredential ($env:PartnerCenterClientId, $env:PartnerCenterClientSecret)
           $installPath = "D:\a\MediaFileManager\MediaFileManager\MsStoreBroker"
           $modulePath = "D:\a\MediaFileManager\MediaFileManager\MsStoreBroker\StoreBroker"
           $submissionConfigFile = "D:\a\MediaFileManager\MediaFileManager\MsStoreBroker\BrokerConfig.json"
@@ -142,9 +142,9 @@ jobs:
           git pull
           Pop-Location
           Import-Module -Force $modulePath
-          Set-StoreBrokerAuthentication -TenantId $PartnerCenterTenantId -Credential $cred
-          New-StoreBrokerConfigFile -Path $submissionConfigFile -AppId $PartnerCenterStoreId
-          Update-ApplicationSubmission -ReplacePackages -AppId $PartnerCenterStoreId -SubmissionDataPath $submissionConfigFile -PackagePath $uploadPackage -AutoCommit -Force
+          Set-StoreBrokerAuthentication -TenantId $env:PartnerCenterTenantId -Credential $cred
+          New-StoreBrokerConfigFile -Path $submissionConfigFile -AppId $env:PartnerCenterStoreId
+          Update-ApplicationSubmission -ReplacePackages -AppId $env:PartnerCenterStoreId -SubmissionDataPath $submissionConfigFile -PackagePath $uploadPackage -AutoCommit -Force
 
 
     # ********************* ARCHIVE BUILD ARTIFACTS ************************ #
