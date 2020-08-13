@@ -152,19 +152,19 @@ jobs:
           $brokerConfigFilePath = Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json'
           New-StoreBrokerConfigFile -AppId $env:PartnerCenterStoreId -Path $brokerConfigFilePath
           
+          # DEBUGGING SBConfig
+          $sbconfigcontents = Get-Content -Path $brokerConfigFilePath
+          echo $sbconfigcontents
+          
           # Generate submission Data package
           $submissionDataFilePath = Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'submission.json'
           
           # With PDP
-          # New-SubmissionPackage -ConfigPath (Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json') -PDPRootPath ([System.Environment]::GetFolderPath('Desktop')) -PDPInclude 'Pdp.xml' -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath $pdpFolderPath -OutName $submissionDataFilePath
+          # New-SubmissionPackage -ConfigPath $brokerConfigFilePath -PDPRootPath ([System.Environment]::GetFolderPath('Desktop')) -PDPInclude 'Pdp.xml' -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath $pdpFolderPath -OutName $submissionDataFilePath
           
           # Without PDP
-          New-SubmissionPackage -ConfigPath (Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json') -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath $pdpFolderPath -OutName $submissionDataFilePath
-          
-          # DEBUGGING SBConfig
-          $sbconfigcontents = Get-Content -Path (Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json')
-          echo $sbconfigcontents
-          
+          New-SubmissionPackage -ConfigPath $brokerConfigFilePath -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath $pdpFolderPath -OutName $submissionDataFilePath
+         
           # Submitting app, we only want to close last submission and just update package
           Update-ApplicationSubmission -ReplacePackages -AppId $env:PartnerCenterStoreId -SubmissionDataPath $submissionDataFilePath -PackagePath $uploadPackage -AutoCommit -Force
 
