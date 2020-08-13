@@ -144,9 +144,9 @@ jobs:
           Set-StoreBrokerAuthentication -TenantId $env:PartnerCenterTenantId -Credential $cred
           
           # Generating PDP (NOTE: Only want a clone of last submission because this pipeline just pushes an updated appxupload)
-          $pdpFolderPath = [System.Environment]::GetFolderPath('Desktop')
-          $pdpFileName = 'Pdp.xml' 
-          D:\a\MediaFileManager\MediaFileManager\broker\\Extensions\ConvertFrom-ExistingSubmission.ps1 -AppId $env:PartnerCenterStoreId -Release $env:UWP_VERSION -PdpFileName $pdpFileName -OutPath $pdpFolderPath
+          # $pdpFolderPath = [System.Environment]::GetFolderPath('Desktop')
+          # $pdpFileName = 'Pdp.xml' 
+          # D:\a\MediaFileManager\MediaFileManager\broker\\Extensions\ConvertFrom-ExistingSubmission.ps1 -AppId $env:PartnerCenterStoreId -Release $env:UWP_VERSION -PdpFileName $pdpFileName -OutPath $pdpFolderPath
           
           # Generating SBConfig file
           $brokerConfigFilePath = Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json'
@@ -154,7 +154,16 @@ jobs:
           
           # Generate submission Data package
           $submissionDataFilePath = Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'submission.json'
-          New-SubmissionPackage -ConfigPath (Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json') -PDPRootPath ([System.Environment]::GetFolderPath('Desktop')) -PDPInclude 'Pdp.xml' -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath $pdpFolderPath -OutName $submissionDataFilePath
+          
+          # With PDP
+          # New-SubmissionPackage -ConfigPath (Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json') -PDPRootPath ([System.Environment]::GetFolderPath('Desktop')) -PDPInclude 'Pdp.xml' -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath $pdpFolderPath -OutName $submissionDataFilePath
+          
+          # Without PDP
+          New-SubmissionPackage -ConfigPath (Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json') -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath $pdpFolderPath -OutName $submissionDataFilePath
+          
+          # DEBUGGING SBConfig
+          $sbconfigcontents = Get-Content -Path (Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json')
+          echo $sbconfigcontents
           
           # Submitting app, we only want to close last submission and just update package
           Update-ApplicationSubmission -ReplacePackages -AppId $env:PartnerCenterStoreId -SubmissionDataPath $submissionDataFilePath -PackagePath $uploadPackage -AutoCommit -Force
