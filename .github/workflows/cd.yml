@@ -135,28 +135,19 @@ jobs:
           $username = $env:PartnerCenterClientId
           $password = ConvertTo-SecureString $env:PartnerCenterClientSecret -AsPlainText -Force
           $cred = New-Object System.Management.Automation.PSCredential ($username, $password)
-                  
-          # Install StoreBroker
+          # ---- Install StoreBroker
           Set-ExecutionPolicy RemoteSigned -Force
           git clone https://github.com/Microsoft/StoreBroker.git 'D:\a\MediaFileManager\MediaFileManager\broker\'
           Import-Module -Force 'D:\a\MediaFileManager\MediaFileManager\broker\StoreBroker'
-         
-          # Authenticating with DevCenter
+          # ---- Authenticating with DevCenter
           Set-StoreBrokerAuthentication -TenantId $env:PartnerCenterTenantId -Credential $cred
-        
-          # Generating SBConfig file
+          # ---- Generating SBConfig file
           $brokerConfigFilePath = Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json'
           New-StoreBrokerConfigFile -AppId $env:PartnerCenterStoreId -Path $brokerConfigFilePath
-          
-          # try output
-          $sbconfigcontents = Get-Content -Path $brokerConfigFilePath
-          echo $sbconfigcontents
-          
-          # save path for azure blob upload
+          # ---- Save path for azure blob upload
           Set-ActionVariable SB_CONFIG_PATH $brokerConfigFilePath
-          
 
-    # This automatically distributes the sideLoad package (enables automatic updates for sideload!)
+    # temporary
     - name: Uploading SBconfig.json to Azure Blob (temp)
       id: sbconfig-upload
       uses: LanceMcCarthy/Action-AzureBlobUpload@v1.3
@@ -172,16 +163,12 @@ jobs:
       with:
         script: |
           $uploadPackage = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
-          
-          # Generate submission Data package
+          # ---- Generate submission Data package
           $submissionDataFilePath = Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'submission.json'
-          
-          # Without PDP
+          # ---- Create submissionPackage (no manual PDP)
           New-SubmissionPackage -ConfigPath $brokerConfigFilePath -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath ([System.Environment]::GetFolderPath('Desktop')) -OutName $submissionDataFilePath
-         
-          # Submitting app, we only want to close last submission and just update package
+          # ---- Submitting app, we only want to close last submission and just update package
           Update-ApplicationSubmission -ReplacePackages -AppId $env:PartnerCenterStoreId -SubmissionDataPath $submissionDataFilePath -PackagePath $uploadPackage -AutoCommit -Force
-
 
     # ********************* ARCHIVE BUILD ARTIFACTS ************************ #
 
