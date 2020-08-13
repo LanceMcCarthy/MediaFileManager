@@ -133,7 +133,6 @@ jobs:
           # ---- Install StoreBroker
           Set-ExecutionPolicy RemoteSigned -Force
           git clone https://github.com/Microsoft/StoreBroker.git 'D:\a\MediaFileManager\MediaFileManager\SBGitRoot\'
-          Import-Module -Force 'D:\a\MediaFileManager\MediaFileManager\SBGitRoot\StoreBroker'
 
     - name: Authenticate SB and Generate SBConfig.json
       uses: Amadevus/pwsh-script@v1
@@ -144,6 +143,8 @@ jobs:
           $username = $env:PartnerCenterClientId
           $password = ConvertTo-SecureString $env:PartnerCenterClientSecret -AsPlainText -Force
           $cred = New-Object System.Management.Automation.PSCredential ($username, $password)
+          
+          Import-Module -Force 'D:\a\MediaFileManager\MediaFileManager\SBGitRoot\StoreBroker'
 
           # ---- Authenticating with Service Principal Credentials
           Set-StoreBrokerAuthentication -TenantId $env:PartnerCenterTenantId -Credential $cred
@@ -170,7 +171,15 @@ jobs:
       with:
         script: |
           $uploadPackage = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
-        
+          $username = $env:PartnerCenterClientId
+          $password = ConvertTo-SecureString $env:PartnerCenterClientSecret -AsPlainText -Force
+          $cred = New-Object System.Management.Automation.PSCredential ($username, $password)
+          
+          Import-Module -Force 'D:\a\MediaFileManager\MediaFileManager\SBGitRoot\StoreBroker'
+          
+          # ---- Authenticating with Service Principal Credentials
+          Set-StoreBrokerAuthentication -TenantId $env:PartnerCenterTenantId -Credential $cred
+          
           # ---- Create submissionPackage
           New-SubmissionPackage -ConfigPath 'D:\a\MediaFileManager\MediaFileManager\SBTemp\submission.json' -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath 'D:\a\MediaFileManager\MediaFileManager\SBTemp\' -OutName 'submission.json'
           
