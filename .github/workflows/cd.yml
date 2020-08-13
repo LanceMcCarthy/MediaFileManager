@@ -115,6 +115,7 @@ jobs:
 
     # This automatically distributes the sideLoad package (enables automatic updates for sideload!)
     - name: Uploading appInstaller to Azure Blob
+      id: sideload-blob-upload
       uses: LanceMcCarthy/Action-AzureBlobUpload@v1.3
       with:
         connection_string: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
@@ -125,45 +126,58 @@ jobs:
 
     # *****************  UPLOAD TO MICROSOFT STORE ************************ #
 
-    - name: Upload the Store build to Microsoft Partner Center (aka DevCenter)
+    - name: Store Broker - Part 1 (Upload the Store build to Microsoft Partner Center)
       uses: Amadevus/pwsh-script@v1
-      id: store-upload
+      id: store-upload1
       with:
         script: |
           $uploadPackage = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
           $username = $env:PartnerCenterClientId
           $password = ConvertTo-SecureString $env:PartnerCenterClientSecret -AsPlainText -Force
           $cred = New-Object System.Management.Automation.PSCredential ($username, $password)
-          
-          # install StoreBroker
+                  
+          # Install StoreBroker
           Set-ExecutionPolicy RemoteSigned -Force
           git clone https://github.com/Microsoft/StoreBroker.git 'D:\a\MediaFileManager\MediaFileManager\broker\'
           Import-Module -Force 'D:\a\MediaFileManager\MediaFileManager\broker\StoreBroker'
          
           # Authenticating with DevCenter
           Set-StoreBrokerAuthentication -TenantId $env:PartnerCenterTenantId -Credential $cred
-          
-          # Generating PDP (NOTE: Only want a clone of last submission because this pipeline just pushes an updated appxupload)
-          # $pdpFolderPath = [System.Environment]::GetFolderPath('Desktop')
-          # $pdpFileName = 'Pdp.xml' 
-          # D:\a\MediaFileManager\MediaFileManager\broker\\Extensions\ConvertFrom-ExistingSubmission.ps1 -AppId $env:PartnerCenterStoreId -Release $env:UWP_VERSION -PdpFileName $pdpFileName -OutPath $pdpFolderPath
-          
+        
           # Generating SBConfig file
           $brokerConfigFilePath = Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json'
           New-StoreBrokerConfigFile -AppId $env:PartnerCenterStoreId -Path $brokerConfigFilePath
           
-          # DEBUGGING SBConfig
+          # try output
           $sbconfigcontents = Get-Content -Path $brokerConfigFilePath
           echo $sbconfigcontents
+          
+          # save path for azure blob upload
+          Set-ActionVariable SB_CONFIG_PATH $brokerConfigFilePath
+          
+
+    # This automatically distributes the sideLoad package (enables automatic updates for sideload!)
+    - name: Uploading SBconfig.json to Azure Blob (temp)
+      id: sbconfig-upload
+      uses: LanceMcCarthy/Action-AzureBlobUpload@v1.3
+      with:
+        connection_string: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
+        container_name: general-app-files
+        source_folder: ${{ env.SB_CONFIG_PATH }}
+        destination_folder: Temp
+
+    - name: Store Broker - Part 2 (Upload the Store build to Microsoft Partner Center)
+      uses: Amadevus/pwsh-script@v1
+      id: store-upload2
+      with:
+        script: |
+          $uploadPackage = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
           
           # Generate submission Data package
           $submissionDataFilePath = Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'submission.json'
           
-          # With PDP
-          # New-SubmissionPackage -ConfigPath $brokerConfigFilePath -PDPRootPath ([System.Environment]::GetFolderPath('Desktop')) -PDPInclude 'Pdp.xml' -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath $pdpFolderPath -OutName $submissionDataFilePath
-          
           # Without PDP
-          New-SubmissionPackage -ConfigPath $brokerConfigFilePath -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath $pdpFolderPath -OutName $submissionDataFilePath
+          New-SubmissionPackage -ConfigPath $brokerConfigFilePath -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath ([System.Environment]::GetFolderPath('Desktop')) -OutName $submissionDataFilePath
          
           # Submitting app, we only want to close last submission and just update package
           Update-ApplicationSubmission -ReplacePackages -AppId $env:PartnerCenterStoreId -SubmissionDataPath $submissionDataFilePath -PackagePath $uploadPackage -AutoCommit -Force
