@@ -50,7 +50,7 @@
     <PackageCertificateThumbprint>5D3EBC7143676D951B7427138402BF2645AC4300</PackageCertificateThumbprint>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
-    <AppxBundlePlatforms>x86|x64</AppxBundlePlatforms>
+    <AppxBundlePlatforms>x86</AppxBundlePlatforms>
     <AppInstallerUpdateFrequency>0</AppInstallerUpdateFrequency>
     <AppInstallerCheckForUpdateFrequency>OnApplicationRun</AppInstallerCheckForUpdateFrequency>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>

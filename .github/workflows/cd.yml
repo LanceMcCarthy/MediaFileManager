@@ -77,20 +77,19 @@ jobs:
         $certificatePath = Join-Path -Path $currentDirectory -ChildPath src\MediaFileManager\PackageProject -AdditionalChildPath $env:SigningCertificate
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
     
-    # Update the appxmanifest with the new verison number, app identity and publisher details.
+    # ************************* UWP WAP PACKAGE BUILD ************************* #
+
+    # Update the appxmanifest for SideLoad (and signing with PFX)
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
         $manifest.Package.Identity.Version = "$env:UWP_VERSION"
         $manifest.Package.Identity.Name = "61469LanceLotSoftware.MediaFileManager"
-        $manifest.Package.Identity.Publisher = "CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02"
+        $manifest.Package.Identity.Publisher = "CN="Lancelot Software, LLC", O="Lancelot Software, LLC", L=NORTH BILLERICA, S=Massachusetts, C=US"
         $manifest.Package.Properties.DisplayName = "Media File Manager"
         $manifest.Package.Properties.PublisherDisplayName = "Lancelot Software"
         $manifest.Package.Applications.Application.VisualElements.DisplayName = "Media File Manager"
         $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
-    
-
-    # ************************* UWP WAP PACKAGE BUILDS ************************* #
 
     # Build the Windows Application Packaging project for Sideload
     - name: Build wapproj for Sideloading
@@ -101,12 +100,27 @@ jobs:
         BuildMode: SideloadOnly
         AppInstUri: https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/PackageProject.appinstaller
       
+
+    # ************************* UWP STORE PACKAGE BUILD ************************* #
+
+    # Update the appxmanifest for Microsoft Store
+    - name: Update manifest version
+      run: |
+        [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
+        $manifest.Package.Identity.Version = "$env:UWP_VERSION"
+        $manifest.Package.Identity.Name = "61469LanceLotSoftware.MediaFileManager"
+        $manifest.Package.Identity.Publisher = "CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02"
+        $manifest.Package.Properties.DisplayName = "Media File Manager"
+        $manifest.Package.Properties.PublisherDisplayName = "Lancelot Software"
+        $manifest.Package.Applications.Application.VisualElements.DisplayName = "Media File Manager"
+        $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
+
     # Build the Windows Application Packaging project for Store
     - name: Build wapproj for Microsoft Store
-      run: msbuild $env:Solution_Path /p:AppxPackageDir=D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\ /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
+      run: msbuild $env:Solution_Path /p:AppxPackageDir=D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\ /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /
       env:
         AppxBundle: Always
-        AppxPackageSigningEnabled: True
+        AppxPackageSigningEnabled: false
         BuildMode: StoreUpload
         GenerateAppInstallerFile: False
 
