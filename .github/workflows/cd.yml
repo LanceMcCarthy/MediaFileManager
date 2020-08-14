@@ -124,19 +124,14 @@ jobs:
         destination_folder: Installers/MediaFileManager
         clean_destination_folder: true
 
-    # *****************  UPLOAD TO MICROSOFT STORE ************************ #
-    - name: Install Store Broker (SB)
-      uses: Amadevus/pwsh-script@v1
-      id: install-store-broker
-      with:
-        script: |
-          # ---- Install StoreBroker
-          Set-ExecutionPolicy RemoteSigned -Force
-          git clone https://github.com/Microsoft/StoreBroker.git 'D:\a\MediaFileManager\MediaFileManager\SBGitRoot\'
 
-    - name: Authenticate SB and Generate SBConfig.json
+
+    # *****************  UPLOAD TO MICROSOFT STORE ************************ #
+      
+      
+    - name: Store Broker Test
       uses: Amadevus/pwsh-script@v1
-      id: authenticate-store-brokwer
+      id: store-broker
       with:
         script: |
           $uploadPackage = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
@@ -144,20 +139,23 @@ jobs:
           $password = ConvertTo-SecureString $env:PartnerCenterClientSecret -AsPlainText -Force
           $cred = New-Object System.Management.Automation.PSCredential ($username, $password)
           
+          Set-ExecutionPolicy RemoteSigned -Force
+          git clone https://github.com/Microsoft/StoreBroker.git 'D:\a\MediaFileManager\MediaFileManager\SBGitRoot\'
           Import-Module -Force 'D:\a\MediaFileManager\MediaFileManager\SBGitRoot\StoreBroker'
 
-          # ---- Authenticating with Service Principal Credentials
           Set-StoreBrokerAuthentication -TenantId $env:PartnerCenterTenantId -Credential $cred
-        
           $app = Get-Application -AppId '9PD3JFK7W5MB'
           $sub = Get-ApplicationSubmission -AppId '9PD3JFK7W5MB' -SubmissionId $($app.lastPublishedApplicationSubmission.id)
           $subJsonFilePath = New-TemporaryFile
-          ConvertTo-Json -InputObject $sub -Depth 20 | Out-File -FilePath $subJsonFilePath
-          
+          ConvertTo-Json -InputObject $sub -Depth 20 | Out-File -FilePath $subJsonFilePath          
           Get-Content -Path $subJsonFilePath
           
-          # ---- Create config file
           New-StoreBrokerConfigFile -AppId '9PD3JFK7W5MB' -Path 'D:\a\MediaFileManager\MediaFileManager\SBTemp\SBConfig.json'
+          Get-Content -Path 'D:\a\MediaFileManager\MediaFileManager\SBTemp\SBConfig.json'
+          
+          New-SubmissionPackage -ConfigPath 'D:\a\MediaFileManager\MediaFileManager\SBTemp\submission.json' -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath 'D:\a\MediaFileManager\MediaFileManager\SBTemp\' -OutName 'submission.json'
+          
+          Update-ApplicationSubmission -ReplacePackages -AppId $env:PartnerCenterStoreId -SubmissionDataPath 'D:\a\MediaFileManager\MediaFileManager\SBTemp\submission.json' -PackagePath $uploadPackage -AutoCommit -Force
 
     # temporary
     - name: Uploading SBconfig.json to Azure Blob (temp)
@@ -168,27 +166,6 @@ jobs:
         container_name: general-app-files
         source_folder: D:\a\MediaFileManager\MediaFileManager\SBTemp\
         destination_folder: SBTemp
-
-    - name: Store Broker - Part 2 (Upload the Store build to Microsoft Partner Center)
-      uses: Amadevus/pwsh-script@v1
-      id: store-broker-submit-app
-      with:
-        script: |
-          $uploadPackage = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
-          $username = $env:PartnerCenterClientId
-          $password = ConvertTo-SecureString $env:PartnerCenterClientSecret -AsPlainText -Force
-          $cred = New-Object System.Management.Automation.PSCredential ($username, $password)
-          
-          Import-Module -Force 'D:\a\MediaFileManager\MediaFileManager\SBGitRoot\StoreBroker'
-          
-          # ---- Authenticating with Service Principal Credentials
-          Set-StoreBrokerAuthentication -TenantId $env:PartnerCenterTenantId -Credential $cred
-          
-          # ---- Create submissionPackage
-          New-SubmissionPackage -ConfigPath 'D:\a\MediaFileManager\MediaFileManager\SBTemp\submission.json' -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath 'D:\a\MediaFileManager\MediaFileManager\SBTemp\' -OutName 'submission.json'
-          
-          # ---- Submitting app, we only want to close last submission and just update package
-          Update-ApplicationSubmission -ReplacePackages -AppId $env:PartnerCenterStoreId -SubmissionDataPath 'D:\a\MediaFileManager\MediaFileManager\SBTemp\submission.json' -PackagePath $uploadPackage -AutoCommit -Force
 
     # ********************* ARCHIVE BUILD ARTIFACTS ************************ #
 
