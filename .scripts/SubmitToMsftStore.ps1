@@ -21,8 +21,8 @@ $outName = 'submission.json'
 New-SubmissionPackage -ConfigPath $configFilePath -AppxPath $appxUploadFilePath -OutPath $sbTempFolderPath -OutName $outName
 
 # ********* UPDATE & COMMIT SUBMISSION *********
-# $originalSubmissionDataFilePath = 'D:\a\MediaFileManager\MediaFileManager\.scripts\submissionData.json'
+$originalSubmissionDataFilePath = 'D:\a\MediaFileManager\MediaFileManager\.scripts\submissionData.json'
 $newSubmissionDataPath = Join-Path -Path $sbTempFolderPath -ChildPath 'submissionData.json'
 $packagePath = 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\StoreUploadPackages.zip'
 
-Update-ApplicationSubmission -ReplacePackages -AppId $env:PartnerCenterStoreId -SubmissionDataPath $newSubmissionDataPath -PackagePath $packagePath -AutoCommit -Force
+Update-ApplicationSubmission -ReplacePackages -AppId $env:PartnerCenterStoreId -SubmissionDataPath $originalSubmissionDataFilePath -PackagePath $packagePath -AutoCommit -Force
