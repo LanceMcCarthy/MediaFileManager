@@ -136,9 +136,9 @@ jobs:
         clean_destination_folder: true
 
     # MICROSOFT STORE (using Store Broker)
-    - name: Submit to Partner Center (aka DevCenter)
-      shell: pwsh
-      run: ./.scripts/SubmitToMsftStore.ps1
+    # - name: Submit to Partner Center (aka DevCenter)
+    #   shell: pwsh
+    #   run: ./.scripts/SubmitToMsftStore.ps1
 
 
     # ****************** GITHUB RELEASE ******************** #
