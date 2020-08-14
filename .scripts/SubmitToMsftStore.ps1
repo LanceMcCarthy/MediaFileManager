@@ -13,14 +13,15 @@ Set-StoreBrokerAuthentication -TenantId $env:PartnerCenterTenantId -Credential $
 
 # ********* Prepare Submission Package *********
 $sbTempFolderPath = New-Item -Type Directory -Force -Path (Join-Path -Path 'D:\a\MediaFileManager\MediaFileManager\' -ChildPath 'SBTemp')
-$appxUploadFilePath = "PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
+$appxUploadFilePath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
+          
 $configFilePath = 'D:\a\MediaFileManager\MediaFileManager\.scripts\storeBrokerConfig.json'
 $outName = 'submission.json'
 
 New-SubmissionPackage -ConfigPath $configFilePath -AppxPath $appxUploadFilePath -OutPath $sbTempFolderPath -OutName $outName
 
 # ********* UPDATE & COMMIT SUBMISSION *********
-# $originalSubmissionDataFilePath = 'D:\a\MediaFileManager\MediaFileManager\.scripts\submissionData.json'
+#$originalSubmissionDataFilePath = 'D:\a\MediaFileManager\MediaFileManager\.scripts\submissionData.json'
 $newSubmissionDataPath = Join-Path -Path $sbTempFolderPath -ChildPath 'submissionData.json'
 $packagePath = 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\StoreUploadPackages.zip'
 
