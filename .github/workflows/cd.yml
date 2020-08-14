@@ -93,9 +93,10 @@ jobs:
 
     # Build the Windows Application Packaging project for Sideload
     - name: Build wapproj for Sideloading
-      run: msbuild $env:Solution_Path /p:GenerateAppInstallerFile=True /p:AppInstallerUri=$env:AppInstUri /p:HoursBetweenUpdateChecks=6 /p:AppxPackageDir=D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\ /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint
+      run: msbuild $env:Solution_Path /p:GenerateAppInstallerFile=True /p:AppInstallerUri=$env:AppInstUri /p:HoursBetweenUpdateChecks=6 /p:AppxPackageDir=D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\ /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled
       env:
         AppxBundle: Always
+        AppxPackageSigningEnabled: True
         GenerateAppInstallerFile: True
         BuildMode: SideloadOnly
         AppInstUri: https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/PackageProject.appinstaller
@@ -117,10 +118,10 @@ jobs:
 
     # Build the Windows Application Packaging project for Store
     - name: Build wapproj for Microsoft Store
-      run: msbuild $env:Solution_Path /p:AppxPackageDir=D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\ /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle
+      run: msbuild $env:Solution_Path /p:AppxPackageDir=D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\ /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled
       env:
         AppxBundle: Always
-        AppxPackageSigningEnabled: false
+        AppxPackageSigningEnabled: False
         BuildMode: StoreUpload
         GenerateAppInstallerFile: False
 
