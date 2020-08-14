@@ -148,12 +148,16 @@ jobs:
 
           # ---- Authenticating with Service Principal Credentials
           Set-StoreBrokerAuthentication -TenantId $env:PartnerCenterTenantId -Credential $cred
+        
+          $app = Get-Application -AppId '9PD3JFK7W5MB'
+          $sub = Get-ApplicationSubmission -AppId '9PD3JFK7W5MB' -SubmissionId $($app.lastPublishedApplicationSubmission.id)
+          $subJsonFilePath = New-TemporaryFile
+          ConvertTo-Json -InputObject $sub -Depth 20 | Out-File -FilePath $subJsonFilePath
           
-          # ---- Making a new directory for Store Broker generated files
-          New-Item -Path 'D:\a\MediaFileManager\MediaFileManager\SBTemp' -ItemType Directory
+          Get-Content -Path $subJsonFilePath
           
           # ---- Create config file
-          New-StoreBrokerConfigFile -AppId $env:PartnerCenterStoreId -Path 'D:\a\MediaFileManager\MediaFileManager\SBTemp\SBConfig.json'
+          New-StoreBrokerConfigFile -AppId '9PD3JFK7W5MB' -Path 'D:\a\MediaFileManager\MediaFileManager\SBTemp\SBConfig.json'
 
     # temporary
     - name: Uploading SBconfig.json to Azure Blob (temp)
