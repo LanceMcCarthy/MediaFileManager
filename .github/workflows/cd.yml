@@ -153,7 +153,7 @@ jobs:
           New-StoreBrokerConfigFile -AppId '9PD3JFK7W5MB' -Path 'D:\a\MediaFileManager\MediaFileManager\SBTemp\SBConfig.json'
           Get-Content -Path 'D:\a\MediaFileManager\MediaFileManager\SBTemp\SBConfig.json'
           
-          New-SubmissionPackage -ConfigPath 'D:\a\MediaFileManager\MediaFileManager\SBTemp\submission.json' -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath 'D:\a\MediaFileManager\MediaFileManager\SBTemp\' -OutName 'submission.json'
+          New-SubmissionPackage -ConfigPath 'D:\a\MediaFileManager\MediaFileManager\SBTemp\SBConfig.json' -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath 'D:\a\MediaFileManager\MediaFileManager\SBTemp\' -OutName 'submission.json'
           
           Update-ApplicationSubmission -ReplacePackages -AppId $env:PartnerCenterStoreId -SubmissionDataPath 'D:\a\MediaFileManager\MediaFileManager\SBTemp\submission.json' -PackagePath $uploadPackage -AutoCommit -Force
 
