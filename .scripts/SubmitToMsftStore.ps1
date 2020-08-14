@@ -23,7 +23,7 @@ $configFilePath = 'D:\a\MediaFileManager\MediaFileManager\.scripts\storeBrokerCo
 New-SubmissionPackage -ConfigPath $configFilePath -AppxPath $appxUploadFilePath -OutPath $sbTempFolderPath -OutName 'submission.json'
 
 # ********* UPDATE & COMMIT SUBMISSION *********
-$submissionDataPath = Join-Path -Path $sbTempFolderPath -ChildPath 'submissionData.json'
+$submissionDataPath = Join-Path -Path $sbTempFolderPath -ChildPath 'submission.json'
 $submissionPackagePath = Join-Path -Path $sbTempFolderPath -ChildPath 'package.zip'
 
 Update-ApplicationSubmission -ReplacePackages -AppId $appStoreId -SubmissionDataPath $submissionDataPath -PackagePath $submissionPackagePath -AutoCommit -Force
