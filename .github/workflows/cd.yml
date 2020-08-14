@@ -110,56 +110,6 @@ jobs:
         BuildMode: StoreUpload
         GenerateAppInstallerFile: False
 
-
-    # *****************  UPLOAD TO AZURE BLOB (for SideLoad package's AppInstaller) ************************ #
-
-    # This automatically distributes the sideLoad package (enables automatic updates for sideload!)
-    - name: Uploading appInstaller to Azure Blob
-      uses: LanceMcCarthy/Action-AzureBlobUpload@v1.3
-      with:
-        connection_string: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
-        container_name: general-app-files
-        source_folder: src\MediaFileManager\PackageProject\SideLoadPackages\
-        destination_folder: Installers/MediaFileManager
-        clean_destination_folder: true
-
-    # *****************  UPLOAD TO MICROSOFT STORE ************************ #
-
-    - name: Upload the Store build to Microsoft Partner Center (aka DevCenter)
-      uses: Amadevus/pwsh-script@v1
-      id: store-upload
-      with:
-        script: |
-          $uploadPackage = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
-          $username = $env:PartnerCenterClientId
-          $password = ConvertTo-SecureString $env:PartnerCenterClientSecret -AsPlainText -Force
-          $cred = New-Object System.Management.Automation.PSCredential ($username, $password)
-          
-          # install StoreBroker
-          Set-ExecutionPolicy RemoteSigned -Force
-          git clone https://github.com/Microsoft/StoreBroker.git 'D:\a\MediaFileManager\MediaFileManager\broker\'
-          Import-Module -Force 'D:\a\MediaFileManager\MediaFileManager\broker\StoreBroker'
-         
-          # Authenticating with DevCenter
-          Set-StoreBrokerAuthentication -TenantId $env:PartnerCenterTenantId -Credential $cred
-          
-          # Generating PDP (NOTE: Only want a clone of last submission because this pipeline just pushes an updated appxupload)
-          $pdpFolderPath = [System.Environment]::GetFolderPath('Desktop')
-          $pdpFileName = 'Pdp.xml' 
-          D:\a\MediaFileManager\MediaFileManager\broker\\Extensions\ConvertFrom-ExistingSubmission.ps1 -AppId $env:PartnerCenterStoreId -Release $env:UWP_VERSION -PdpFileName $pdpFileName -OutPath $pdpFolderPath
-          
-          # Generating SBConfig file
-          $brokerConfigFilePath = Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json'
-          New-StoreBrokerConfigFile -AppId $env:PartnerCenterStoreId -Path $brokerConfigFilePath
-          
-          # Generate submission Data package
-          $submissionDataFilePath = Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'submission.json'
-          New-SubmissionPackage -ConfigPath (Join-Path -Path ([System.Environment]::GetFolderPath('Desktop')) -ChildPath 'SBConfig.json') -PDPRootPath ([System.Environment]::GetFolderPath('Desktop')) -PDPInclude 'Pdp.xml' -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath $pdpFolderPath -OutName $submissionDataFilePath
-          
-          # Submitting app, we only want to close last submission and just update package
-          Update-ApplicationSubmission -ReplacePackages -AppId $env:PartnerCenterStoreId -SubmissionDataPath $submissionDataFilePath -PackagePath $uploadPackage -AutoCommit -Force
-
-
     # ********************* ARCHIVE BUILD ARTIFACTS ************************ #
 
     # ZIP up the sideload packages using Powershell
@@ -171,7 +121,27 @@ jobs:
       run: Compress-Archive D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\* -DestinationPath D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\StoreUploadPackages.zip
 
 
-    # ****************** CREATE RELEASE and UPLOAD ASSETS ******************** #
+    # *****************  DISTRIBUTIONS ************************ #
+
+    # AZURE STORAGE
+    # This automatically distributes the sideLoad package, which users can visit the index.html page and run the appinstaller
+    - name: Uploading appInstaller to Azure Blob
+      id: sideload-blob-upload
+      uses: LanceMcCarthy/Action-AzureBlobUpload@v1.3
+      with:
+        connection_string: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
+        container_name: general-app-files
+        source_folder: src\MediaFileManager\PackageProject\SideLoadPackages\
+        destination_folder: Installers/MediaFileManager
+        clean_destination_folder: true
+
+    # MICROSOFT STORE (using Store Broker)
+    - name: Submit to Partner Center (aka DevCenter)
+      shell: pwsh
+      run: ./.scripts/SubmitToMsftStore.ps1
+
+
+    # ****************** GITHUB RELEASE ******************** #
 
     # Create the release: https://github.com/actions/create-release
     - name: Create GitHub Release

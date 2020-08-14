@@ -1,0 +1,66 @@
+﻿{
+  "packageParameters": {
+    "PDPRootPath": "",
+    "Release": "",
+    "PDPInclude": [
+    ],
+    "PDPExclude": [
+    ],
+    "LanguageExclude": [
+      "default"
+    ],
+    "ImagesRootPath": "",
+    "MediaFallbackLanguage": "",
+    "AppxPath": [
+    ],
+    "OutPath": "",
+    "OutName": "",
+    "DisableAutoPackageNameFormatting": false
+  },
+    "appSubmission": {
+        "appId": "9PD3JFK7W5MB",
+        "targetPublishMode": "Immediate",
+        "targetPublishDate": "1601-01-01T00:00:00.0000000Z",
+        "visibility": "Public",
+        "pricing": {
+            "priceId": "Free",
+            "trialPeriod": "NoFreeTrial",
+            "marketSpecificPricings": {
+
+},
+            "sales": [ ]
+        },
+        "allowTargetFutureDeviceFamilies": {
+            "Xbox": false,
+            "Team": true,    // Surface Hub
+            "Holographic": true,
+            "Desktop": true,
+            "Mobile": true
+        },
+        "allowMicrosoftDecideAppAvailabilityToFutureDeviceFamilies": true,
+        "enterpriseLicensing": "Online",
+        "applicationCategory": "UtilitiesAndTools_FileManager",
+        "hardwarePreferences": [ ],
+        "hasExternalInAppProducts": false,
+        "meetAccessibilityGuidelines": false,
+        "canInstallOnRemovableMedia": true,
+        "automaticBackupEnabled": true,
+        "isGameDvrEnabled": false,
+        "gamingOptions": [{
+            "genres": "UtilitiesAndTools_FileManager",
+            "isLocalMultiplayer": false,
+            "isLocalCooperative": false,
+            "isOnlineMultiplayer": false,
+            "isOnlineCooperative": false,
+            "localMultiplayerMinPlayers": 0,
+            "localMultiplayerMaxPlayers": 0,
+            "localCooperativeMinPlayers": 0,
+            "localCooperativeMaxPlayers": 0,
+            "isBroadcastingPrivilegeGranted": true,
+            "isCrossPlayEnabled": false,
+            "kinectDataForExternal": "Disabled"
+        }],
+        "notesForCertification": "To get a quick understanding of how the app works:\r\n\r\n1. Look at the screenshots in the README - https://github.com/LanceMcCarthy/MediaFileManager#mediafilemanager\r\n\r\nor \r\n\r\n2. Watch the quick walkthough video here https://www.screencast.com/t/84UQ7Vkv\r\n\r\nThe application is fully open source and you can audit that it does not go outside the folder the user explicitly selected. https://github.com/LanceMcCarthy/MediaFileManager"
+    }
+}
+
