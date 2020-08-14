@@ -10,6 +10,8 @@
     <PackageProjectUrl>https://github.com/LanceMcCarthy/MediaFileManager/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/LanceMcCarthy/MediaFileManager/blob/master/LICENSE</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <ApplicationIcon>Images\MainIcon.ico</ApplicationIcon>
+    <Platforms>AnyCPU;x86;x64</Platforms>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Images\Splashscreen Logo 100.png" />
@@ -25,10 +27,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AppCenter.Analytics" Version="3.2.2" />
-    <PackageReference Include="Microsoft.AppCenter.Crashes" Version="3.2.2" />
+    <PackageReference Include="Microsoft.AppCenter.Analytics" Version="3.4.0" />
+    <PackageReference Include="Microsoft.AppCenter.Crashes" Version="3.4.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
-      <Version>3.0.0</Version>
+      <Version>3.3.0</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

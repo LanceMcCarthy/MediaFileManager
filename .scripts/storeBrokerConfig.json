@@ -32,7 +32,7 @@
         },
         "allowTargetFutureDeviceFamilies": {
             "Xbox": false,
-            "Team": true,    // Surface Hub
+            "Team": true,
             "Holographic": true,
             "Desktop": true,
             "Mobile": true
@@ -60,7 +60,6 @@
             "isCrossPlayEnabled": false,
             "kinectDataForExternal": "Disabled"
         }],
-        "notesForCertification": "To get a quick understanding of how the app works:\r\n\r\n1. Look at the screenshots in the README - https://github.com/LanceMcCarthy/MediaFileManager#mediafilemanager\r\n\r\nor \r\n\r\n2. Watch the quick walkthough video here https://www.screencast.com/t/84UQ7Vkv\r\n\r\nThe application is fully open source and you can audit that it does not go outside the folder the user explicitly selected. https://github.com/LanceMcCarthy/MediaFileManager"
+        "notesForCertification": "See https://bit.ly/MediaFileManagerReadMe for directions on app use."
     }
 }
-

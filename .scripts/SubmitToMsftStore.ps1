@@ -1,28 +1,29 @@
 Set-ExecutionPolicy RemoteSigned -Force
 
+# Prepare materials from previous steps and runner environment variables
+$appxUploadFilePath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
+$username = $env:PartnerCenterClientId
+$password = ConvertTo-SecureString $env:PartnerCenterClientSecret -AsPlainText -Force
+$appStoreId = $env:PartnerCenterStoreId
+$tenantId = $env:PartnerCenterTenantId
+
+# ********* Create temporary directory for submission artifacts *********
+$sbTempFolderPath = New-Item -Type Directory -Force -Path (Join-Path -Path 'D:\a\MediaFileManager\MediaFileManager\' -ChildPath 'SBTemp')
+
 # ********* Install StoreBroker and import PowerShell Module *********
 git clone https://github.com/Microsoft/StoreBroker.git 'D:\a\MediaFileManager\MediaFileManager\SBGitRoot\'
 Import-Module -Force 'D:\a\MediaFileManager\MediaFileManager\SBGitRoot\StoreBroker'
 
 # ********* Authenticate Store Broker *********
-$username = $env:PartnerCenterClientId
-$password = ConvertTo-SecureString $env:PartnerCenterClientSecret -AsPlainText -Force
 $cred = New-Object System.Management.Automation.PSCredential ($username, $password)
-
-Set-StoreBrokerAuthentication -TenantId $env:PartnerCenterTenantId -Credential $cred
+Set-StoreBrokerAuthentication -TenantId $tenantId -Credential $cred
 
 # ********* Prepare Submission Package *********
-$sbTempFolderPath = New-Item -Type Directory -Force -Path (Join-Path -Path 'D:\a\MediaFileManager\MediaFileManager\' -ChildPath 'SBTemp')
-$appxUploadFilePath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
-          
 $configFilePath = 'D:\a\MediaFileManager\MediaFileManager\.scripts\storeBrokerConfig.json'
-$outName = 'submission.json'
-
-New-SubmissionPackage -ConfigPath $configFilePath -AppxPath $appxUploadFilePath -OutPath $sbTempFolderPath -OutName $outName
+New-SubmissionPackage -ConfigPath $configFilePath -AppxPath $appxUploadFilePath -OutPath $sbTempFolderPath -OutName 'submission.json'
 
 # ********* UPDATE & COMMIT SUBMISSION *********
-#$originalSubmissionDataFilePath = 'D:\a\MediaFileManager\MediaFileManager\.scripts\submissionData.json'
-$newSubmissionDataPath = Join-Path -Path $sbTempFolderPath -ChildPath 'submissionData.json'
-$packagePath = 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\StoreUploadPackages.zip'
+$submissionDataPath = Join-Path -Path $sbTempFolderPath -ChildPath 'submission.json'
+$submissionPackagePath = Join-Path -Path $sbTempFolderPath -ChildPath 'package.zip'
 
-Update-ApplicationSubmission -ReplacePackages -AppId $env:PartnerCenterStoreId -SubmissionDataPath $newSubmissionDataPath -PackagePath $packagePath -AutoCommit -Force
+Update-ApplicationSubmission -ReplacePackages -AppId $appStoreId -SubmissionDataPath $submissionDataPath -PackagePath $submissionPackagePath -AutoCommit -Force
