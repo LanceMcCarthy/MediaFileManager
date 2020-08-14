@@ -110,78 +110,6 @@ jobs:
         BuildMode: StoreUpload
         GenerateAppInstallerFile: False
 
-
-    # *****************  UPLOAD TO AZURE BLOB (for SideLoad package's AppInstaller) ************************ #
-
-    # This automatically distributes the sideLoad package (enables automatic updates for sideload!)
-    - name: Uploading appInstaller to Azure Blob
-      id: sideload-blob-upload
-      uses: LanceMcCarthy/Action-AzureBlobUpload@v1.3
-      with:
-        connection_string: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
-        container_name: general-app-files
-        source_folder: src\MediaFileManager\PackageProject\SideLoadPackages\
-        destination_folder: Installers/MediaFileManager
-        clean_destination_folder: true
-
-    # *****************  UPLOAD TO MICROSOFT STORE ************************ #
-      
-    - name: Display the path
-      shell: pwsh
-      run: ./.scripts/SubmitToMsftStore.ps1
-
-    # - name: Store Broker Test
-    #   uses: Amadevus/pwsh-script@v1
-    #   id: store-broker
-    #   with:
-    #     script: |
-    #       $uploadPackage = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
-    #       $username = $env:PartnerCenterClientId
-    #       $password = ConvertTo-SecureString $env:PartnerCenterClientSecret -AsPlainText -Force
-    #       $cred = New-Object System.Management.Automation.PSCredential ($username, $password)
-    #       $sbTempFolderPath = New-Item -Type Directory -Force -Path (Join-Path -Path D:\a\MediaFileManager\MediaFileManager\ -ChildPath 'SBTemp')
-          
-    #       Set-ExecutionPolicy RemoteSigned -Force
-
-    #       # ********* Install StoreBroker and import module *********
-    #       git clone https://github.com/Microsoft/StoreBroker.git 'D:\a\MediaFileManager\MediaFileManager\SBGitRoot\'
-    #       Import-Module -Force 'D:\a\MediaFileManager\MediaFileManager\SBGitRoot\StoreBroker'
-    #       Set-StoreBrokerAuthentication -TenantId $env:PartnerCenterTenantId -Credential $cred
-
-    #       # DEBUGGING1 Get submission data
-    #       $app = Get-Application -AppId '9PD3JFK7W5MB'
-    #       $sub = Get-ApplicationSubmission -AppId '9PD3JFK7W5MB' -SubmissionId $($app.lastPublishedApplicationSubmission.id)
-    #       $subJsonFilePath = New-TemporaryFile
-    #       ConvertTo-Json -InputObject $sub -Depth 20 | Out-File -FilePath $subJsonFilePath          
-          
-    #       # DEBUGGING2 - upload config file to Azure blob for debug (SAS token only valid for a couple hours)
-    #       $headers = @{ 'x-ms-blob-type' = 'BlockBlob' }
-
-    #       $azFileName1 = (Get-Item $subJsonFilePath).Name
-    #       $azStorageUriWithSas1 = "https://dvlup.blob.core.windows.net/ci-cd/broker-output/$($azFileName1)?st=2019-04-03T07%3A28%3A36Z&se=2019-04-03T07%3A28%3A36Z&sp=rwdl&sv=2018-03-28&sr=c&sig=Y3%2BBRkH5ivySba7qAFQ%2BnjF2HoVg0Lr4bjVPrKZh6mU%3D"
-    #       Invoke-RestMethod -Uri $azStorageUriWithSas1 -Method Put -Headers $headers -InFile $subJsonFilePath
-          
-    #       # ********* Generate SBconfig file *********
-    #       $sbConfigFilePath = 'D:\a\MediaFileManager\MediaFileManager\SBTemp\SBConfig.json'
-    #       New-StoreBrokerConfigFile -AppId '9PD3JFK7W5MB' -Path $sbConfigFilePath
-          
-    #       # DEBUGGING3 - upload config file to Azure blob for debug
-    #       $azFileName2 = (Get-Item $sbConfigFilePath).Name
-    #       $azStorageUriWithSas2 = "https://dvlup.blob.core.windows.net/ci-cd/broker-output/$($azFileName2)?st=2019-04-03T07%3A28%3A36Z&se=2019-04-03T07%3A28%3A36Z&sp=rwdl&sv=2018-03-28&sr=c&sig=Y3%2BBRkH5ivySba7qAFQ%2BnjF2HoVg0Lr4bjVPrKZh6mU%3D"
-    #       Invoke-RestMethod -Uri $azStorageUriWithSas2 -Method Put -Headers $headers -InFile $sbConfigFilePath
-          
-    #       # ********* NEW SUBMISSION *********
-    #       $sbSubmissionFilePath = 'D:\a\MediaFileManager\MediaFileManager\SBTemp\submission.json'
-    #       New-SubmissionPackage -ConfigPath $sbConfigFilePath -ImagesRootPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\Images' -AppxPath $uploadPackage -OutPath 'D:\a\MediaFileManager\MediaFileManager\SBTemp\' -OutName 'submission.json'
-
-    #       # DEBUGGING4
-    #       $azFileName3 = (Get-Item $sbSubmissionFilePath).Name
-    #       $azStorageUriWithSas3 = "https://dvlup.blob.core.windows.net/ci-cd/broker-output/$($azFileName3)?st=2019-04-03T07%3A28%3A36Z&se=2019-04-03T07%3A28%3A36Z&sp=rwdl&sv=2018-03-28&sr=c&sig=Y3%2BBRkH5ivySba7qAFQ%2BnjF2HoVg0Lr4bjVPrKZh6mU%3D"
-    #       Invoke-RestMethod -Uri $azStorageUriWithSas3 -Method Put -Headers $headers -InFile $sbSubmissionFilePath
-
-    #       # ********* UPDATE/COMMIT SUBMISSION *********
-    #       Update-ApplicationSubmission -ReplacePackages -AppId $env:PartnerCenterStoreId -SubmissionDataPath 'D:\a\MediaFileManager\MediaFileManager\SBTemp\submission.json' -PackagePath $uploadPackage -AutoCommit -Force
-
     # ********************* ARCHIVE BUILD ARTIFACTS ************************ #
 
     # ZIP up the sideload packages using Powershell
@@ -193,7 +121,27 @@ jobs:
       run: Compress-Archive D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\* -DestinationPath D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\StoreUploadPackages.zip
 
 
-    # ****************** CREATE RELEASE and UPLOAD ASSETS ******************** #
+    # *****************  DISTRIBUTIONS ************************ #
+
+    # AZURE STORAGE
+    # This automatically distributes the sideLoad package, which users can visit the index.html page and run the appinstaller
+    - name: Uploading appInstaller to Azure Blob
+      id: sideload-blob-upload
+      uses: LanceMcCarthy/Action-AzureBlobUpload@v1.3
+      with:
+        connection_string: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
+        container_name: general-app-files
+        source_folder: src\MediaFileManager\PackageProject\SideLoadPackages\
+        destination_folder: Installers/MediaFileManager
+        clean_destination_folder: true
+
+    # MICROSOFT STORE (using Store Broker)
+    - name: Display the path
+      shell: pwsh
+      run: ./.scripts/SubmitToMsftStore.ps1
+
+
+    # ****************** GITHUB RELEASE ******************** #
 
     # Create the release: https://github.com/actions/create-release
     - name: Create GitHub Release
