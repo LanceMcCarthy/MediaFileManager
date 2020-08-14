@@ -11,7 +11,7 @@
     <RepositoryUrl>https://github.com/LanceMcCarthy/MediaFileManager/blob/master/LICENSE</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <ApplicationIcon>Images\MainIcon.ico</ApplicationIcon>
-    <Platforms>AnyCPU;x86;x64</Platforms>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Images\Splashscreen Logo 100.png" />
