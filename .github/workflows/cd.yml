@@ -117,7 +117,7 @@ jobs:
 
     # Build the Windows Application Packaging project for Store
     - name: Build wapproj for Microsoft Store
-      run: msbuild $env:Solution_Path /p:AppxPackageDir=D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\ /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /
+      run: msbuild $env:Solution_Path /p:AppxPackageDir=D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\ /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle
       env:
         AppxBundle: Always
         AppxPackageSigningEnabled: false
