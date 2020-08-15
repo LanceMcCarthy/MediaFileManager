@@ -17,7 +17,7 @@ You can use the web page that distributes the side load package.
 1. Go to [Media File Manager](https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/index.html)
 2. Click **Get the App**.
 
-![](../../.images/SideLoadPageSS.png)
+![](https://github.com/LanceMcCarthy/MediaFileManager/blob/main/.images/SideLoadPageSS.png)
 
 > This option will automatically update your installation even though you're not using the Microsoft Store!
 
