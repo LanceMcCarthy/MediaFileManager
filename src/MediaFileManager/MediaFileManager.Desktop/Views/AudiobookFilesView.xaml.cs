@@ -47,12 +47,6 @@ namespace MediaFileManager.Desktop.Views
             WriteOutput($"Ready, open an author folder to begin.", OutputMessageLevel.Success);
         }
 
-        public ObservableCollection<OutputMessage> StatusMessages { get; }
-
-        public ObservableCollection<string> AudiobookTitles { get; }
-
-        public ObservableCollection<AudiobookFile> AudiobookFiles { get; }
-
         private void SelectAuthorFolderButton_Click(object sender, RoutedEventArgs e)
         {
             try
