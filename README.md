@@ -1,11 +1,18 @@
 # MediaFileManager
 
-[Media File Manager installable via Microsoft Store](https://www.microsoft.com/en-us/p/media-file-manager/9pd3jfk7w5mb) a UWP Packaged WPF application. [Watch a quick video demo](https://www.screencast.com/t/84UQ7Vkv) (< 1 minute).
+Media File Manager is a UWP-packaged WPF application for easily naming media files that need a specific  naming paradigm ([see this 50 second video](https://youtu.be/5U7rmrJXwWw)).
+
+This repo also serves as a real-world example using GitHub Actions to package and distribute a WPF application as a UWP-packaged distribution to the Microsoft Store *and* Azure Storage blob! 
 
 | Branch       | Status                           |
-|--------------|------------------------------------------|
+|--------------|----------------------------------|
 | master | ![WPF CI](https://github.com/LanceMcCarthy/MediaFileManager/workflows/WPF%20CI/badge.svg)|
 | releases | ![WPF CD](https://github.com/LanceMcCarthy/MediaFileManager/workflows/WPF%20CD/badge.svg) |
+
+### Installation Options
+
+* [Microsoft Store](https://www.microsoft.com/en-us/p/media-file-manager/9pd3jfk7w5mb)
+* [AppInstaller Web Site](https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/index.html)
 
 ## Getting Started - Video Files
 

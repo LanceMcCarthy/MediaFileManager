@@ -99,7 +99,7 @@ jobs:
         AppxPackageSigningEnabled: True
         GenerateAppInstallerFile: True
         BuildMode: SideloadOnly
-        AppInstUri: https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/PackageProject.appinstaller
+        AppInstUri: https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/
       
 
     # ************************* UWP STORE PACKAGE BUILD ************************* #
