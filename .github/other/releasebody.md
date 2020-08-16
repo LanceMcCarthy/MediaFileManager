@@ -8,27 +8,21 @@ You can install the app right from the Microsoft Store at any time - [See Media 
 
 ## Sideload
 
-If you want to sideload the release, there are 3 ways to do it.
+If you want to sideload the release, there are two ways to do it.
 
-### Option I - Web with Automatic Update Support (**Recommended**)
+#### Option 1 [Easy] - AppInstaller (recommended)
 
-You can use the web page that distributes the side load package. 
+This option provides automatic update support and is the easiest way to install an app.
+ 
+1. Go to [Media File Manager installer website](https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/index.html) and click **Get the App** button.
 
-1. Go to [Media File Manager](https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/index.html)
-2. Click **Get the App**.
-
-![](https://github.com/LanceMcCarthy/MediaFileManager/blob/main/.images/SideLoadPageSS.png)
+![Screenshot of Get the App button](https://github.com/LanceMcCarthy/MediaFileManager/blob/main/.images/SideLoadPageSS.png)
 
 > This option will automatically update your installation even though you're not using the Microsoft Store!
 
-### Option II - Use appinstaller file locally
+#### Option 2 [Advanced] - Powershell
 
-1. Download and extract the `SideloadPackages.zip`.
-2. Double click on the `PackageProject.appinstaller` file.
-
-### Otion III - Powershell
-
-1. Download and extract the `SideloadPackages.zip` file
+1. Download and extract the `SideloadPackages.zip` file from the release attachments.
 2. Navigate to the 'PackageProject.xxxx.Test/` subfolder.
 3. Right-click on the `Install.ps1` file and select **Run with Powershell**
 
