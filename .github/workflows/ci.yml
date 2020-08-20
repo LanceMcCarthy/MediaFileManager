@@ -24,6 +24,12 @@ jobs:
       with:
         fetch-depth: 0
     
+    # This action uses sentiment to analyze the sentiment of an incoming PR and responds with a gif and score from -5 to 5.
+    - uses: TerabyteTiger/action-happyPR@v2
+      id: happy
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
     # Install the .NET Core workload
     - name: Install .NET Core 3.1
       uses: actions/setup-dotnet@v1
