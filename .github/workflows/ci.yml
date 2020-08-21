@@ -6,6 +6,8 @@ on:
     branches:
       - main
   pull_request:
+    types:
+      - opened
     branches:
       - main
 
@@ -74,7 +76,7 @@ jobs:
         TargetPlatform: x86
         
     # This action uses sentiment to analyze the sentiment of an incoming PR and responds with a gif and score from -5 to 5.
-    #- uses: TerabyteTiger/action-happyPR@v2
-    #  id: happy
-    #  with:
-    #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: TerabyteTiger/action-happyPR@v2
+      id: happyPR-go
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
