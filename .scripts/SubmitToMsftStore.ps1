@@ -20,10 +20,10 @@ Set-StoreBrokerAuthentication -TenantId $tenantId -Credential $cred
 
 # ********* Prepare Submission Package *********
 $configFilePath = 'D:\a\MediaFileManager\MediaFileManager\.scripts\sbConfig.json'
-New-SubmissionPackage -ConfigPath $configFilePath -AppxPath $appxUploadFilePath -OutPath $sbTempFolderPath -OutName 'submission.json'
+New-SubmissionPackage -ConfigPath $configFilePath -AppxPath $appxUploadFilePath -OutPath $sbTempFolderPath -OutName 'submission'
 
 # ********* UPDATE & COMMIT SUBMISSION *********
 $submissionDataPath = Join-Path -Path $sbTempFolderPath -ChildPath 'submission.json'
-$submissionPackagePath = Join-Path -Path $sbTempFolderPath -ChildPath 'package.zip'
+$submissionPackagePath = Join-Path -Path $sbTempFolderPath -ChildPath 'submission.zip'
 
 Update-ApplicationSubmission -ReplacePackages -AppId $appStoreId -SubmissionDataPath $submissionDataPath -PackagePath $submissionPackagePath -AutoCommit -Force
