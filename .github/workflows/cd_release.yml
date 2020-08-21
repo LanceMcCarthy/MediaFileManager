@@ -1,5 +1,5 @@
 # If you are looking for guidance for your builds, see https://github.com/microsoft/github-actions-for-desktop-apps
-name: WPF CD
+name: Release
 
 on:
   push:

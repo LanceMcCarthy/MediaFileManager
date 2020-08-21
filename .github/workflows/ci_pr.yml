@@ -1,5 +1,5 @@
 # If you are looking for guidance for your builds, see https://github.com/microsoft/github-actions-for-desktop-apps
-name:  WPF CI
+name: Main-PR
 
 on:
   pull_request:
@@ -23,6 +23,12 @@ jobs:
       with:
         fetch-depth: 0
       
+    # This action uses sentiment to analyze the sentiment of an incoming PR and responds in the PR thread with a GIF
+    - uses: TerabyteTiger/action-happyPR@v2
+      id: happyPR-go
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     # Install the .NET Core workload
     - name: Install .NET Core 3.1
       uses: actions/setup-dotnet@v1
@@ -72,8 +78,3 @@ jobs:
         Configuration: Debug
         TargetPlatform: x86
         
-    # This action uses sentiment to analyze the sentiment of an incoming PR and responds with a gif and score from -5 to 5.
-    - uses: TerabyteTiger/action-happyPR@v2
-      id: happyPR-go
-      with:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
