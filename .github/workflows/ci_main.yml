@@ -1,11 +1,8 @@
 # If you are looking for guidance for your builds, see https://github.com/microsoft/github-actions-for-desktop-apps
-name:  WPF CI
+name: Main
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
     branches:
       - main
 
@@ -23,7 +20,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    
+      
     # Install the .NET Core workload
     - name: Install .NET Core 3.1
       uses: actions/setup-dotnet@v1
@@ -63,30 +60,12 @@ jobs:
         # https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
         RID: win-x86
 
-    # Decode the Base64 encoded certificate, save it as a PFX file and install it
-    - name: Decode and Install the Signing Certificate
-      run: |
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
-        $currentDirectory = Get-Location
-        $certificatePath = Join-Path -Path $currentDirectory -ChildPath src\MediaFileManager\PackageProject -AdditionalChildPath $env:CERTIFICATE_FILENAME
-        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
-
     # Build the WAP project
     - name: Build the Windows Application Packaging Project (wapproj) 
-      run: msbuild src\MediaFileManager\MediaFileManager.sln /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateThumbprint=${{ secrets.LancelotSoftwareCert_Thumbprint }} /p:PackageCertificateKeyFile=$env:CERTIFICATE_FILENAME /p:PackageCertificatePassword=${{ secrets.LancelotSoftwareCert_Key }}
+      run: msbuild src\MediaFileManager\MediaFileManager.sln /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
       env:
         AppxBundle: Never
-        BuildMode: SideLoadOnly
+        AppxPackageSigningEnabled: False
+        BuildMode: CI
         Configuration: Debug
         TargetPlatform: x86
-
-    # Delete the .pfx
-    - name: Uninstall the Signing Certificate
-      run: Remove-Item -path src\MediaFileManager\PackageProject\$env:CERTIFICATE_FILENAME
-
-    # Upload the MSIX package: https://github.com/marketplace/actions/upload-artifact
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v1
-      with:
-        name: MSIX Package
-        path: src\MediaFileManager\PackageProject\AppPackages\
