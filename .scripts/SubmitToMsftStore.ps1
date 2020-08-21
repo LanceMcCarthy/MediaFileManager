@@ -10,6 +10,13 @@ $tenantId = $env:PartnerCenterTenantId
 # ********* Create temporary directory for submission artifacts *********
 $sbTempFolderPath = New-Item -Type Directory -Force -Path (Join-Path -Path 'D:\a\MediaFileManager\MediaFileManager\' -ChildPath 'SBTemp')
 
+# WORKAROUND
+$azureStorageDllSourcePath = "https://dvlup.blob.core.windows.net/general-app-files/Assemblies/Microsoft.WindowsAzure.Storage.dll"
+$azureStorageDllTargetPath = New-Item -Type Directory -Force -Path (Join-Path -Path sbTempFolderPath -ChildPath 'Microsoft.WindowsAzure.Storage.dll')
+
+$client = new-object System.Net.WebClient
+$client.DownloadFile($waDll, $azureStorageDllTargetPath)
+
 # ********* Install StoreBroker and import PowerShell Module *********
 git clone https://github.com/Microsoft/StoreBroker.git 'D:\a\MediaFileManager\MediaFileManager\SBGitRoot\'
 Import-Module -Force 'D:\a\MediaFileManager\MediaFileManager\SBGitRoot\StoreBroker'
