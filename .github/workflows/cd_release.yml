@@ -145,9 +145,9 @@ jobs:
         GenerateAppInstallerFile: False
 
     # Use Store Broker to publish to Microsoft Store
-    - name: Submit to Partner Center (aka DevCenter)
-      shell: pwsh
-      run: ./.scripts/SubmitToMsftStore.ps1
+    #- name: Submit to Partner Center (aka DevCenter)
+    #  shell: pwsh
+    #  run: ./.scripts/SubmitToMsftStore.ps1
 
     # ZIP up the store upload packages using Powershell
     - name: Create StoreUploadPackages.zip
