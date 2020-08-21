@@ -12,10 +12,8 @@ $sbTempFolderPath = New-Item -Type Directory -Force -Path (Join-Path -Path 'D:\a
 
 # WORKAROUND
 $azureStorageDllSourcePath = "https://dvlup.blob.core.windows.net/general-app-files/Assemblies/Microsoft.WindowsAzure.Storage.dll"
-$azureStorageDllTargetPath = New-Item -Type Directory -Force -Path (Join-Path -Path sbTempFolderPath -ChildPath 'Microsoft.WindowsAzure.Storage.dll')
-
-$client = new-object System.Net.WebClient
-$client.DownloadFile($waDll, $azureStorageDllTargetPath)
+$azureStorageDllTargetPath = "D:\a\MediaFileManager\MediaFileManager\SBTemp\Microsoft.WindowsAzure.Storage.dll"
+Invoke-WebRequest $azureStorageDllSourcePath -OutFile $azureStorageDllTargetPath
 
 # ********* Install StoreBroker and import PowerShell Module *********
 git clone https://github.com/Microsoft/StoreBroker.git 'D:\a\MediaFileManager\MediaFileManager\SBGitRoot\'
@@ -27,10 +25,10 @@ Set-StoreBrokerAuthentication -TenantId $tenantId -Credential $cred
 
 # ********* Prepare Submission Package *********
 $configFilePath = 'D:\a\MediaFileManager\MediaFileManager\.scripts\sbConfig.json'
-New-SubmissionPackage -ConfigPath $configFilePath -AppxPath $appxUploadFilePath -OutPath $sbTempFolderPath -OutName 'submission'
+New-SubmissionPackage -ConfigPath $configFilePath -AppxPath $appxUploadFilePath -OutPath $sbTempFolderPath -OutName 'submission' -NoStatus
 
 # ********* UPDATE & COMMIT SUBMISSION *********
 $submissionDataPath = Join-Path -Path $sbTempFolderPath -ChildPath 'submission.json'
 $submissionPackagePath = Join-Path -Path $sbTempFolderPath -ChildPath 'submission.zip'
 
-Update-ApplicationSubmission -ReplacePackages -AppId $appStoreId -SubmissionDataPath $submissionDataPath -PackagePath $submissionPackagePath -AutoCommit -Force
+Update-ApplicationSubmission -ReplacePackages -AppId $appStoreId -SubmissionDataPath $submissionDataPath -PackagePath $submissionPackagePath -AutoCommit -Force -NoStatus
