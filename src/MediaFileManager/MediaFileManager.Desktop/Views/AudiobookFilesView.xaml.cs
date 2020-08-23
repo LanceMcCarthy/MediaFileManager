@@ -222,9 +222,10 @@ namespace MediaFileManager.Desktop.Views
             busyIndicator.IsIndeterminate = false;
             busyIndicator.ProgressValue = 0;
 
-            backgroundWorker.RunWorkerAsync(new TagWorkerParameters
+            var selectedFiles = AudiobookFilesGridView.SelectedItems.Cast<AudiobookFile>().ToList();
+
+            backgroundWorker.RunWorkerAsync(new TagWorkerParameters(selectedFiles)
             {
-                AudiobookFiles = AudiobookFilesGridView.SelectedItems.Cast<AudiobookFile>().ToList(),
                 UpdateAlbumName = SetAlbumNameCheckBox.IsChecked,
                 UpdateTitle = SetTitleCheckBox.IsChecked,
                 UpdateArtistName = SetArtistNameCheckBox.IsChecked
