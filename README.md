@@ -2,11 +2,15 @@
 
 Media File Manager is a UWP-packaged WPF application for easily naming media files that need a specific  naming paradigm ([see this 50 second video](https://youtu.be/5U7rmrJXwWw)).
 
-This repo also serves as a real-world example using GitHub Actions to package and distribute a WPF application as a UWP-packaged distribution to the Microsoft Store *and* Azure Storage blob!
 
-| Pull Request  | Main | Release |
-|--------------|--------------|----------------|
-| ![Main-PR](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Main-PR/badge.svg) | ![Main](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Main/badge.svg)| ![Release](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Release/badge.svg) |
+
+| Branch | Build Status | Pull Requests |
+|--------|--------|-----------|
+| Release | ![Release](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Release/badge.svg) | `not configured` |
+| Main | ![Main](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Main/badge.svg) | ![Main-PR](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Main-PR/badge.svg) |
+| .NET Core 5 | ![NET Core 5](https://github.com/LanceMcCarthy/MediaFileManager/workflows/NET%20Core%205/badge.svg) | `not configured` |
+
+> This repo also serves as a real-world example using GitHub Actions to build and distribute a WPF application to the Microsoft Store and Azure Storage.
 
 ## Installation Options
 

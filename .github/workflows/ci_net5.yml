@@ -1,0 +1,82 @@
+# If you are looking for guidance for your builds, see https://github.com/microsoft/github-actions-for-desktop-apps
+name: NET Core 5
+
+on:
+  push:
+    branches:
+      - netcore5
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      StorePublisher: "CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02"
+      PfxPublisher: "&quot;Lancelot Software, LLC&quot;, O=&quot;Lancelot Software, LLC&quot;, L=NORTH BILLERICA, S=Massachusetts, C=US"
+      TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
+      TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+      SolutionPath: src\MediaFileManager\MediaFileManager.sln
+      WpfProjPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+      NugetConfigPath: src\nuget.config
+      Configuration: Debug
+      TargetPlatform: x64
+      RID: win-x64 # https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+      
+    # Install the .NET Core workload
+    #- name: Install .NET Core
+    #  uses: actions/setup-dotnet@v1
+    #  with:
+    #    dotnet-version: '5.0.100-preview.7.20366.6'
+
+    # https://dotnet.microsoft.com/download/dotnet-core/scripts
+    - name: Install .NET 5
+      run: |
+        Invoke-WebRequest -Uri 'https://dot.net/v1/dotnet-install.ps1' -OutFile 'dotnet-install.ps1'
+        .\dotnet-install.ps1 -Version '5.0.100-preview.7.20366.6' -Runtime 'windowsdesktop' -Architecture 'x64' 
+
+    # Restore packages, using nuget.config
+    - name: NuGet Restore
+      run: dotnet restore $env:SolutionPath --configfile $env:NugetConfigPath --runtime $env:RID
+    
+    # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v1.0.1
+    
+    # Restore WPF project
+    - name: Restore the Wpf application to populate the obj folder
+      run: msbuild $env:WpfProjPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID
+    
+    # Create my own version number with a specific format using date. ex: 2020.805.1.0
+    - uses: Amadevus/pwsh-script@v1
+      id: version-creator
+      with:
+        script: |
+          $buildDay = Get-Date -Format "yyyy.Mdd"
+          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+          Set-ActionVariable UWP_VERSION $ver
+
+    # Update the UWP package version
+    - name: Update manifest version
+      run: |
+        [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
+        $manifest.Package.Identity.Version = "$env:UWP_VERSION"
+        $manifest.Package.Identity.Name = "61469LanceLotSoftware.MediaFileManager"
+        $manifest.Package.Identity.Publisher = "CN='Lancelot Software, LLC', O='Lancelot Software, LLC', L=NORTH BILLERICA, S=Massachusetts, C=US"
+        $manifest.Package.Properties.DisplayName = "Media File Manager"
+        $manifest.Package.Properties.PublisherDisplayName = "Lancelot Software"
+        $manifest.Package.Applications.Application.VisualElements.DisplayName = "Media File Manager"
+        $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
+    
+    # Build the WAP project
+    - name: Build the Windows Application Packaging Project (wapproj) 
+      run: msbuild $env:SolutionPath /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
+      env:
+        AppxBundle: Never
+        AppxPackageSigningEnabled: False
+        BuildMode: CI
