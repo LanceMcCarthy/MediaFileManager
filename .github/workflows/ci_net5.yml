@@ -8,7 +8,8 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+  runs-on: windows-latest
+    #runs-on: self-hosted
 
     env:
       StorePublisher: "CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02"
@@ -33,23 +34,20 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '5.0.100-preview.8.20417.9'
-    
-    - name: Ps1 Execution Policy (see https://github.com/actions/virtual-environments/issues/1503)
-      run: Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
 
     # Restore packages, using nuget.config
     - name: NuGet Restore
       run: dotnet restore $env:SolutionPath --configfile $env:NugetConfigPath --runtime $env:RID
     
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
-    - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1.0.1
-      with:
-        vs-version: '16.8' #needs v16.8 msbuild (VS2019 Preview) to build .NET5 project
+    #- name: Setup MSBuild.exe
+    #  uses: microsoft/setup-msbuild@v1.0.1
+    #  with:
+    #    vs-version: '16.8' #needs v16.8 msbuild (VS2019 Preview) to build .NET5 project
     
     # Restore WPF project
     - name: Restore the Wpf application to populate the obj folder
-      run: msbuild $env:WpfProjPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID
+      run: dotnet msbuild $env:WpfProjPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID
     
     # Create my own version number with a specific format using date. ex: 2020.805.1.0
     - uses: Amadevus/pwsh-script@v1
@@ -74,7 +72,7 @@ jobs:
     
     # Build the WAP project
     - name: Build the Windows Application Packaging Project (wapproj) 
-      run: msbuild $env:SolutionPath /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
+      run: dotnet msbuild $env:SolutionPath /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
       env:
         AppxBundle: Never
         AppxPackageSigningEnabled: False
