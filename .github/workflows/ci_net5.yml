@@ -36,7 +36,6 @@ jobs:
     
     - name: Ps1 Execution Policy (see https://github.com/actions/virtual-environments/issues/1503)
       run: Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
-      shell: pwsh
 
     # Restore packages, using nuget.config
     - name: NuGet Restore
