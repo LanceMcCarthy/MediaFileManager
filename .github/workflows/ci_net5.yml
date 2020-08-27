@@ -64,13 +64,7 @@ jobs:
         $manifest.Package.Properties.PublisherDisplayName = "Lancelot Software"
         $manifest.Package.Applications.Application.VisualElements.DisplayName = "Media File Manager"
         $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
-    
-    - name: Jeremy's Workaround Suggestion
-      run: |
-        Write-Host 'Setting msbuild to VS 2019 16.7 to use installed MSIX tools'
-        $revertedMSBuildPath = Join-Path -Path $env:VSINSTALLDIR -ChildPath 'MSBuild'
-        set MSBuildExtensionsPath=$revertedMSBuildPath
-    
+
     # Add MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     #- name: Setup MSBuild.exe
     #  uses: microsoft/setup-msbuild@v1.0.1
@@ -79,7 +73,7 @@ jobs:
     
     # Build the WAP project with VS msbuild
     - name: Build the Windows Application Packaging Project (wapproj)
-      run: msbuild $env:WapProjPath /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
+      run: msbuild $env:WapProjPath /p:MSBuildExtensionsPath="%VSINSTALLDIR%MSBuild" /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
       env:
         AppxBundle: Never
         AppxPackageSigningEnabled: False
