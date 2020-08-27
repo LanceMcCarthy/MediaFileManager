@@ -39,6 +39,7 @@ jobs:
       run: |
         Invoke-WebRequest -Uri 'https://dot.net/v1/dotnet-install.ps1' -OutFile 'dotnet-install.ps1'
         .\dotnet-install.ps1 -Version '5.0.100-rc.1.20427.4' -Channel '5.0.100 RC 1' -Architecture $env:TargetPlatform
+        #.\dotnet-install.ps1 -Version '5.0.100-preview.7.20366.6' -Runtime 'windowsdesktop' -Architecture 'x64' -Channel '5.0.100 Preview 7'
 
     # Restore packages, using nuget.config
     - name: NuGet Restore
