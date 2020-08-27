@@ -15,7 +15,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Images\SplashscreenImage.png" />
-    <None Remove="Images\SplashscreenLogo200.png" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Images\SplashscreenImage.png">
