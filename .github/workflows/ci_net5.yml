@@ -70,16 +70,16 @@ jobs:
     - name: Build Wpf application to populate the obj folder
       run: dotnet msbuild $env:WpfProjPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID
 
-    # Build the WAP project with .NET5
-    - name: Build the Windows Application Packaging Project (wapproj)
-      run: dotnet msbuild $env:WapProjectPath /p:MSBuildExtensionsPath="C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild" /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
-      env:
-        AppxBundle: Never
-        AppxPackageSigningEnabled: False
-        BuildMode: CI
-        WapProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
+    # DOESNT WORK - Build the WAP project with .NET5
+    # - name: Build the Windows Application Packaging Project (wapproj)
+    #   run: dotnet msbuild $env:WapProjectPath /p:MSBuildExtensionsPath="C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild" /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
+    #   env:
+    #     AppxBundle: Never
+    #     AppxPackageSigningEnabled: False
+    #     BuildMode: CI
+    #     WapProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
     
-    # Build the WAP project with VS msbuild
+    # NEEDS VS2019 16.8 to be on the runner - Build the WAP project with VS msbuild
     # - name: Build the Windows Application Packaging Project (wapproj)
     #   run: msbuild $env:SolutionPath /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
     #   env:
