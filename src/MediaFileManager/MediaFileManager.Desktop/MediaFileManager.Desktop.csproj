@@ -14,11 +14,10 @@
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Images\Splashscreen Logo 100.png" />
-    <None Remove="Images\SplashscreenLogo200.png" />
+    <None Remove="Images\SplashscreenImage.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Images\Splashscreen Logo 100.png">
+    <Content Include="Images\SplashscreenImage.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
