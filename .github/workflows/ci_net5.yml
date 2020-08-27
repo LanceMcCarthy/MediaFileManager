@@ -78,4 +78,4 @@ jobs:
         AppxBundle: Never
         AppxPackageSigningEnabled: False
         BuildMode: CI
-        MsBuildExPath: $env:VSINSTALLDIR/MSBuild
+        MsBuildExPath: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild'
