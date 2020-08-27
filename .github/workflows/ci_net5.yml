@@ -41,6 +41,8 @@ jobs:
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.1
+      with:
+        vs-version: '[16.8, )' #needs VS2019 preview's msbuild
     
     # Restore WPF project
     - name: Restore the Wpf application to populate the obj folder
