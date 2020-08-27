@@ -25,7 +25,9 @@ namespace MediaFileManager.Desktop
         protected override async void OnStartup(StartupEventArgs e)
         {
             var dataContext = (SplashScreenDataContext)RadSplashScreenManager.SplashScreenDataContext;
-            dataContext.ImagePath = "/MediaFileManager.Desktop;component/Images/Splashscreen Logo 100.png";
+            dataContext.ImagePath = "/MediaFileManager.Desktop;component/Images/SplashscreenImage.png";
+            dataContext.ImageWidth = 600;
+
             dataContext.Content = "Loading Media File Manager...";
             
             dataContext.IsIndeterminate = false;
