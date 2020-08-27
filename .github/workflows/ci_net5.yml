@@ -34,6 +34,10 @@ jobs:
       with:
         dotnet-version: '5.0.100-preview.8.20417.9'
     
+    - name: Ps1 Execution Policy (see https://github.com/actions/virtual-environments/issues/1503)
+      run: Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force
+      shell: pwsh
+
     # Restore packages, using nuget.config
     - name: NuGet Restore
       run: dotnet restore $env:SolutionPath --configfile $env:NugetConfigPath --runtime $env:RID
