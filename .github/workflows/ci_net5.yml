@@ -70,10 +70,18 @@ jobs:
         $manifest.Package.Applications.Application.VisualElements.DisplayName = "Media File Manager"
         $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
     
-    # Build the WAP project
+    # Build the WAP project with dotnet msbuild
     - name: Build the Windows Application Packaging Project (wapproj) 
-      run: dotnet msbuild $env:SolutionPath /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
+      run: dotnet msbuild $env:SolutionPath /p:RuntimeIdentifier=$env:RID /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
       env:
         AppxBundle: Never
         AppxPackageSigningEnabled: False
         BuildMode: CI
+    
+    # Build the WAP project with VS msbuild
+    #- name: Build the Windows Application Packaging Project (wapproj) 
+    #  run: msbuild $env:SolutionPath /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
+    #  env:
+    #    AppxBundle: Never
+    #    AppxPackageSigningEnabled: False
+    #    BuildMode: CI
