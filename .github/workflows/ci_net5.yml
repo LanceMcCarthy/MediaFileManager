@@ -73,7 +73,7 @@ jobs:
     
     # Build the WAP project with VS msbuild
     - name: Build the Windows Application Packaging Project (wapproj)
-      run: msbuild $env:WapProjPath /p:MSBuildExtensionsPath="%VSINSTALLDIR%MSBuild" /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
+      run: dotnet msbuild $env:WapProjPath /p:MSBuildExtensionsPath="%VSINSTALLDIR%MSBuild" /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
       env:
         AppxBundle: Never
         AppxPackageSigningEnabled: False
