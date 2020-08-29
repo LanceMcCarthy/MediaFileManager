@@ -239,6 +239,7 @@
 
         <telerik:RadBusyIndicator x:Name="busyIndicator"
                                   Background="#DDFFFFFF"
+                                  Visibility="Collapsed"
                                   IsBusy="False" />
     </Grid>
 </UserControl>

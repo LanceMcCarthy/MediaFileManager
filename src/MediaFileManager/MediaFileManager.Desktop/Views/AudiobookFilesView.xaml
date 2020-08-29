@@ -157,6 +157,7 @@
 
         <telerik:RadBusyIndicator x:Name="busyIndicator"
                                   Background="#99000000"
+                                  Visibility="Collapsed"
                                   IsBusy="False" />
     </Grid>
 </UserControl>
