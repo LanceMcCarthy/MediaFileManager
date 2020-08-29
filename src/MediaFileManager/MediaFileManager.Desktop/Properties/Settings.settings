@@ -11,5 +11,8 @@
     <Setting Name="AppCenterAnalyticsKey" Type="System.String" Scope="User">
       <Value Profile="(Default)">d675d968-d698-4a38-832a-8b9db5d3764d</Value>
     </Setting>
+    <Setting Name="PreferredTheme" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Fluent</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
