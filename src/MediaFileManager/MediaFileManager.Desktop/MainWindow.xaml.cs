@@ -64,7 +64,7 @@ namespace MediaFileManager.Desktop
 
                 PersonalizationHelpers.UpdateTheme(selectedThemeName);
 
-                Analytics.TrackEvent("ThemeChanged", new Dictionary<string, string>
+                Microsoft.AppCenter.Analytics.Analytics.TrackEvent("ThemeChanged", new Dictionary<string, string>
                 {
                     { "Theme Name", selectedThemeName }
                 });
