@@ -20,12 +20,9 @@
     <None Remove="Images\SplashscreenImage.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Images\SplashscreenImage.png">
+    <Content Include="Images\SplashScreenImage.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,6 +34,35 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="taglib-sharp-netstandard2.0" Version="2.1.0" />
-    <PackageReference Include="Telerik.UI.for.Wpf.NetCore.Xaml" Version="2020.2.617" />
+    <PackageReference Include="Telerik.UI.for.Wpf.NetCore" Version="2020.2.617" />
+    <PackageReference Include="Telerik.Windows.Themes.Crystal.for.Wpf" Version="2020.2.617" />
+    <PackageReference Include="Telerik.Windows.Themes.Expression_Dark.for.Wpf" Version="2020.2.617" />
+    <PackageReference Include="Telerik.Windows.Themes.Fluent.for.Wpf" Version="2020.2.617" />
+    <PackageReference Include="Telerik.Windows.Themes.Green.for.Wpf" Version="2020.2.617" />
+    <PackageReference Include="Telerik.Windows.Themes.Material.for.Wpf" Version="2020.2.617" />
+    <PackageReference Include="Telerik.Windows.Themes.Office2013.for.Wpf" Version="2020.2.617" />
+    <PackageReference Include="Telerik.Windows.Themes.Office2016.for.Wpf" Version="2020.2.617" />
+    <PackageReference Include="Telerik.Windows.Themes.Summer.for.Wpf" Version="2020.2.617" />
+    <PackageReference Include="Telerik.Windows.Themes.Transparent.for.Wpf" Version="2020.2.617" />
+    <PackageReference Include="Telerik.Windows.Themes.Vista.for.Wpf" Version="2020.2.617" />
+    <PackageReference Include="Telerik.Windows.Themes.VisualStudio2013.for.Wpf" Version="2020.2.617" />
+    <PackageReference Include="Telerik.Windows.Themes.VisualStudio2019.for.Wpf" Version="2020.2.617" />
+    <PackageReference Include="Telerik.Windows.Themes.Windows7.for.Wpf" Version="2020.2.617" />
+    <PackageReference Include="Telerik.Windows.Themes.Windows8.for.Wpf" Version="2020.2.617" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>PublicSettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 </Project>

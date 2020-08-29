@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using MediaFileManager.Desktop.Helpers;
 using MediaFileManager.Desktop.Views;
 using Telerik.Windows.Controls;
 
@@ -11,12 +12,17 @@ namespace MediaFileManager.Desktop
     {
         public MainWindow()
         {
+            if (Properties.Settings.Default.PreferredTheme != "Fluent")
+            {
+                PersonalizationHelpers.UpdateTheme(Properties.Settings.Default.PreferredTheme);
+            }
+
             InitializeComponent();
 
-            var rw = new RadWindow();
+            ThemeComboBox.ItemsSource = PersonalizationHelpers.ThemeNames;
+            ThemeComboBox.SelectedItem = Properties.Settings.Default.PreferredTheme;
 
-            FileTypeComboBox.ItemsSource = new List<string> {"Videos", "Audiobooks", "Music"};
-
+            FileTypeComboBox.ItemsSource = new List<string> {"Videos", "Audiobooks", "Music"}; 
             FileTypeComboBox.SelectedIndex = Properties.Settings.Default.SelectedViewIndex;
         }
 
@@ -48,6 +54,24 @@ namespace MediaFileManager.Desktop
                     { "FileType", selectedItem }
                 });
             }
+        }
+
+        private void ThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems != null)
+            {
+                var selectedThemeName = ThemeComboBox.SelectedItem.ToString();
+
+                PersonalizationHelpers.UpdateTheme(selectedThemeName);
+
+                Analytics.TrackEvent("ThemeChanged", new Dictionary<string, string>
+                {
+                    { "Theme Name", selectedThemeName }
+                });
+
+                Properties.Settings.Default.PreferredTheme = selectedThemeName;
+                Properties.Settings.Default.Save();
+            } 
         }
     }
 }

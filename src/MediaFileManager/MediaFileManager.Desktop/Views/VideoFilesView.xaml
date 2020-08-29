@@ -244,7 +244,7 @@
             </telerikDocking:RadSplitContainer>
         </telerik:RadDocking>
 
-        <telerik:RadBusyIndicator x:Name="busyIndicator"
+        <telerik:RadBusyIndicator x:Name="LocalBusyIndicator"
                                   Background="#DDFFFFFF"
                                   Visibility="Collapsed"
                                   IsBusy="False" />
