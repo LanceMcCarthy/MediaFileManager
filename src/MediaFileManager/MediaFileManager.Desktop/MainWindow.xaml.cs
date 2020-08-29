@@ -3,9 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using MediaFileManager.Desktop.Helpers;
 using MediaFileManager.Desktop.Views;
-using Microsoft.AppCenter.Analytics;
 
-// ReSharper disable InconsistentNaming
 namespace MediaFileManager.Desktop
 {
     public partial class MainWindow : Window
@@ -49,7 +47,7 @@ namespace MediaFileManager.Desktop
 
                 Properties.Settings.Default.SelectedViewIndex = FileTypeComboBox.SelectedIndex;
 
-                Analytics.TrackEvent("View Selected", new Dictionary<string, string>
+                Microsoft.AppCenter.Analytics.Analytics.TrackEvent("View Selected", new Dictionary<string, string>
                 {
                     { "FileType", selectedItem }
                 });
@@ -64,7 +62,7 @@ namespace MediaFileManager.Desktop
 
                 PersonalizationHelpers.UpdateTheme(selectedThemeName);
 
-                Analytics.TrackEvent("ThemeChanged", new Dictionary<string, string>
+                Microsoft.AppCenter.Analytics.Analytics.TrackEvent("ThemeChanged", new Dictionary<string, string>
                 {
                     { "Theme Name", selectedThemeName }
                 });
