@@ -13,8 +13,9 @@
             <telerik:RadDocking.DocumentHost>
                 <telerikDocking:RadSplitContainer>
                     <telerikDocking:RadPaneGroup x:Name="SeasonsPaneGroup"
-                                          telerikDocking:ProportionalStackPanel.RelativeSize="200, 200">
-                        <telerikDocking:RadPane Header="Seasons">
+                                                 telerikDocking:ProportionalStackPanel.RelativeSize="200, 200">
+                        <telerikDocking:RadPane Header="Seasons"
+                                                CanUserClose="False">
                             <ListBox x:Name="SeasonsListBox"
                                      SelectionMode="Extended"
                                      SelectionChanged="SeasonsListBox_SelectionChanged"
@@ -22,16 +23,18 @@
                         </telerikDocking:RadPane>
                     </telerikDocking:RadPaneGroup>
                     <telerikDocking:RadPaneGroup x:Name="EpisodesPaneGroup"
-                                          telerikDocking:ProportionalStackPanel.RelativeSize="400, 200">
+                                                 telerikDocking:ProportionalStackPanel.RelativeSize="400, 200">
                         <telerikDocking:RadPane x:Name="EpisodesPane"
-                                         Header="Episodes">
+                                                Header="Episodes"
+                                                CanUserClose="False">
                             <ListBox x:Name="EpisodesListBox"
                                      SelectionMode="Extended"
                                      SelectionChanged="EpisodesListBox_SelectionChanged"
                                      Margin="5" />
                         </telerikDocking:RadPane>
                         <telerikDocking:RadPane x:Name="ResultPreviewPane"
-                                         Header="Preview">
+                                                Header="Preview"
+                                                CanUserClose="False">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*" />
@@ -72,7 +75,8 @@
 
             <telerikDocking:RadSplitContainer InitialPosition="DockedLeft">
                 <telerikDocking:RadPaneGroup>
-                    <telerikDocking:RadPane Header="Status">
+                    <telerikDocking:RadPane Header="Status"
+                                            CanUserClose="False">
                         <Grid Margin="5">
                             <Grid.RowDefinitions>
                                 <RowDefinition />
@@ -112,7 +116,8 @@
                             </StackPanel>
                         </Grid>
                     </telerikDocking:RadPane>
-                    <telerikDocking:RadPane Header="Help">
+                    <telerikDocking:RadPane Header="Help"
+                                            CanUserClose="False">
                         <TextBlock TextWrapping="Wrap"
                                    Margin="5">
                             <Run Text="Getting Started"
@@ -152,7 +157,8 @@
 
             <telerikDocking:RadSplitContainer InitialPosition="DockedBottom">
                 <telerikDocking:RadPaneGroup>
-                    <telerikDocking:RadPane Header="Renaming Operations">
+                    <telerikDocking:RadPane Header="Renaming Operations"
+                                            CanUserClose="False">
                         <StackPanel Margin="5">
                             <telerik:RadWatermarkTextBox x:Name="EpisodeName_Renaming_TextBox"
                                                          IsReadOnly="True"
@@ -185,7 +191,8 @@
                             </Grid>
                         </StackPanel>
                     </telerikDocking:RadPane>
-                    <telerikDocking:RadPane Header="Renumbering Operations">
+                    <telerikDocking:RadPane Header="Renumbering Operations"
+                                            CanUserClose="False">
                         <StackPanel Margin="5">
                             <TextBlock Text="Select the text that will be replaced with: 'show name - SXXEXX -' "
                                        Margin="5,0" />

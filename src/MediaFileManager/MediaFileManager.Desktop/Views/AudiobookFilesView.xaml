@@ -15,7 +15,8 @@
                 <telerikDocking:RadSplitContainer>
                     <telerikDocking:RadPaneGroup x:Name="AlbumsPaneGroup"
                                                  telerikDocking:ProportionalStackPanel.RelativeSize="200, 200">
-                        <telerikDocking:RadPane Header="Audiobook Folders">
+                        <telerikDocking:RadPane Header="Audiobook Folders"
+                                                CanUserClose="False">
                             <ListBox x:Name="AudiobookTitlesListBox"
                                      SelectionMode="Extended"
                                      SelectionChanged="AudiobookTitlesListBox_SelectionChanged"
@@ -25,7 +26,8 @@
                     <telerikDocking:RadPaneGroup x:Name="SongsPaneGroup"
                                                  telerikDocking:ProportionalStackPanel.RelativeSize="500, 200">
                         <telerikDocking:RadPane x:Name="DataGridPane"
-                                                Header="Audiobook Files">
+                                                Header="Audiobook Files"
+                                                CanUserClose="False">
                             <telerik:RadGridView x:Name="AudiobookFilesGridView"
                                                  AutoGenerateColumns="False"
                                                  SelectionMode="Extended"
@@ -51,7 +53,8 @@
 
             <telerikDocking:RadSplitContainer InitialPosition="DockedLeft">
                 <telerikDocking:RadPaneGroup>
-                    <telerikDocking:RadPane Header="Status">
+                    <telerikDocking:RadPane Header="Status"
+                                            CanUserClose="False">
                         <Grid Margin="5">
                             <Grid.RowDefinitions>
                                 <RowDefinition />
@@ -96,7 +99,8 @@
 
             <telerikDocking:RadSplitContainer InitialPosition="DockedBottom">
                 <telerikDocking:RadPaneGroup>
-                    <telerikDocking:RadPane Header="Audiobook Files">
+                    <telerikDocking:RadPane Header="Audiobook Files"
+                                            CanUserClose="False">
                         <Grid Margin="5">
                             <Grid.RowDefinitions>
                                 <RowDefinition />
