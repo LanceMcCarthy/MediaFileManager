@@ -159,7 +159,7 @@
             </telerikDocking:RadSplitContainer>
         </telerikDocking:RadDocking>
 
-        <telerik:RadBusyIndicator x:Name="busyIndicator"
+        <telerik:RadBusyIndicator x:Name="LocalBusyIndicator"
                                   Background="#99000000"
                                   Visibility="Collapsed"
                                   IsBusy="False" />
