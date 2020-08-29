@@ -54,6 +54,7 @@ namespace MediaFileManager.Desktop.Views
                 WriteOutput($"Opening folder picker...", OutputMessageLevel.Normal);
 
                 busyIndicator.IsBusy = true;
+                busyIndicator.Visibility = Visibility.Visible;
                 busyIndicator.BusyContent = "opening folder...";
                 busyIndicator.IsIndeterminate = true;
 
@@ -134,6 +135,7 @@ namespace MediaFileManager.Desktop.Views
             {
                 busyIndicator.BusyContent = "";
                 busyIndicator.IsBusy = false;
+                busyIndicator.Visibility = Visibility.Collapsed;
                 busyIndicator.IsIndeterminate = false;
             }
         }
@@ -218,6 +220,7 @@ namespace MediaFileManager.Desktop.Views
             });
 
             busyIndicator.IsBusy = true;
+            busyIndicator.Visibility = Visibility.Visible;
             busyIndicator.BusyContent = "updating tags...";
             busyIndicator.IsIndeterminate = false;
             busyIndicator.ProgressValue = 0;
@@ -314,6 +317,7 @@ namespace MediaFileManager.Desktop.Views
 
             busyIndicator.BusyContent = "";
             busyIndicator.IsBusy = false;
+            busyIndicator.Visibility = Visibility.Collapsed;
             busyIndicator.ProgressValue = 0;
         }
 
