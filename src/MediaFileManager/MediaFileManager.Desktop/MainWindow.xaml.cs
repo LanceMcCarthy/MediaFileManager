@@ -3,9 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using MediaFileManager.Desktop.Helpers;
 using MediaFileManager.Desktop.Views;
-using Telerik.Windows.Controls;
 
-// ReSharper disable InconsistentNaming
 namespace MediaFileManager.Desktop
 {
     public partial class MainWindow : Window
