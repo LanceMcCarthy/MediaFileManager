@@ -5,13 +5,9 @@ using Telerik.Windows.Controls;
 using Telerik.Windows.Controls.SplashScreen;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Crashes;
-using System.Diagnostics.CodeAnalysis;
 using Analytics =  Microsoft.AppCenter.Analytics.Analytics;
 using Settings = MediaFileManager.Desktop.Properties.Settings;
 
-[assembly: SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "<Pending>", Scope = "member")]
-[assembly: SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>", Scope = "member")]
-[assembly: SuppressMessage("Design", "CA1063:Implement IDisposable Correctly", Justification = "<Pending>", Scope = "type")]
 namespace MediaFileManager.Desktop
 {
     public partial class App : Application
