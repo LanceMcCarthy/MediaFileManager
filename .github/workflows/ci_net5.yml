@@ -34,12 +34,12 @@ jobs:
       run: |
         Write-Output 'Downloading installer'
         $client = new-object System.Net.WebClient
-        $client.DownloadFile("https://dvlup.blob.core.windows.net/general-app-files/Installers/VS2019Preview/vs_community__547105323.1596228440.exe",".\Downloads\vs_community.exe")
+        $client.DownloadFile("https://dvlup.blob.core.windows.net/general-app-files/Installers/VS2019Preview/vs_community__547105323.1596228440.exe","D:\a\vs_community.exe")
 
         Write-Output 'Creating installer cache'
         $startInfo = New-Object System.Diagnostics.ProcessStartInfo
-        $startInfo.FileName = ".\vs_community.exe"
-        $startInfo.Arguments = "--layout c:\vslayout --add Microsoft.VisualStudio.Workload.ManagedDesktop --includeOptional --lang en-US --passive --norestart"
+        $startInfo.FileName = "D:\a\vs_community.exe"
+        $startInfo.Arguments = "--layout C:\vslayout --add Microsoft.VisualStudio.Workload.ManagedDesktop --includeOptional --lang en-US --passive --norestart"
         $process = New-Object System.Diagnostics.Process
         $process.StartInfo = $startInfo
         $process.Start()
@@ -47,8 +47,8 @@ jobs:
 
         Write-Output 'Installing VS2019 Preview'
         $startInfo = New-Object System.Diagnostics.ProcessStartInfo
-        $startInfo.FileName = "c:\vslayout\vs_community.exe"
-        $startInfo.Arguments = "--layout c:\vslayout --noweb --add Microsoft.VisualStudio.Workload.ManagedDesktop --includeOptional --lang en-US --passive --norestart"
+        $startInfo.FileName = "C:\vslayout\vs_community.exe"
+        $startInfo.Arguments = "--layout C:\vslayout --noweb --add Microsoft.VisualStudio.Workload.ManagedDesktop --includeOptional --lang en-US --passive --norestart"
         $process = New-Object System.Diagnostics.Process
         $process.StartInfo = $startInfo
         $process.Start()
