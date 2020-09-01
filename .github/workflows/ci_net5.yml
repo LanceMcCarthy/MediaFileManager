@@ -39,12 +39,12 @@ jobs:
     - name: "Create VS Layout"
       shell: cmd
       run: |
-        D:\a\vs_community.exe --layout c:\vslayout --add Microsoft.VisualStudio.Workload.ManagedDesktop --includeOptional --lang en-US --passive --norestart
+        D:\a\vs_community.exe --layout c:\vslayout --add Microsoft.VisualStudio.Product.BuildTools --add Microsoft.VisualStudio.Workload.ManagedDesktop --includeOptional --lang en-US --passive --norestart
 
     - name: "Install VS2019 Preview"
       shell: cmd
       run: |
-        c:\vslayout\vs_community.exe --noweb --add Microsoft.VisualStudio.Workload.ManagedDesktop  --includeOptional --lang en-US --passive --norestart
+        c:\vslayout\vs_community.exe --noweb --add Microsoft.VisualStudio.Product.BuildTools --add Microsoft.VisualStudio.Workload.ManagedDesktop  --includeOptional --lang en-US --passive --norestart
 
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
