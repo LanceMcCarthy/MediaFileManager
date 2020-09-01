@@ -28,33 +28,43 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-
+    
     - name: Download and install Visual Studio 2019 Preview
-      shell: pwsh
       run: |
         Write-Output 'Downloading installer'
         $client = new-object System.Net.WebClient
         $client.DownloadFile("https://dvlup.blob.core.windows.net/general-app-files/Installers/VS2019Preview/vs_community__547105323.1596228440.exe","D:\a\vs_community.exe")
+        Write-Output 'Downloaded'
 
-        Write-Output 'Creating installer cache'
-        $startInfo = New-Object System.Diagnostics.ProcessStartInfo
-        $startInfo.FileName = "D:\a\vs_community.exe"
-        $startInfo.Arguments = "--layout C:\vslayout --add Microsoft.VisualStudio.Workload.ManagedDesktop --includeOptional --lang en-US --passive --norestart"
-        $process = New-Object System.Diagnostics.Process
-        $process.StartInfo = $startInfo
-        $process.Start()
-        $process.WaitForExit()
+# Write-Output 'Creating installer cache'
+# $startInfo = New-Object System.Diagnostics.ProcessStartInfo
+# $startInfo.FileName = "D:\a\vs_community.exe"
+# $startInfo.Arguments = "--layout C:\vslayout --add Microsoft.VisualStudio.Workload.ManagedDesktop --includeOptional --lang en-US --passive --norestart"
+# $process = New-Object System.Diagnostics.Process
+# $process.StartInfo = $startInfo
+# $process.Start()
+# $process.WaitForExit()
 
-        Write-Output 'Installing VS2019 Preview'
-        $startInfo = New-Object System.Diagnostics.ProcessStartInfo
-        $startInfo.FileName = "C:\vslayout\vs_community.exe"
-        $startInfo.Arguments = "--layout C:\vslayout --noweb --add Microsoft.VisualStudio.Workload.ManagedDesktop --includeOptional --lang en-US --passive --norestart"
-        $process = New-Object System.Diagnostics.Process
-        $process.StartInfo = $startInfo
-        $process.Start()
-        $process.WaitForExit()
-        Write-Output 'Done installing VS2019 Preview'
-      
+# Write-Output 'Installing VS2019 Preview'
+# $startInfo = New-Object System.Diagnostics.ProcessStartInfo
+# $startInfo.FileName = "C:\vslayout\vs_community.exe"
+# $startInfo.Arguments = "--layout C:\vslayout --noweb --add Microsoft.VisualStudio.Workload.ManagedDesktop --includeOptional --lang en-US --passive --norestart"
+# $process = New-Object System.Diagnostics.Process
+# $process.StartInfo = $startInfo
+# $process.Start()
+# $process.WaitForExit()
+# Write-Output 'Done installing VS2019 Preview'
+    
+    - name: "Create VS Layout"
+      shell: cmd
+      run: |
+        D:\a\vs_community.exe --layout c:\vslayout --add Microsoft.VisualStudio.Workload.ManagedDesktop --includeOptional --lang en-US --passive --norestart
+
+    - name: "Install VS2019 Preview"
+      shell: cmd
+      run: |
+        c:\vslayout\vs_community.exe --noweb --add Microsoft.VisualStudio.Workload.ManagedDesktop  --includeOptional --lang en-US --passive --norestart
+
     # Install .NET Core
     - name: Install .NET Core
       uses: actions/setup-dotnet@v1
