@@ -40,22 +40,28 @@ jobs:
       shell: cmd
       run: |
         D:\a\vs_community.exe --layout c:\vslayout ^
-        --add Microsoft.VisualStudio.Workload.MSBuildTools ^
-        --add Microsoft.VisualStudio.Workload.NetCoreBuildTools ^
-        --add Microsoft.VisualStudio.Component.Windows10SDK.19041 ^
-        --add Microsoft.VisualStudio.ComponentGroup.MSIX.Packaging ^
-        --includeOptional --lang en-US --quiet --passive --norestart
-
+        --add Microsoft.VisualStudio.Workload.NetCoreTools ^
+        --add Microsoft.VisualStudio.Workload.Universal ^
+        --add Microsoft.VisualStudio.Workload.ManagedDesktop ^
+        --includeOptional --lang en-US --passive --norestart
+# --add Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools ^
+# --add Microsoft.VisualStudio.Workload.NetCoreBuildTools ^
+# --add Microsoft.VisualStudio.Component.Windows10SDK.19041 ^
+# --add Microsoft.VisualStudio.ComponentGroup.MSIX.Packaging ^
+    
     - name: "Install VS2019 Preview from Layout"
       shell: cmd
       run: |
         c:\vslayout\vs_community.exe ^
         --installPath "C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\" ^
-        --add Microsoft.VisualStudio.Workload.MSBuildTools ^
-        --add Microsoft.VisualStudio.Workload.NetCoreBuildTools ^
-        --add Microsoft.VisualStudio.Component.Windows10SDK.19041 ^
-        --add Microsoft.VisualStudio.ComponentGroup.MSIX.Packaging ^
-        --includeOptional --lang en-US --passive --quiet --norestart
+        --add Microsoft.VisualStudio.Workload.NetCoreTools ^
+        --add Microsoft.VisualStudio.Workload.Universal ^
+        --add Microsoft.VisualStudio.Workload.ManagedDesktop ^
+        --includeOptional --lang en-US --passive --norestart
+# --add Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools ^
+# --add Microsoft.VisualStudio.Workload.NetCoreBuildTools ^
+# --add Microsoft.VisualStudio.Component.Windows10SDK.19041 ^
+# --add Microsoft.VisualStudio.ComponentGroup.MSIX.Packaging ^
     
     # Add MsBuild to the PATH:
     - name: Add VS2019 Preview MSBuild to PATH
