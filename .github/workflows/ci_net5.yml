@@ -39,26 +39,28 @@ jobs:
     - name: "Create VS Layout"
       shell: cmd
       run: |
-        D:\a\vs_community.exe --layout c:\vslayout ^
-         --add Microsoft.VisualStudio.Workload.NetCoreTools ^
-         --add Microsoft.VisualStudio.Workload.Universal ^
-         --add Microsoft.VisualStudio.Workload.ManagedDesktop ^
-         --includeOptional --lang en-US --passive --norestart
+        # D:\a\vs_community.exe --layout c:\vslayout ^
+        #   --add Microsoft.VisualStudio.Workload.NetCoreTools ^
+        #   --add Microsoft.VisualStudio.Workload.Universal ^
+        #   --add Microsoft.VisualStudio.Workload.ManagedDesktop ^
+        #   --includeOptional --lang en-US --passive --norestart
+        D:\a\vs_community.exe --layout "c:\vslayout" --config "D:\a\MediaFileManager\.scripts\vs2019_preview.vsconfig" --passive --norestart
 
     - name: "Install VS2019 Preview"
       shell: cmd
       run: |
-        c:\vslayout\vs_community.exe ^
-        --add Microsoft.VisualStudio.Workload.NetCoreTools ^
-        --add Microsoft.VisualStudio.Workload.Universal ^
-        --add Microsoft.VisualStudio.Workload.ManagedDesktop ^
-        --includeOptional --lang en-US --passive --norestart
+        # c:\vslayout\vs_community.exe ^
+        # --add Microsoft.VisualStudio.Workload.NetCoreTools ^
+        # --add Microsoft.VisualStudio.Workload.Universal ^
+        # --add Microsoft.VisualStudio.Workload.ManagedDesktop ^
+        # --includeOptional --lang en-US --passive --norestart
+        c:\vslayout\vs_community.exe --installPath "C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview" --config "D:\a\MediaFileManager\.scripts\vs2019_preview.vsconfig" --passive --norestart
 
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.1
       with:
-        vs-version: '[16.8,16.9)'
+        vs-version: '16.8'
 
     # Install .NET Core
     - name: Install .NET Core
