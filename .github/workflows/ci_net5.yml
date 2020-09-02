@@ -57,7 +57,7 @@ jobs:
       run: |
         C:
         cd Users\RUNNER~1\Downloads
-        .\vs_community.exe --config D:\a\MediaFileManager\.scripts\vs2019_preview.vsconfig --passive --norestart --wait
+        .\vs_community.exe --config D:\a\MediaFileManager\.scripts\vs2019_preview.vsconfig --lang en-US --passive --norestart --wait
     
     # Add MsBuild to the PATH:
     - name: Add VS2019 Preview MSBuild to PATH
