@@ -22,7 +22,6 @@ jobs:
       Configuration: Debug
       TargetPlatform: x64
       RID: win-x64 # https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
-      VS2019PreviewInstallPath:  
 
     steps:
     - name: Checkout
@@ -40,12 +39,13 @@ jobs:
     # Layout options https://docs.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio?view=vs-2019#layout-options
     - name: Create VS2019 Preview Layout
       run: |
-        C:\Users\RUNNER~1\Downloads\vs_community.exe --layout "C:\vslayout" --add Microsoft.VisualStudio.Workload.ManagedDesktop --add Microsoft.VisualStudio.Workload.NetCoreTools --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --includeRecommended --includeOptional --lang en-US --quiet --wait
+        C:\Users\RUNNER~1\Downloads\vs_community.exe --layout C:\vslayout --add Microsoft.VisualStudio.Workload.ManagedDesktop --add Microsoft.VisualStudio.Workload.NetCoreTools --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --includeRecommended --includeOptional --lang en-US --quiet --wait
     
     # Install options https://docs.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio?view=vs-2019#install-options
     - name: Install VS2019 Preview
       run: |
-        C:\vslayout\vs_community.exe --add Microsoft.VisualStudio.Workload.ManagedDesktop --add Microsoft.VisualStudio.Workload.NetCoreTools --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --includeOptional --includeRecommended --lang en-US --quiet --norestart --wait
+        cd C:\vslayout
+        .\vs_community.exe --add Microsoft.VisualStudio.Workload.ManagedDesktop --add Microsoft.VisualStudio.Workload.NetCoreTools --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --includeOptional --includeRecommended --lang en-US --quiet --norestart --wait
 
     # Add MsBuild to the PATH:
     - name: Add VS2019 Preview MSBuild to PATH
