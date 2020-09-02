@@ -54,23 +54,23 @@ jobs:
         --add Microsoft.VisualStudio.Workload.ManagedDesktop ^
         --includeOptional --lang en-US --passive --norestart
         
-    # # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
+    # Add MsBuild to the PATH:
+    - name: Add VS2019 Preview MSBuild to PATH
+      run: |
+        $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\MSBuild\Current\Bin\"
+    
+    # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     # - name: Setup MSBuild.exe
     #   uses: microsoft/setup-msbuild@v1.0.1
     #   with:
     #     vs-version: '16.8'
-   
-    # # Add MsBuild to the PATH:
-    # - name: Add VS PReview MSBuild to PATH
-    #   run: |
-    #     $env:Path += "C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\MSBuild\Current\Bin\"
-    
+
     # Replace VSEnterprise MSBuild with VSPreview  in Path
-    - name: Add VSPReview MSBuild to PATH
-      run: |
-        $vsEntBuildPath = "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
-        $vsPreviewBuildPath = "C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\MSBuild\Current\Bin\"
-        $env:Path.Replace($vsEntBuildPath, $vsPreviewBuildPath)
+    # - name: Replace MSBuild in Path
+    #   run: |
+    #     $vsEntBuildPath = "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
+    #     $vsPreviewBuildPath = "C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\MSBuild\Current\Bin\"
+    #     $env:Path.Replace($vsEntBuildPath, $vsPreviewBuildPath)
     
     # Install .NET Core
     - name: Install .NET Core
