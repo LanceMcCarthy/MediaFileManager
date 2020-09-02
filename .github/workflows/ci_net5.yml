@@ -37,25 +37,38 @@ jobs:
         $client.DownloadFile("https://dvlup.blob.core.windows.net/general-app-files/Installers/VS2019Preview/vs_community__547105323.1596228440.exe","D:\a\vs_community.exe")
         Write-Output 'Downloaded'
 
-    - name: "Create VS2019 Preview Layout"
-      shell: cmd
-      run: |
-        D:\a\vs_community.exe --layout c:\vslayout --add Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools --add Microsoft.VisualStudio.Workload.NetCoreBuildTools --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --add Microsoft.VisualStudio.ComponentGroup.MSIX.Packaging --includeOptional --lang en-US --passive --norestart
+#    - name: "Create VS2019 Preview Layout"
+      # shell: cmd
+      # run: |
+      #   D:\a\vs_community.exe --layout c:\vslayout --add Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools --add Microsoft.VisualStudio.Workload.NetCoreBuildTools --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --add Microsoft.VisualStudio.ComponentGroup.MSIX.Packaging --includeOptional --lang en-US --passive --norestart
+      
 # --add Microsoft.VisualStudio.Workload.NetCoreTools --add Microsoft.VisualStudio.Workload.Universal --add Microsoft.VisualStudio.Workload.ManagedDesktop
     
-    - name: "Install VS2019 Preview from Layout"
-      shell: cmd
-      run: |
-        c:\vslayout\vs_community.exe --installPath D:\\a\\Microsoft Visual Studio\\2019\\Preview\\ --add Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools --add Microsoft.VisualStudio.Workload.NetCoreBuildTools --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --add Microsoft.VisualStudio.ComponentGroup.MSIX.Packaging --includeOptional --lang en-US --passive --norestart
+    # - name: "Install VS2019 Preview from Layout"
+    #   shell: cmd
+    #   run: |
+    #     c:\vslayout\vs_community.exe --installPath D:\\a\\Microsoft Visual Studio\\2019\\Preview\\ --add Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools --add Microsoft.VisualStudio.Workload.NetCoreBuildTools --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --add Microsoft.VisualStudio.ComponentGroup.MSIX.Packaging --includeOptional --lang en-US --passive --norestart
+
 # --add Microsoft.VisualStudio.Workload.NetCoreTools --add Microsoft.VisualStudio.Workload.Universal --add Microsoft.VisualStudio.Workload.ManagedDesktop
     
+    - name: Install VS2019 Preview
+      shell: pwsh
+      run: |
+        $startInfo = New-Object System.Diagnostics.ProcessStartInfo
+        $startInfo.FileName = "D:\a\vs_community.exe"
+        $startInfo.Arguments = "--add Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools --add Microsoft.VisualStudio.Workload.NetCoreBuildTools --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --add Microsoft.VisualStudio.ComponentGroup.MSIX.Packaging --includeOptional --lang en-US --passive --norestart"
+        $process = New-Object System.Diagnostics.Process
+        $process.StartInfo = $startInfo
+        $process.Start()
+        $process.WaitForExit()
+
     # Add MsBuild to the PATH:
     - name: Add VS2019 Preview MSBuild to PATH
       run: |
         Write-Host "Checking VS2019 Preview Installation"
-        ls 'D:\a\Microsoft Visual Studio\2019\'
-        $env:Path += ";D:\a\Microsoft Visual Studio\2019\Preview\MSBuild\Current\Bin\msbuild.exe"
-        ::add-path::"D:\a\Microsoft Visual Studio\2019\Preview\MSBuild\Current\Bin\msbuild.exe"
+        ls 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\'
+        $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\MSBuild\Current\Bin\msbuild.exe"
+        ::add-path::"C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\MSBuild\Current\Bin\msbuild.exe"
     
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     # - name: Setup MSBuild.exe
