@@ -34,18 +34,18 @@ jobs:
       run: |
         Write-Output 'Downloading installer'
         $client = new-object System.Net.WebClient
-        $client.DownloadFile("https://dvlup.blob.core.windows.net/general-app-files/Installers/VS2019Preview/vs_community__547105323.1596228440.exe","D:\a\vs_community.exe")
-        Write-Output 'Downloaded'
+        $client.DownloadFile("https://dvlup.blob.core.windows.net/general-app-files/Installers/VS2019Preview/vs_community__547105323.1596228440.exe","D:\a\vs_community_shell.exe")
+        Write-Output 'Downloaded to D:\a\vs_community_shell.exe'
     
     - name: Create VS2019 Preview Layout
       shell: cmd
       run: |
-        D:\a\vs_community.exe --layout "D:\vslayout" --config "D:\a\MediaFileManager\.scripts\vs2019_preview.vsconfig" --lang en-US
+        D:\a\vs_community_shell.exe --layout "D:\a\vslayout" --config "D:\a\MediaFileManager\.scripts\vs2019_preview.vsconfig" --lang en-US
     
     - name: Install VS2019 Preview from Layout
       shell: cmd
       run: |
-        D:\a\vslayout\vs_community.exe --config "D:\a\MediaFileManager\.scripts\vs2019_preview.vsconfig" --lang en-US --passive --norestart
+        D:\a\vslayout\vs_community.exe --noweb --config "D:\a\MediaFileManager\.scripts\vs2019_preview.vsconfig" --wait --passive --norestart
 
     # Add MsBuild to the PATH:
     - name: Add VS2019 Preview MSBuild to PATH
