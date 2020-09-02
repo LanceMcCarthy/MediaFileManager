@@ -44,22 +44,24 @@ jobs:
         --add Microsoft.VisualStudio.Workload.NetCoreBuildTools ^
         --add Microsoft.VisualStudio.Component.Windows10SDK.19041 ^
         --add Microsoft.VisualStudio.ComponentGroup.MSIX.Packaging ^
-        --includeOptional --lang en-US --passive --norestart
+        --includeOptional --lang en-US --quiet --passive --norestart
 
     - name: "Install VS2019 Preview from Layout"
       shell: cmd
       run: |
         c:\vslayout\vs_community.exe ^
+        --installPath "C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\" ^
         --add Microsoft.VisualStudio.Workload.MSBuildTools ^
         --add Microsoft.VisualStudio.Workload.NetCoreBuildTools ^
         --add Microsoft.VisualStudio.Component.Windows10SDK.19041 ^
         --add Microsoft.VisualStudio.ComponentGroup.MSIX.Packaging ^
-        --includeOptional --lang en-US --passive --norestart
+        --includeOptional --lang en-US --passive --quiet --norestart
     
     # Add MsBuild to the PATH:
     - name: Add VS2019 Preview MSBuild to PATH
       run: |
-        ls "C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\MSBuild\Current\Bin\"
+        Write-Host "Checking VS2019 Installations..."
+        ls "C:\Program Files (x86)\Microsoft Visual Studio\2019\"
         echo "::add-path::C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\MSBuild\Current\Bin\msbuild.exe"
     
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
