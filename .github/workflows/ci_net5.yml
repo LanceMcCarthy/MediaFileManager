@@ -29,14 +29,14 @@ jobs:
       with:
         fetch-depth: 0
     
-    - name: Download and install Visual Studio 2019 Preview
+    - name: Download VS2019 Preview 16.8 Installer Shell
       run: |
         Write-Output 'Downloading installer'
         $client = new-object System.Net.WebClient
         $client.DownloadFile("https://dvlup.blob.core.windows.net/general-app-files/Installers/VS2019Preview/vs_community__547105323.1596228440.exe","D:\a\vs_community.exe")
         Write-Output 'Downloaded'
 
-    - name: "Create VS Layout"
+    - name: "Create VS2019 Preview Layout"
       shell: cmd
       run: |
         D:\a\vs_community.exe --layout c:\vslayout ^
@@ -45,7 +45,7 @@ jobs:
         --add Microsoft.VisualStudio.Workload.ManagedDesktop ^
         --includeOptional --lang en-US --passive --norestart
 
-    - name: "Install VS2019 Preview"
+    - name: "Install VS2019 Preview from Layout"
       shell: cmd
       run: |
         c:\vslayout\vs_community.exe ^
