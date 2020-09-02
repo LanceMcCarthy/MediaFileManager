@@ -60,12 +60,12 @@ jobs:
     #   with:
     #     vs-version: '16.8'
    
-   # add
-    - name: Add VSPReview MSBuild to PATH
-      run: |
-        $env:Path += "C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\MSBuild\Current\Bin\"
+    # # Add MsBuild to the PATH:
+    # - name: Add VS PReview MSBuild to PATH
+    #   run: |
+    #     $env:Path += "C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\MSBuild\Current\Bin\"
     
-    #replace
+    # Replace VSEnterprise MSBuild with VSPreview  in Path
     - name: Add VSPReview MSBuild to PATH
       run: |
         $vsEntBuildPath = "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
