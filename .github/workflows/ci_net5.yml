@@ -36,22 +36,28 @@ jobs:
         $client.DownloadFile("https://dvlup.blob.core.windows.net/general-app-files/Installers/VS2019Preview/vs_community__547105323.1596228440.exe","C:\Users\RUNNER~1\Downloads\vs_community.exe")
         Write-Output 'Downloaded to C:\Users\RUNNER~1\Downloads\'
     
-    # Layout options https://docs.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio?view=vs-2019#layout-options
-    - name: Create VS2019 Preview Layout
-      shell: cmd
-      run: |
-        C:
-        cd Users\RUNNER~1\Downloads
-        vs_community.exe --layout C:\vslayout --add Microsoft.VisualStudio.Workload.ManagedDesktop;includeRecommended;includeOptional --add Microsoft.VisualStudio.Workload.NetCoreTools;includeRecommended;includeOptional --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --lang en-US --quiet --wait
+    # # Layout options https://docs.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio?view=vs-2019#layout-options
+    # - name: Create VS2019 Preview Layout
+    #   shell: cmd
+    #   run: |
+    #     C:
+    #     cd Users\RUNNER~1\Downloads
+    #     vs_community.exe --layout C:\vslayout --add Microsoft.VisualStudio.Workload.ManagedDesktop;includeRecommended;includeOptional --add Microsoft.VisualStudio.Workload.NetCoreTools;includeRecommended;includeOptional --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --lang en-US --quiet --wait
     
     # Install options https://docs.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio?view=vs-2019#install-options
+    # - name: Install VS2019 Preview
+    #   shell: cmd
+    #   run: |
+    #     C:
+    #     cd vslayout
+    #     .\vs_community.exe --add Microsoft.VisualStudio.Workload.ManagedDesktop;includeRecommended;includeOptional --add Microsoft.VisualStudio.Workload.NetCoreTools;includeRecommended;includeOptional --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --lang en-US --quiet --norestart --wait
+    
     - name: Install VS2019 Preview
       shell: cmd
       run: |
         C:
-        cd vslayout
-        .\vs_community.exe --add Microsoft.VisualStudio.Workload.ManagedDesktop;includeRecommended;includeOptional --add Microsoft.VisualStudio.Workload.NetCoreTools;includeRecommended;includeOptional --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --lang en-US --quiet --norestart --wait
-
+        cd Users\RUNNER~1\Downloads
+        .\vs_community.exe --config D:\a\MediaFileManager\.scripts\vs2019_preview.vsconfig --lang en-US --quiet --norestart --wait
     # Add MsBuild to the PATH:
     - name: Add VS2019 Preview MSBuild to PATH
       run: |
