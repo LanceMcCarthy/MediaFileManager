@@ -57,7 +57,7 @@ jobs:
     # Add MsBuild to the PATH:
     - name: Add VS2019 Preview MSBuild to PATH
       run: |
-        $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\MSBuild\Current\Bin\"
+        $env:Path += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\MSBuild\Current\Bin\msbuild.exe"
     
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     # - name: Setup MSBuild.exe
