@@ -39,13 +39,11 @@ jobs:
     
    - name: Create VS2019 Preview Layout
       shell: cmd
-      run: |
-        D:\a\vs_community.exe --layout "D:\vslayout" --config "D:\a\MediaFileManager\.scripts\vs2019_preview.vsconfig" --lang en-US
+      run: D:\a\vs_community.exe --layout "D:\vslayout" --config "D:\a\MediaFileManager\.scripts\vs2019_preview.vsconfig" --lang en-US
     
     - name: Install VS2019 Preview from Layout
       shell: cmd
-      run: |
-        D:\vslayout\vs_community.exe --config "D:\a\MediaFileManager\.scripts\vs2019_preview.vsconfig" --lang en-US --passive --norestart
+      run: D:\a\vslayout\vs_community.exe --config "D:\a\MediaFileManager\.scripts\vs2019_preview.vsconfig" --lang en-US --passive --norestart
 
     # Add MsBuild to the PATH:
     - name: Add VS2019 Preview MSBuild to PATH
