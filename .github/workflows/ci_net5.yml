@@ -48,7 +48,7 @@ jobs:
     - name: Install VS2019 Preview
       shell: cmd
       run: |
-        d:
+        C:
         cd vslayout
         .\vs_community.exe --add Microsoft.VisualStudio.Workload.ManagedDesktop --add Microsoft.VisualStudio.Workload.NetCoreTools --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --includeOptional --includeRecommended --lang en-US --quiet --norestart --wait
 
