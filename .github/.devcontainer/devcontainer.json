@@ -10,18 +10,12 @@
 			"INSTALL_AZURE_CLI": "false"
 		}
 	},
-
-	// Set *default* container specific settings.json values on container create.
 	"settings": {
 		"terminal.integrated.shell.linux": "/bin/bash"
 	},
-
-	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"ms-dotnettools.csharp"
 	],
-
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [5000, 5001],
 
 	// [Optional] To reuse of your local HTTPS dev cert, first export it locally using this command:
