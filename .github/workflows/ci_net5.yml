@@ -81,18 +81,18 @@ jobs:
         $manifest.Package.Applications.Application.VisualElements.DisplayName = "Media File Manager"
         $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
 
-  # # NET5 SideLoad Build (including AppInstaller instructions)
+    # NET5 SideLoad Build (including AppInstaller instructions)
     - name: Build wapproj for Sideloading
-      run: msbuild $env:Solution_Path /p:GenerateAppInstallerFile=True /p:AppInstallerUri=$env:AppInstUri /p:HoursBetweenUpdateChecks=6 /p:AppxPackageDir=D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\ /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled
+      run: dotnet msbuild $env:Solution_Path /p:GenerateAppInstallerFile=True /p:AppInstallerUri=$env:AppInstUri /p:HoursBetweenUpdateChecks=6 /p:AppxPackageDir=D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\ /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled
       env:
         AppxBundle: Always
         AppxPackageSigningEnabled: True
         GenerateAppInstallerFile: True
         BuildMode: SideloadOnly
-        AppInstUri: https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager_Net5/
+        AppInstUri: https://dvlup.blob.core.windows.net/general-app-files/Installers/MfmNet5/
     
-  # # UPLOAD TO AZURE STORAGE BLOB
-  # # This automatically distributes the sideLoad package, which users can visit the index.html page and run the appinstaller
+    # UPLOAD TO AZURE STORAGE BLOB
+    # This automatically distributes the sideLoad package, which users can visit the index.html page and run the appinstaller
     - name: Uploading appInstaller to Azure Blob
       id: sideload-blob-upload
       uses: LanceMcCarthy/Action-AzureBlobUpload@v1.7
@@ -100,5 +100,5 @@ jobs:
         connection_string: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
         container_name: general-app-files
         source_folder: src\MediaFileManager\PackageProject\SideLoadPackages\
-        destination_folder: Installers/MediaFileManager_Net5
+        destination_folder: Installers/MfmNet5
         clean_destination_folder: true
