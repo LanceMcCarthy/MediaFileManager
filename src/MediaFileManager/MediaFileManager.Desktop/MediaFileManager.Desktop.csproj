@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFrameworks>netcoreapp3.1;net5.0-windows10.0.19041.0</TargetFrameworks>
+		<TargetFrameworks>net5.0-windows10.0.19041.0</TargetFrameworks>
 		<UseWPF>true</UseWPF>
 		<RootNamespace>MediaFileManager.Desktop</RootNamespace>
 		<AssemblyName>MediaFileManager.Desktop</AssemblyName>
@@ -26,30 +26,29 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Condition="'$(TargetFramework)' == 'netcoreapp3.1'" Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.0" />
-		<PackageReference Include="Microsoft.AppCenter.Analytics" Version="3.4.1" />
-		<PackageReference Include="Microsoft.AppCenter.Crashes" Version="3.4.1" />
+		<PackageReference Include="Microsoft.AppCenter.Analytics" Version="3.4.3" />
+		<PackageReference Include="Microsoft.AppCenter.Crashes" Version="3.4.3" />
 		<PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
-			<Version>3.3.0</Version>
+			<Version>3.3.1</Version>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 		<PackageReference Include="taglib-sharp-netstandard2.0" Version="2.1.0" />
-		<PackageReference Include="Telerik.UI.for.Wpf.NetCore" Version="2020.2.617" />
-		<PackageReference Include="Telerik.Windows.Themes.Crystal.for.Wpf" Version="2020.2.617" />
-		<PackageReference Include="Telerik.Windows.Themes.Expression_Dark.for.Wpf" Version="2020.2.617" />
-		<PackageReference Include="Telerik.Windows.Themes.Fluent.for.Wpf" Version="2020.2.617" />
-		<PackageReference Include="Telerik.Windows.Themes.Green.for.Wpf" Version="2020.2.617" />
-		<PackageReference Include="Telerik.Windows.Themes.Material.for.Wpf" Version="2020.2.617" />
-		<PackageReference Include="Telerik.Windows.Themes.Office2013.for.Wpf" Version="2020.2.617" />
-		<PackageReference Include="Telerik.Windows.Themes.Office2016.for.Wpf" Version="2020.2.617" />
-		<PackageReference Include="Telerik.Windows.Themes.Summer.for.Wpf" Version="2020.2.617" />
-		<PackageReference Include="Telerik.Windows.Themes.Transparent.for.Wpf" Version="2020.2.617" />
-		<PackageReference Include="Telerik.Windows.Themes.Vista.for.Wpf" Version="2020.2.617" />
-		<PackageReference Include="Telerik.Windows.Themes.VisualStudio2013.for.Wpf" Version="2020.2.617" />
-		<PackageReference Include="Telerik.Windows.Themes.VisualStudio2019.for.Wpf" Version="2020.2.617" />
-		<PackageReference Include="Telerik.Windows.Themes.Windows7.for.Wpf" Version="2020.2.617" />
-		<PackageReference Include="Telerik.Windows.Themes.Windows8.for.Wpf" Version="2020.2.617" />
+		<PackageReference Include="Telerik.UI.for.Wpf.NetCore" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Crystal.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Expression_Dark.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Fluent.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Green.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Material.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Office2013.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Office2016.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Summer.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Transparent.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Vista.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.VisualStudio2013.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.VisualStudio2019.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Windows7.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Windows8.for.Wpf" Version="2020.3.1020" />
 	</ItemGroup>
 
 	<ItemGroup>
