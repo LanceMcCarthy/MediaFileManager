@@ -39,13 +39,13 @@ jobs:
 
     # Install the .NET Core workload
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v1.7.2
       with:
-        dotnet-version: '3.1.302'
+        dotnet-version: '5.0.x'
     
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1.0.1
+      uses: microsoft/setup-msbuild@v1.0.2
 
     # Restore NuGet packages using the nuget config (package sources authenticate using environment variable and nuget.config)
     - name: NuGet Restore
