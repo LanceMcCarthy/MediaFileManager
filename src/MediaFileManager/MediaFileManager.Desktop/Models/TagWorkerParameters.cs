@@ -4,7 +4,12 @@ namespace MediaFileManager.Desktop.Models
 {
     public class TagWorkerParameters
     {
-        public IList<AudiobookFile> AudiobookFiles { get; set; }
+        public TagWorkerParameters(IList<AudiobookFile> audiobookFiles)
+        {
+            AudiobookFiles = audiobookFiles;
+        }
+
+        public IList<AudiobookFile> AudiobookFiles { get; }
 
         public bool? UpdateTitle { get; set; }
 

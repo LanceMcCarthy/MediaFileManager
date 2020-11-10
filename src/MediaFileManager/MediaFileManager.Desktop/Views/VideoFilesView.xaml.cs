@@ -391,10 +391,11 @@ namespace MediaFileManager.Desktop.Views
                 this.renamedEpisodesPreviewList.Clear();
             }
 
-            this.renumberWorker.RunWorkerAsync(new WorkerParameters
+            var selectedEpisodes = EpisodesListBox.SelectedItems.Cast<string>().ToList();
+
+            renumberWorker.RunWorkerAsync(new WorkerParameters(selectedEpisodes)
             {
                 IsPreview = true,
-                SelectedEpisodes = EpisodesListBox.SelectedItems.Cast<string>().ToList(),
                 SeasonNumber = seasonNumber,
                 EpisodeNumberStart = startingEpisodeNumber,
                 EpisodeNumberEnd = lastEpisodeNumber,
@@ -572,9 +573,10 @@ namespace MediaFileManager.Desktop.Views
             LocalBusyIndicator.IsIndeterminate = false;
             LocalBusyIndicator.ProgressValue = 0;
 
-            this.renumberWorker.RunWorkerAsync(new WorkerParameters
+            var selectedEpisodes = EpisodesListBox.SelectedItems.Cast<string>().ToList();
+
+            renumberWorker.RunWorkerAsync(new WorkerParameters(selectedEpisodes)
             {
-                SelectedEpisodes = EpisodesListBox.SelectedItems.Cast<string>().ToList(),
                 SeasonNumber = seasonNumber,
                 EpisodeNumberStart = startingEpisodeNumber,
                 EpisodeNumberEnd = lastEpisodeNumber,

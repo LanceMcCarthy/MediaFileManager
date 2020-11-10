@@ -220,9 +220,10 @@ namespace MediaFileManager.Desktop.Views
             LocalBusyIndicator.IsIndeterminate = false;
             LocalBusyIndicator.ProgressValue = 0;
 
-            this.backgroundWorker.RunWorkerAsync(new TagWorkerParameters
+            var selectedFiles = AudiobookFilesGridView.SelectedItems.Cast<AudiobookFile>().ToList();
+
+            backgroundWorker.RunWorkerAsync(new TagWorkerParameters(selectedFiles)
             {
-                AudiobookFiles = AudiobookFilesGridView.SelectedItems.Cast<AudiobookFile>().ToList(),
                 UpdateAlbumName = SetAlbumNameCheckBox.IsChecked,
                 UpdateTitle = SetTitleCheckBox.IsChecked,
                 UpdateArtistName = SetArtistNameCheckBox.IsChecked
@@ -326,7 +327,7 @@ namespace MediaFileManager.Desktop.Views
 
                 foreach (var filePath in filePaths)
                 {
-                    if (Path.GetExtension(filePath)?.Contains("mp3", StringComparison.InvariantCulture) == false)
+                    if (Path.GetExtension(filePath)?.ToLower().Contains("mp3", StringComparison.InvariantCulture) == false)
                     {
                         WriteOutput($"Skipping {Path.GetFileNameWithoutExtension(filePath)} (only MP3s allowed)...", OutputMessageLevel.Warning);
                         continue;
