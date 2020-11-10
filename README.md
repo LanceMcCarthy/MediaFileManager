@@ -2,13 +2,10 @@
 
 Media File Manager is a UWP-packaged WPF application for easily naming media files that need a specific  naming paradigm ([see this 50 second video](https://youtu.be/5U7rmrJXwWw)).
 
-
-
 | Branch | Build Status |
 |--------|--------|-----------|
-| `main` | ![Main](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Main/badge.svg) |
-| `release` | ![Release](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Release/badge.svg) |
-
+| main | ![Main](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Main/badge.svg) |
+| release | ![Release](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Release/badge.svg) |
 
 > This repo also serves as a real-world example using GitHub Actions to build and distribute a WPF application to the Microsoft Store and Azure Storage.
 
