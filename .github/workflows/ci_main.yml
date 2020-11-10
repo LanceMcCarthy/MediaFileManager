@@ -27,7 +27,7 @@ jobs:
         $client = new-object System.Net.WebClient 
         $client.DownloadFile("https://download.visualstudio.microsoft.com/download/pr/5f914955-f6c7-4add-8e47-2e090bdc02fa/bc60b587587d10eacc50fe99a6f3d57a81749cb55c904225892d1d165f01a913/vs_BuildTools.exe","c:\bldtlinstall\vs_BuildTools.exe")
         # self note https://docs.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio?view=vs-2019
-        Start-Process -Wait "c:\bldtlinstall\vs_BuildTools.exe" "--add Microsoft.VisualStudio.Workload.MSBuildTools --quiet"
+        Start-Process -Wait "c:\bldtlinstall\vs_BuildTools.exe" "--add Microsoft.VisualStudio.Workload.MSBuildTools --add Microsoft.VisualStudio.Workload.UniversalBuildTools --add Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --quiet"
 
     # Install the .NET Core workload
     - name: Install .NET Core
