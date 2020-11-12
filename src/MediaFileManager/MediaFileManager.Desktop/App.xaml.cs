@@ -1,32 +1,28 @@
 ﻿using System.Globalization;
 using System.Threading;
 using System.Windows;
+using System.Windows.Media;
 using Telerik.Windows.Controls;
 using Telerik.Windows.Controls.SplashScreen;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Crashes;
-using System.Diagnostics.CodeAnalysis;
-using Analytics =  Microsoft.AppCenter.Analytics.Analytics;
-using Settings = MediaFileManager.Desktop.Properties.Settings;
 
-[assembly: SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "<Pending>", Scope = "member")]
-[assembly: SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>", Scope = "member")]
-[assembly: SuppressMessage("Design", "CA1063:Implement IDisposable Correctly", Justification = "<Pending>", Scope = "type")]
 namespace MediaFileManager.Desktop
 {
     public partial class App : Application
     {
         public App()
         {
-            StyleManager.ApplicationTheme = new FluentTheme();
             InitializeComponent();
         }
 
         protected override async void OnStartup(StartupEventArgs e)
         {
             var dataContext = (SplashScreenDataContext)RadSplashScreenManager.SplashScreenDataContext;
-            dataContext.ImagePath = "/MediaFileManager.Desktop;component/Images/SplashscreenImage.png";
+            dataContext.ImagePath = "/MediaFileManager.Desktop;component/Images/SplashScreenImage.png";
             dataContext.ImageWidth = 600;
+            dataContext.ImageHeight = 400;
+            dataContext.ImageStretch = Stretch.UniformToFill;
 
             dataContext.Content = "Loading Media File Manager...";
             
@@ -37,7 +33,9 @@ namespace MediaFileManager.Desktop
             RadSplashScreenManager.Show();
 
             // AppCenter
-            AppCenter.Start(Settings.Default.AppCenterAnalyticsKey, typeof(Analytics), typeof(Crashes));
+            AppCenter.Start(MediaFileManager.Desktop.Properties.Settings.Default.AppCenterAnalyticsKey, 
+                typeof(Microsoft.AppCenter.Analytics.Analytics), 
+                typeof(Microsoft.AppCenter.Crashes.Crashes));
 
             // Just use general region, not actual location.
             AppCenter.SetCountryCode(RegionInfo.CurrentRegion.TwoLetterISORegionName);
@@ -71,6 +69,7 @@ namespace MediaFileManager.Desktop
             for (var i = 0; i < 100; i++)
             {
                 dataContext.ProgressValue = i;
+
                 Thread.Sleep(30);
 
                 dataContext.Footer = i < 50 ? "Hi! Loading resources, this will be quick." : "Just a little bit more...";

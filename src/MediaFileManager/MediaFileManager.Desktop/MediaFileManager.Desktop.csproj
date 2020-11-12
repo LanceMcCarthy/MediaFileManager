@@ -1,39 +1,70 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <UseWPF>true</UseWPF>
-    <RootNamespace>MediaFileManager.Desktop</RootNamespace>
-    <AssemblyName>MediaFileManager.Desktop</AssemblyName>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <PackageLicenseExpression>https://github.com/LanceMcCarthy/MediaFileManager/blob/master/LICENSE</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/LanceMcCarthy/MediaFileManager/</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/LanceMcCarthy/MediaFileManager/blob/master/LICENSE</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <ApplicationIcon>Images\MainIcon.ico</ApplicationIcon>
-    <Platforms>AnyCPU</Platforms>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Remove="Images\SplashscreenImage.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Images\SplashscreenImage.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\.editorconfig" Link=".editorconfig" />
-  </ItemGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net5.0-windows10.0.19041.0</TargetFramework>
+		<UseWPF>true</UseWPF>
+		<RootNamespace>MediaFileManager.Desktop</RootNamespace>
+		<AssemblyName>MediaFileManager.Desktop</AssemblyName>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<PackageLicenseExpression>https://github.com/LanceMcCarthy/MediaFileManager/blob/master/LICENSE</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/LanceMcCarthy/MediaFileManager/</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/LanceMcCarthy/MediaFileManager/blob/master/LICENSE</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<ApplicationIcon>Images\MainIcon.ico</ApplicationIcon>
+		<Platforms>AnyCPU</Platforms>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<NoWarn>1701;1702;1051;1303;1063</NoWarn>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Remove="Images\SplashscreenImage.png" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="Images\SplashScreenImage.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AppCenter.Analytics" Version="3.4.0" />
-    <PackageReference Include="Microsoft.AppCenter.Crashes" Version="3.4.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
-      <Version>3.3.0</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="taglib-sharp-netstandard2.0" Version="2.1.0" />
-    <PackageReference Include="Telerik.UI.for.Wpf.NetCore.Xaml" Version="2020.2.617" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AppCenter.Analytics" Version="3.4.3" />
+		<PackageReference Include="Microsoft.AppCenter.Crashes" Version="3.4.3" />
+		<PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
+			<Version>3.3.1</Version>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Windows.CsWinRT" Version="1.0.1" />
+		<PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.1" />
+		<PackageReference Include="taglib-sharp-netstandard2.0" Version="2.1.0" />
+		<PackageReference Include="Telerik.UI.for.Wpf.NetCore" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Crystal.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Expression_Dark.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Fluent.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Green.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Material.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Office2013.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Office2016.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Summer.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Transparent.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Vista.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.VisualStudio2013.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.VisualStudio2019.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Windows7.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Themes.Windows8.for.Wpf" Version="2020.3.1020" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Properties\Settings.Designer.cs">
+			<DesignTimeSharedInput>True</DesignTimeSharedInput>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Settings.settings</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="Properties\Settings.settings">
+			<Generator>PublicSettingsSingleFileGenerator</Generator>
+			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
+		</None>
+	</ItemGroup>
 </Project>

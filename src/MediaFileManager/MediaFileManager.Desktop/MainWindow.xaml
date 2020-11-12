@@ -4,7 +4,6 @@
         xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:views="clr-namespace:MediaFileManager.Desktop.Views"
         mc:Ignorable="d"
         Title="Media File Manager"
         Height="800"
@@ -15,9 +14,22 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <telerik:RadComboBox x:Name="FileTypeComboBox" 
-                             SelectionChanged="FileTypeComboBox_OnSelectionChanged"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
 
+            <telerik:RadComboBox x:Name="FileTypeComboBox" 
+                                 SelectionChanged="FileTypeComboBox_OnSelectionChanged"
+                                 Margin="2"/>
+                                 
+            <telerik:RadComboBox x:Name="ThemeComboBox"
+                                 SelectionChanged="ThemeComboBox_SelectionChanged"
+                                 Grid.Column="1"
+                                 Margin="2"/>
+        </Grid>
+        
         <Border x:Name="SelectedViewBorder"
                 Grid.Row="1"/>
     </Grid>

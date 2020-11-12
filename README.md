@@ -1,14 +1,11 @@
-# MediaFileManager
+'m going take lunch at 4, # MediaFileManager
 
 Media File Manager is a UWP-packaged WPF application for easily naming media files that need a specific  naming paradigm ([see this 50 second video](https://youtu.be/5U7rmrJXwWw)).
 
-
-
-| Branch | Build Status | Pull Requests |
-|--------|--------|-----------|
-| Release | ![Release](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Release/badge.svg) | `not configured` |
-| Main | ![Main](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Main/badge.svg) | ![Main-PR](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Main-PR/badge.svg) |
-| .NET Core 5 | ![NET Core 5](https://github.com/LanceMcCarthy/MediaFileManager/workflows/NET%20Core%205/badge.svg) | `not configured` |
+| Branch | Build Status |
+|--------|--------|
+| main | ![Main](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Main/badge.svg) |
+| release | ![Release](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Release/badge.svg) |
 
 > This repo also serves as a real-world example using GitHub Actions to build and distribute a WPF application to the Microsoft Store and Azure Storage.
 
@@ -28,7 +25,7 @@ You can install the app directly from the Microsoft Store or from the SideLoad d
 ### Stage 2 - Select the Season, then the Episodes to rename
 
 1. Select a Season(s) to load the episodes.
-2. Select the Epsiodes to be renamed (keyboard shortcuts supported).
+2. Select the Episodes to be renamed (keyboard shortcuts supported).
 3. Select a portion of the filename that will be replaced.
 4. Enter the replacement text
 5. Click the `Rename` button to start the operation

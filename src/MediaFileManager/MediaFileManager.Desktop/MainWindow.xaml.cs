@@ -1,20 +1,26 @@
 ﻿using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using MediaFileManager.Desktop.Helpers;
 using MediaFileManager.Desktop.Views;
-using Microsoft.AppCenter.Analytics;
 
-// ReSharper disable InconsistentNaming
 namespace MediaFileManager.Desktop
 {
     public partial class MainWindow : Window
     {
         public MainWindow()
         {
+            if (Properties.Settings.Default.PreferredTheme != "Fluent")
+            {
+                PersonalizationHelpers.UpdateTheme(Properties.Settings.Default.PreferredTheme);
+            }
+
             InitializeComponent();
 
-            FileTypeComboBox.ItemsSource = new List<string> {"Videos", "Audiobooks", "Music"};
+            ThemeComboBox.ItemsSource = PersonalizationHelpers.ThemeNames;
+            ThemeComboBox.SelectedItem = Properties.Settings.Default.PreferredTheme;
 
+            FileTypeComboBox.ItemsSource = new List<string> {"Videos", "Audiobooks", "Music"}; 
             FileTypeComboBox.SelectedIndex = Properties.Settings.Default.SelectedViewIndex;
         }
 
@@ -41,11 +47,29 @@ namespace MediaFileManager.Desktop
 
                 Properties.Settings.Default.SelectedViewIndex = FileTypeComboBox.SelectedIndex;
 
-                Analytics.TrackEvent("View Selected", new Dictionary<string, string>
+                Microsoft.AppCenter.Analytics.Analytics.TrackEvent("View Selected", new Dictionary<string, string>
                 {
                     { "FileType", selectedItem }
                 });
             }
+        }
+
+        private void ThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems != null)
+            {
+                var selectedThemeName = ThemeComboBox.SelectedItem.ToString();
+
+                PersonalizationHelpers.UpdateTheme(selectedThemeName);
+
+                Microsoft.AppCenter.Analytics.Analytics.TrackEvent("ThemeChanged", new Dictionary<string, string>
+                {
+                    { "Theme Name", selectedThemeName }
+                });
+
+                Properties.Settings.Default.PreferredTheme = selectedThemeName;
+                Properties.Settings.Default.Save();
+            } 
         }
     }
 }
