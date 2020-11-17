@@ -6,6 +6,17 @@ namespace MediaFileManager.Desktop.Helpers
 {
     public static class PersonalizationHelpers
     {
+        private static readonly string[] CtrlAssemblyNames = 
+        {
+            "Controls", 
+            "Controls.Data", 
+            "Controls.Docking", 
+            "Controls.FileDialogs",
+            "Controls.GridView", 
+            "Controls.Input", 
+            "Controls.Navigation"
+        };
+
         public static List<string> ThemeNames { get; } = new List<string> 
         {
             "Fluent", "VisualStudio2019", "Crystal", "Expression_Dark", "Green", 
@@ -13,6 +24,10 @@ namespace MediaFileManager.Desktop.Helpers
             "Vista", "VisualStudio2013", "Windows7", "Windows8",
         };
 
+        /// <summary>
+        /// Helper for merging Telerik theme into the App Resources
+        /// </summary>
+        /// <param name="themeAssemblyName">Name of the theme to use (e.g. "Fluent" or "Office2013"). Query this class's ThemeNames list for available names to use.</param>
         public static void UpdateTheme(string themeAssemblyName)
         {
             Application.Current.Resources.MergedDictionaries.Clear();
@@ -22,9 +37,7 @@ namespace MediaFileManager.Desktop.Helpers
                 Source = new Uri($"/Telerik.Windows.Themes.{themeAssemblyName};component/Themes/System.Windows.xaml", UriKind.RelativeOrAbsolute)
             });
 
-            var ctrlAssemblyNames = new[] { "Controls", "Controls.Data", "Controls.GridView", "Controls.Input", "Controls.Navigation", "Controls.Docking" };
-
-            foreach (var ctrlAssemblyName in ctrlAssemblyNames)
+            foreach (var ctrlAssemblyName in CtrlAssemblyNames)
             {
                 Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
                 {
@@ -33,6 +46,11 @@ namespace MediaFileManager.Desktop.Helpers
             }
         }
 
+        /// <summary>
+        /// Helper for merging Telerik themes into a pre-defined ResourceDictionary. This is useful for custom controls that do not have access to the App resources
+        /// </summary>
+        /// <param name="source">The ResourceDictionary to merge the Telerik theme ResourceDictionaries into.</param>
+        /// <param name="themeAssemblyName">Name of the theme to use (e.g. "Fluent" or "Office2013"). Query this class's ThemeNames list for available names to use.</param>
         public static void UpdateTheme(ResourceDictionary source, string themeAssemblyName)
         {
             if(source == null)
@@ -47,9 +65,7 @@ namespace MediaFileManager.Desktop.Helpers
                 Source = new Uri($"/Telerik.Windows.Themes.{themeAssemblyName};component/Themes/System.Windows.xaml", UriKind.RelativeOrAbsolute)
             });
 
-            var ctrlAssemblyNames = new[] { "Controls", "Controls.Data", "Controls.GridView", "Controls.Input", "Controls.Navigation", "Controls.Docking" };
-
-            foreach (var ctrlAssemblyName in ctrlAssemblyNames)
+            foreach (var ctrlAssemblyName in CtrlAssemblyNames)
             {
                 source.MergedDictionaries.Add(new ResourceDictionary
                 {
