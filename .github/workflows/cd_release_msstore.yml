@@ -28,12 +28,22 @@ jobs:
       PartnerCenterClientId: ${{ secrets.PARTNER_CENTER_CLIENT_ID }}
       PartnerCenterClientSecret: ${{ secrets.PARTNER_CENTER_CLIENT_SECRET }}
       PartnerCenterStoreId: 9PD3JFK7W5MB
+      Actions_Allow_Unsecure_Commands: true # so we can set environment variable at the job level
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
+    
+    # Create my own version number with a specific format using date. ex: 2020.805.1.0
+    - uses: Amadevus/pwsh-script@v2
+      id: version-creator
+      with:
+        script: |
+          $buildDay = Get-Date -Format "yyyy.Mdd"
+          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+          Set-ActionVariable APP_VERSION $ver
 
     # ******************| TOOL INSTALL and DEPENDENCY RESTORE |********************* #
 
@@ -68,12 +78,8 @@ jobs:
     # Update the appxmanifest for Microsoft Store
     - name: Update manifest version
       run: |
-        $buildDay = Get-Date -Format "yyyy.Mdd"
-        $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
-        echo "APP_VERSION=$ver" >> $GITHUB_ENV
-
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$ver"
+        $manifest.Package.Identity.Version = "$env:APP_VERSION"
         $manifest.Package.Identity.Name = "61469LanceLotSoftware.MediaFileManager"
         $manifest.Package.Identity.Publisher = "CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02"
         $manifest.Package.Properties.DisplayName = "Media File Manager"
