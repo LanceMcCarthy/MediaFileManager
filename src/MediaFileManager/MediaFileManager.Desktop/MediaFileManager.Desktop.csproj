@@ -36,7 +36,14 @@
 		<PackageReference Include="Microsoft.Windows.CsWinRT" Version="1.0.1" />
 		<PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.1" />
 		<PackageReference Include="taglib-sharp-netstandard2.0" Version="2.1.0" />
-		<PackageReference Include="Telerik.UI.for.Wpf.NetCore" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Controls.Data.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Controls.Docking.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Controls.FileDialogs.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Controls.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Controls.GridView.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Controls.Input.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Controls.Navigation.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Data.for.Wpf" Version="2020.3.1020" />
 		<PackageReference Include="Telerik.Windows.Themes.Crystal.for.Wpf" Version="2020.3.1020" />
 		<PackageReference Include="Telerik.Windows.Themes.Expression_Dark.for.Wpf" Version="2020.3.1020" />
 		<PackageReference Include="Telerik.Windows.Themes.Fluent.for.Wpf" Version="2020.3.1020" />
