@@ -67,7 +67,7 @@ jobs:
     
     # Create a version number with a specific format using date (e.g. 2020.805.1.0)
     - name: Generate version number
-      uses: Amadevus/pwsh-script@v1
+      uses: Amadevus/pwsh-script@v2
       id: version-creator
       with:
         script: |

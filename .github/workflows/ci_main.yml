@@ -42,7 +42,7 @@ jobs:
         vs-version: '[16.8,16.9)'
 
     # Create my own version number with a specific format using date. ex: 2020.805.1.0
-    - uses: Amadevus/pwsh-script@v1
+    - uses: Amadevus/pwsh-script@v2
       id: version-creator
       with:
         script: |
