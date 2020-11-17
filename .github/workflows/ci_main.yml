@@ -21,19 +21,15 @@ jobs:
       with:
         fetch-depth: 0
 
-    # Create a version number with a specific format using date (e.g. 2020.805.1.0)
-    - name: Update manifest version
-      run: |
-        $buildDay = Get-Date -Format "yyyy.Mdd"
-        $envFilePair = "APP_VERSION=" + $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
-        echo $envFilePair >> $GITHUB_ENV
-    
     # Update the UWP package version
     - name: Update manifest version
       run: |
-        echo $env:APP_VERSION
+        $buildDay = Get-Date -Format "yyyy.Mdd"
+        $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+        echo "APP_VERSION=$ver" >> $GITHUB_ENV
+
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$env:APP_VERSION"
+        $manifest.Package.Identity.Version = "$ver"
         $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
     
     - name: Downloand and install msbuild 16.8

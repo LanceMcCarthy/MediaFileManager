@@ -64,15 +64,6 @@ jobs:
       run: msbuild $env:Solution_Path /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RuntimeIdentifier
 
     # ************************| BUILD AND DISTRIBUTION |************************ #
-    
-    # Create a version number with a specific format using date (e.g. 2020.805.1.0)
-    - name: Update manifest version
-      run: |
-        $buildDay = Get-Date -Format "yyyy.Mdd"
-        $envFilePair = "APP_VERSION=" + $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
-        echo $envFilePair >> $GITHUB_ENV
-
-    # *********| STAGE 1 - SideLoad & AppInstaller |********* #
 
     # Decode the Base64 encoded Pfx
     - name: Decode the Pfx
@@ -85,8 +76,12 @@ jobs:
     # Update the appxmanifest for SideLoad (and signing with PFX)
     - name: Update manifest version
       run: |
+        $buildDay = Get-Date -Format "yyyy.Mdd"
+        $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+        echo "APP_VERSION=$ver" >> $GITHUB_ENV
+        
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$env:APP_VERSION"
+        $manifest.Package.Identity.Version = "$ver"
         $manifest.Package.Identity.Name = "61469LanceLotSoftware.MediaFileManager"
         $manifest.Package.Identity.Publisher = "CN='Lancelot Software, LLC', O='Lancelot Software, LLC', L=NORTH BILLERICA, S=Massachusetts, C=US"
         $manifest.Package.Properties.DisplayName = "Media File Manager"
