@@ -66,14 +66,11 @@ jobs:
     # ************************| BUILD AND DISTRIBUTION |************************ #
     
     # Create a version number with a specific format using date (e.g. 2020.805.1.0)
-    - name: Generate version number
-      uses: Amadevus/pwsh-script@v2
-      id: version-creator
-      with:
-        script: |
-          $buildDay = Get-Date -Format "yyyy.Mdd"
-          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
-          Set-ActionVariable UWP_VERSION $ver
+    - name: Update manifest version
+      run: |
+        $buildDay = Get-Date -Format "yyyy.Mdd"
+        $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+        echo "APP_VERSION=$ver" >> $GITHUB_ENV
 
     # Update the appxmanifest for Microsoft Store
     - name: Update manifest version
