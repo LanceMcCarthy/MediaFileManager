@@ -1,10 +1,10 @@
 # If you are looking for guidance for your builds, see https://github.com/microsoft/github-actions-for-desktop-apps
-name: Release
+name: Release (sideload)
 
 on:
   push:
     branches:
-      - releases
+      - release-sideload
 
 jobs:
   build:
@@ -128,40 +128,6 @@ jobs:
     - name: Remove the .pfx
       run: Remove-Item -path $env:Wap_Project_Directory\$env:SigningCertificate
 
-
-    # *********| STAGE 2 - Microsoft Store |********* #
-
-    # Update the appxmanifest for Microsoft Store
-    - name: Update manifest version
-      run: |
-        [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$env:UWP_VERSION"
-        $manifest.Package.Identity.Name = "61469LanceLotSoftware.MediaFileManager"
-        $manifest.Package.Identity.Publisher = "CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02"
-        $manifest.Package.Properties.DisplayName = "Media File Manager"
-        $manifest.Package.Properties.PublisherDisplayName = "Lancelot Software"
-        $manifest.Package.Applications.Application.VisualElements.DisplayName = "Media File Manager"
-        $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
-
-    # Build using StoreUpload instructions, no code signing required (Microsoft signs it during certification)
-    - name: Build wapproj for Microsoft Store
-      run: msbuild $env:Solution_Path /p:AppxPackageDir=D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\ /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled
-      env:
-        AppxBundle: Always
-        AppxPackageSigningEnabled: False
-        BuildMode: StoreUpload
-        GenerateAppInstallerFile: False
-
-    # Use Store Broker to publish to Microsoft Store
-    - name: Submit to Partner Center (aka DevCenter)
-      shell: pwsh
-      run: ./.scripts/SubmitToMsftStore.ps1
-
-    # ZIP up the store upload packages using Powershell
-    - name: Create StoreUploadPackages.zip
-      run: Compress-Archive D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\* -DestinationPath D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\StoreUploadPackages.zip
-
-
     # ************************| GITHUB RELEASE |************************ #
 
     # Create a new GitHub Release tagged with the build version number (via https://github.com/actions/create-release)
@@ -187,16 +153,4 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\SideLoadPackages.zip
         asset_name: SideLoadPackages.zip
-        asset_content_type: application/zip
-
-    # Add Microsoft Store artifacts to GitHub release (via https://github.com/actions/upload-release-asset)
-    - name: Uploading StoreUpload Release asset
-      id: upload-storeupload-asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\StoreUploadPackages.zip
-        asset_name: StoreUploadPackages.zip
         asset_content_type: application/zip
