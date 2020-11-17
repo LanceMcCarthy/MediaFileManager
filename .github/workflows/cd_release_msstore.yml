@@ -69,14 +69,14 @@ jobs:
     - name: Update manifest version
       run: |
         $buildDay = Get-Date -Format "yyyy.Mdd"
-        $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
-        echo "APP_VERSION=$ver" >> $GITHUB_ENV
+        $envFilePair = "APP_VERSION=" + $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+        echo $envFilePair >> $GITHUB_ENV
 
     # Update the appxmanifest for Microsoft Store
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$env:UWP_VERSION"
+        $manifest.Package.Identity.Version = "$env:APP_VERSION"
         $manifest.Package.Identity.Name = "61469LanceLotSoftware.MediaFileManager"
         $manifest.Package.Identity.Publisher = "CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02"
         $manifest.Package.Properties.DisplayName = "Media File Manager"
