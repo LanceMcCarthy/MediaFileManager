@@ -14,22 +14,28 @@ jobs:
       CERTIFICATE_FILENAME: LancelotSoftwareLLC.pfx
       TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
       TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+      Actions_Allow_Unsecure_Commands: true # so we can set environment variable at the job level
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
+    
+    # Create my own version number with a specific format using date. ex: 2020.805.1.0
+    - uses: Amadevus/pwsh-script@v2
+      id: version-creator
+      with:
+        script: |
+          $buildDay = Get-Date -Format "yyyy.Mdd"
+          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+          Set-ActionVariable APP_VERSION $ver
 
     # Update the UWP package version
     - name: Update manifest version
       run: |
-        $buildDay = Get-Date -Format "yyyy.Mdd"
-        $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
-        echo "APP_VERSION=$ver" >> $GITHUB_ENV
-
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$ver"
+        $manifest.Package.Identity.Version = "$env:APP_VERSION"
         $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
     
     - name: Downloand and install msbuild 16.8
