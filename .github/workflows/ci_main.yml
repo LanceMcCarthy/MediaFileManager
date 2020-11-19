@@ -48,8 +48,7 @@ jobs:
     
     - name: Update WPF Assembly version
       run: |
-tweaks        # Inspired by https://blog.davidjwise.com/2012/07/12/automatically-set-the-assemblyfileversion-for-visual-studio-projects/
-
+        # Inspired by https://blog.davidjwise.com/2012/07/12/automatically-set-the-assemblyfileversion-for-visual-studio-projects/
         function SetAssemblyFileVersion([string]$pathToFile, [string]$majorVer, [string]$minorVer, [string]$buildVer, [string]$revVer) {
           if ($majorVer -eq $null) { throw "Major version CANNOT be blank!" }
           if ($minorVer -eq $null) { throw "Minor version CANNOT be blank!" }
