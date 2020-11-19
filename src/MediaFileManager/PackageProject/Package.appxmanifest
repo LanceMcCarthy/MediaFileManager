@@ -9,7 +9,7 @@
   <Identity
     Name="61469LanceLotSoftware.MediaFileManager"
     Publisher="CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02"
-    Version="2020.1112.94.0" />
+    Version="2020.1117.1.0" />
 
   <Properties>
     <DisplayName>Media File Manager</DisplayName>

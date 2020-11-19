@@ -1,0 +1,115 @@
+# If you are looking for guidance for your builds, see https://github.com/microsoft/github-actions-for-desktop-apps
+name: Release (Microsoft Store)
+
+on:
+  push:
+    branches:
+      - release-microsoft-store
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      Configuration: Release
+      RuntimeIdentifier: win-x86 #RIDs reference https://github.com/dotnet/runtime/blob/master/src/libraries/pkg/Microsoft.NETCore.Platforms/readme.md
+      UwpBundlePlatform: x86 #package bundles, eg. x86|x64|arm|arm64
+      Solution_Path: src\MediaFileManager\MediaFileManager.sln
+      Wpf_Project_Path: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+      Wap_Project_Directory: src\MediaFileManager\PackageProject
+      Wap_Project_Name: PackageProject.wapproj
+      NuGetConfig_Path: src\nuget.config
+      TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }} # this env variable is used in the nuget.config
+      TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }} # this env variable is used in the nuget.config
+      SigningCertificate: LancelotSoftwareLLC.pfx # For UWP package signing
+      CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}  # For UWP package signing
+      CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }} # For UWP package signing
+      PartnerCenterTenantId: ${{ secrets.PARTNER_CENTER_TENANT_ID }}
+      PartnerCenterClientId: ${{ secrets.PARTNER_CENTER_CLIENT_ID }}
+      PartnerCenterClientSecret: ${{ secrets.PARTNER_CENTER_CLIENT_SECRET }}
+      PartnerCenterStoreId: 9PD3JFK7W5MB
+      Actions_Allow_Unsecure_Commands: true # so we can set environment variable at the job level
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    
+    # Create my own version number with a specific format using date. ex: 2020.805.1.0
+    - uses: Amadevus/pwsh-script@v2
+      id: version-creator
+      with:
+        script: |
+          $buildDay = Get-Date -Format "yyyy.Mdd"
+          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+          Set-ActionVariable APP_VERSION $ver
+
+    # ******************| TOOL INSTALL and DEPENDENCY RESTORE |********************* #
+
+    # Install the .NET Core workload
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v1.7.2
+      with:
+        dotnet-version: '5.0.x'
+
+    # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    # Restore NuGet packages using the nuget config (package sources authenticate using environment variable and nuget.config)
+    - name: NuGet Restore
+      run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path --runtime $env:RuntimeIdentifier
+   
+    # Restore the application
+    - name:  Restore the Wpf application to populate the obj folder
+      run: msbuild $env:Solution_Path /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RuntimeIdentifier
+
+    # ************************| BUILD AND DISTRIBUTION |************************ #
+
+    # Update the appxmanifest for Microsoft Store
+    - name: Update manifest version
+      run: |
+        [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
+        $manifest.Package.Identity.Version = "$env:APP_VERSION"
+        $manifest.Package.Identity.Name = "61469LanceLotSoftware.MediaFileManager"
+        $manifest.Package.Identity.Publisher = "CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02"
+        $manifest.Package.Properties.DisplayName = "Media File Manager"
+        $manifest.Package.Properties.PublisherDisplayName = "Lancelot Software"
+        $manifest.Package.Applications.Application.VisualElements.DisplayName = "Media File Manager"
+        $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
+
+    # Updates the WPF project's assembly version number.
+    - name: Update WPF Assembly version
+      run: |
+        function SetAssemblyFileVersion([string]$pathToFile, [string]$newVersion) {
+          $newFile = Get-Content $pathToFile -encoding "UTF8" | foreach-object {
+            if ($_.StartsWith("[assembly: AssemblyFileVersion")) {
+              $verStart = $_.IndexOf("(")
+              $verEnd = $_.IndexOf(")", $verStart)
+              $origVersion = $_.SubString($verStart+2, $verEnd-$verStart-3)
+              $newVersion = "$env:APP_VERSION"
+              write-host "Setting AssemblyFileVersion from $origVersion to $newVersion"
+              $_.Replace($origVersion, $newVersion)
+            }  else {
+              $_
+            } 
+          }
+          $newfile | Set-Content $assemblyInfoPath -encoding "UTF8"
+        }
+        $assemblyInfoPath = "src\MediaFileManager\MediaFileManager.Desktop\Properties\AssemblyInfo.cs"
+        SetAssemblyFileVersion $assemblyInfoPath $env:APP_VERSION
+
+    # Build using StoreUpload instructions, no code signing required (Microsoft signs it during certification)
+    - name: Build wapproj for Microsoft Store
+      run: msbuild $env:Solution_Path /p:AppxPackageDir=D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\ /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled
+      env:
+        AppxBundle: Always
+        AppxPackageSigningEnabled: False
+        BuildMode: StoreUpload
+        GenerateAppInstallerFile: False
+
+    # Use Store Broker to publish to Microsoft Store
+    - name: Submit to Partner Center (aka DevCenter)
+      shell: pwsh
+      run: ./.scripts/SubmitToMsftStore.ps1

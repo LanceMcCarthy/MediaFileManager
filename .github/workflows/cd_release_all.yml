@@ -1,10 +1,10 @@
 # If you are looking for guidance for your builds, see https://github.com/microsoft/github-actions-for-desktop-apps
-name: Release
+name: Release (all)
 
 on:
   push:
     branches:
-      - releases
+      - release-all
 
 jobs:
   build:
@@ -28,22 +28,45 @@ jobs:
       PartnerCenterClientId: ${{ secrets.PARTNER_CENTER_CLIENT_ID }}
       PartnerCenterClientSecret: ${{ secrets.PARTNER_CENTER_CLIENT_SECRET }}
       PartnerCenterStoreId: 9PD3JFK7W5MB
+      Actions_Allow_Unsecure_Commands: true # so we can set environment variable at the job level
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
+    
+    # Create my own version number with a specific format using date. ex: 2020.805.1.0
+    - uses: Amadevus/pwsh-script@v2
+      id: version-creator
+      with:
+        script: |
+          $buildDay = Get-Date -Format "yyyy.Mdd"
+          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+          Set-ActionVariable APP_VERSION $ver
+
+    # Updates the WPF project's assembly version number.
+    - name: Update WPF Assembly version
+      run: |
+        function SetAssemblyFileVersion([string]$pathToFile, [string]$newVersion) {
+          $newFile = Get-Content $pathToFile -encoding "UTF8" | foreach-object {
+            if ($_.StartsWith("[assembly: AssemblyFileVersion")) {
+              $verStart = $_.IndexOf("(")
+              $verEnd = $_.IndexOf(")", $verStart)
+              $origVersion = $_.SubString($verStart+2, $verEnd-$verStart-3)
+              $newVersion = "$env:APP_VERSION"
+              write-host "Setting AssemblyFileVersion from $origVersion to $newVersion"
+              $_.Replace($origVersion, $newVersion)
+            }  else {
+              $_
+            } 
+          }
+          $newfile | Set-Content $assemblyInfoPath -encoding "UTF8"
+        }
+        $assemblyInfoPath = "src\MediaFileManager\MediaFileManager.Desktop\Properties\AssemblyInfo.cs"
+        SetAssemblyFileVersion $assemblyInfoPath $env:APP_VERSION
 
     # ******************| TOOL INSTALL and DEPENDENCY RESTORE |********************* #
-
-    - name: Downloand and install msbuild
-      run: | 
-        mkdir c:\bldtlinstall
-        $client = new-object System.Net.WebClient 
-        $client.DownloadFile("https://download.visualstudio.microsoft.com/download/pr/5f914955-f6c7-4add-8e47-2e090bdc02fa/bc60b587587d10eacc50fe99a6f3d57a81749cb55c904225892d1d165f01a913/vs_BuildTools.exe","c:\bldtlinstall\vs_BuildTools.exe")
-        # self note https://docs.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio?view=vs-2019
-        Start-Process -Wait "c:\bldtlinstall\vs_BuildTools.exe" "--add Microsoft.VisualStudio.Workload.MSBuildTools --add Microsoft.VisualStudio.Workload.UniversalBuildTools --add Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --quiet"
 
     # Install the .NET Core workload
     - name: Install .NET Core
@@ -64,17 +87,6 @@ jobs:
       run: msbuild $env:Solution_Path /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RuntimeIdentifier
 
     # ************************| BUILD AND DISTRIBUTION |************************ #
-    
-    # Create a version number with a specific format using date (e.g. 2020.805.1.0)
-    - name: Generate version number
-      uses: Amadevus/pwsh-script@v1
-      id: version-creator
-      with:
-        script: |
-          $buildDay = Get-Date -Format "yyyy.Mdd"
-          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
-          Set-ActionVariable UWP_VERSION $ver
-
 
     # *********| STAGE 1 - SideLoad & AppInstaller |********* #
 
@@ -90,7 +102,7 @@ jobs:
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$env:UWP_VERSION"
+        $manifest.Package.Identity.Version = "$env:APP_VERSION"
         $manifest.Package.Identity.Name = "61469LanceLotSoftware.MediaFileManager"
         $manifest.Package.Identity.Publisher = "CN='Lancelot Software, LLC', O='Lancelot Software, LLC', L=NORTH BILLERICA, S=Massachusetts, C=US"
         $manifest.Package.Properties.DisplayName = "Media File Manager"
@@ -135,7 +147,7 @@ jobs:
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$env:UWP_VERSION"
+        $manifest.Package.Identity.Version = "$env:APP_VERSION"
         $manifest.Package.Identity.Name = "61469LanceLotSoftware.MediaFileManager"
         $manifest.Package.Identity.Publisher = "CN=51B5A8B2-5D86-4826-BBE2-C92E963A4C02"
         $manifest.Package.Properties.DisplayName = "Media File Manager"
@@ -171,8 +183,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: v.${{ env.UWP_VERSION }}
-        release_name: Media File Manager v.${{ env.UWP_VERSION }}
+        tag_name: v.${{ env.APP_VERSION }}
+        release_name: Media File Manager v.${{ env.APP_VERSION }}
         draft: false
         prerelease: false
         body_path: .github\other\releasebody.md
