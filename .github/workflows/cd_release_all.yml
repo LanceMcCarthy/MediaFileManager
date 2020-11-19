@@ -45,6 +45,27 @@ jobs:
           $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
           Set-ActionVariable APP_VERSION $ver
 
+    # Updates the WPF project's assembly version number.
+    - name: Update WPF Assembly version
+      run: |
+        function SetAssemblyFileVersion([string]$pathToFile, [string]$newVersion) {
+          $newFile = Get-Content $pathToFile -encoding "UTF8" | foreach-object {
+            if ($_.StartsWith("[assembly: AssemblyFileVersion")) {
+              $verStart = $_.IndexOf("(")
+              $verEnd = $_.IndexOf(")", $verStart)
+              $origVersion = $_.SubString($verStart+2, $verEnd-$verStart-3)
+              $newVersion = "$env:APP_VERSION"
+              write-host "Setting AssemblyFileVersion from $origVersion to $newVersion"
+              $_.Replace($origVersion, $newVersion)
+            }  else {
+              $_
+            } 
+          }
+          $newfile | Set-Content $assemblyInfoPath -encoding "UTF8"
+        }
+        $assemblyInfoPath = "src\MediaFileManager\MediaFileManager.Desktop\Properties\AssemblyInfo.cs"
+        SetAssemblyFileVersion $assemblyInfoPath $env:APP_VERSION
+
     # ******************| TOOL INSTALL and DEPENDENCY RESTORE |********************* #
 
     # Install the .NET Core workload

@@ -79,6 +79,27 @@ jobs:
         $manifest.Package.Applications.Application.VisualElements.DisplayName = "Media File Manager"
         $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
 
+    # Updates the WPF project's assembly version number.
+    - name: Update WPF Assembly version
+      run: |
+        function SetAssemblyFileVersion([string]$pathToFile, [string]$newVersion) {
+          $newFile = Get-Content $pathToFile -encoding "UTF8" | foreach-object {
+            if ($_.StartsWith("[assembly: AssemblyFileVersion")) {
+              $verStart = $_.IndexOf("(")
+              $verEnd = $_.IndexOf(")", $verStart)
+              $origVersion = $_.SubString($verStart+2, $verEnd-$verStart-3)
+              $newVersion = "$env:APP_VERSION"
+              write-host "Setting AssemblyFileVersion from $origVersion to $newVersion"
+              $_.Replace($origVersion, $newVersion)
+            }  else {
+              $_
+            } 
+          }
+          $newfile | Set-Content $assemblyInfoPath -encoding "UTF8"
+        }
+        $assemblyInfoPath = "src\MediaFileManager\MediaFileManager.Desktop\Properties\AssemblyInfo.cs"
+        SetAssemblyFileVersion $assemblyInfoPath $env:APP_VERSION
+
     # Build using StoreUpload instructions, no code signing required (Microsoft signs it during certification)
     - name: Build wapproj for Microsoft Store
       run: msbuild $env:Solution_Path /p:AppxPackageDir=D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\ /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled
