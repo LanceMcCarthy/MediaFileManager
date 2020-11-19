@@ -6,24 +6,6 @@ namespace MediaFileManager.Desktop.Helpers
 {
     public static class PersonalizationHelpers
     {
-        private static readonly string[] CtrlAssemblyNames = 
-        {
-            "Controls", 
-            "Controls.Data", 
-            "Controls.Docking", 
-            "Controls.FileDialogs",
-            "Controls.GridView", 
-            "Controls.Input", 
-            "Controls.Navigation"
-        };
-
-        public static List<string> ThemeNames { get; } = new List<string> 
-        {
-            "Fluent", "VisualStudio2019", "Crystal", "Expression_Dark", "Green", 
-            "Material", "Office2013", "Office2016", "Summer", "Transparent", 
-            "Vista", "VisualStudio2013", "Windows7", "Windows8",
-        };
-
         /// <summary>
         /// Helper for merging Telerik theme into the App Resources
         /// </summary>
@@ -32,18 +14,18 @@ namespace MediaFileManager.Desktop.Helpers
         {
             Application.Current.Resources.MergedDictionaries.Clear();
 
-            Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
-            {
-                Source = new Uri($"/Telerik.Windows.Themes.{themeAssemblyName};component/Themes/System.Windows.xaml", UriKind.RelativeOrAbsolute)
-            });
-
-            foreach (var ctrlAssemblyName in CtrlAssemblyNames)
+            foreach (var fileName in ResourceDictionaryList)
             {
                 Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
                 {
-                    Source = new Uri($"/Telerik.Windows.Themes.{themeAssemblyName};component/Themes/Telerik.Windows.{ctrlAssemblyName}.xaml", UriKind.RelativeOrAbsolute)
+                    Source = new Uri($"/Telerik.Windows.Themes.{themeAssemblyName};component/Themes/{fileName}", UriKind.RelativeOrAbsolute)
                 });
             }
+
+            Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("/Styles/GeneralStyles.xaml", UriKind.RelativeOrAbsolute)
+            });
         }
 
         /// <summary>
@@ -60,18 +42,53 @@ namespace MediaFileManager.Desktop.Helpers
 
             source.MergedDictionaries.Clear();
 
-            source.MergedDictionaries.Add(new ResourceDictionary
-            {
-                Source = new Uri($"/Telerik.Windows.Themes.{themeAssemblyName};component/Themes/System.Windows.xaml", UriKind.RelativeOrAbsolute)
-            });
-
-            foreach (var ctrlAssemblyName in CtrlAssemblyNames)
+            foreach (var fileName in ResourceDictionaryList)
             {
                 source.MergedDictionaries.Add(new ResourceDictionary
                 {
-                    Source = new Uri($"/Telerik.Windows.Themes.{themeAssemblyName};component/Themes/Telerik.Windows.{ctrlAssemblyName}.xaml", UriKind.RelativeOrAbsolute)
+                    Source = new Uri($"/Telerik.Windows.Themes.{themeAssemblyName};component/Themes/{fileName}", UriKind.RelativeOrAbsolute)
                 });
             }
+
+            source.MergedDictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("/Styles/GeneralStyles.xaml", UriKind.RelativeOrAbsolute)
+            });
         }
+
+        // This is the ensure we are merging the correct Resources
+        private static readonly string[] ResourceDictionaryList =
+        {
+            "System.Windows.xaml",
+            "Telerik.Windows.Controls.xaml",
+            "Telerik.Windows.Controls.Data.xaml",
+            "Telerik.Windows.Controls.Docking.xaml",
+            "Telerik.Windows.Controls.FileDialogs.xaml",
+            "Telerik.Windows.Controls.GridView.xaml",
+            "Telerik.Windows.Controls.Input.xaml",
+            "Telerik.Windows.Controls.Navigation.xaml",
+            "Telerik.Windows.Controls.RichTextBox.xaml"
+        };
+
+        /// <summary>
+        /// List of themes names that are currently supported.
+        /// </summary>
+        public static List<string> ThemeNames { get; } = new List<string>
+        {
+            "Fluent", 
+            "VisualStudio2019", 
+            "Crystal", 
+            "Expression_Dark", 
+            "Green",
+            "Material", 
+            "Office2013", 
+            "Office2016", 
+            "Summer", 
+            "Transparent",
+            "Vista", 
+            "VisualStudio2013", 
+            "Windows7", 
+            "Windows8",
+        };
     }
 }
