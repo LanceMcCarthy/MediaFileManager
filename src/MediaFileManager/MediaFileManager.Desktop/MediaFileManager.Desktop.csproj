@@ -14,7 +14,7 @@
 		<Platforms>AnyCPU</Platforms>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<NoWarn>1701;1702;1051;1303;1063</NoWarn>
+		<NoWarn>1701;1702;1051;1303;1063;1416;1031;1001</NoWarn>
 	</PropertyGroup>
 	<ItemGroup>
 		<None Remove="Images\SplashscreenImage.png" />

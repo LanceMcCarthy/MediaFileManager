@@ -74,8 +74,7 @@ namespace MediaFileManager.Desktop.Windows
 
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
         {
-            var about = new AboutWindow();
-            about.Show();
+            new AboutWindow().Show();
         }
     }
 }
