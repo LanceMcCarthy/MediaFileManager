@@ -48,60 +48,58 @@ jobs:
     
     - name: Update WPF Assembly version
       run: |
-        $buildYear = Get-Date -Format "yyyy"
-        $buildMonthDay = Get-Date -Format "Mdd"
+tweaks        # Inspired by https://blog.davidjwise.com/2012/07/12/automatically-set-the-assemblyfileversion-for-visual-studio-projects/
 
-        $pathToFile = "src\MediaFileManager\MediaFileManager.Desktop\Properties\AssemblyInfo.cs"
-        $majorVer = $buildYear
-        $minorVer = $buildMonthDay
-        $buildVer = $env:GITHUB_RUN_NUMBER
-        $revVer = "0"
-        
-        $newFile = Get-Content $pathToFile -encoding "UTF8" | foreach-object {
-          if ($_.StartsWith("[assembly: AssemblyFileVersion")) {
-            $verStart = $_.IndexOf("(")
-            $verEnd = $_.IndexOf(")", $verStart)
-            $origVersion = $_.SubString($verStart+2, $verEnd-$verStart-3)
-            
-            $segments=$origVersion.Split(".")
-            
-            #default values for each segment
-            $v1="1"
-            $v2="0"
-            $v3="0"
-            $v4="0"
-            
-            #assign them based on what was found
-            if ($segments.Length -gt 0) { $v1=$segments[0] }
-            if ($segments.Length -gt 1) { $v2=$segments[1] } 
-            if ($segments.Length -gt 2) { $v3=$segments[2] } 
-            if ($segments.Length -gt 3) { $v4=$segments[3] } 
-            
-            $v1 = AssignVersionValue $v1 $majorVer
-            $v2 = AssignVersionValue $v2 $minorVer
-            $v3 = AssignVersionValue $v3 $buildVer
-            $v4 = AssignVersionValue $v4 $revVer
-            
-            if ($v1 -eq $null) { throw "Major version CANNOT be blank!" }
-            if ($v2 -eq $null) { throw "Minor version CANNOT be blank!" }
-            
-            $newVersion = "$v1.$v2"
-            
-            if ($v3 -ne $null) {
-                $newVersion = "$newVersion.$v3"
-                
-                if ($v4 -ne $null) {
-                    $newVersion = "$newVersion.$v4"
-                }
-            }
+        function SetAssemblyFileVersion([string]$pathToFile, [string]$majorVer, [string]$minorVer, [string]$buildVer, [string]$revVer) {
+          if ($majorVer -eq $null) { throw "Major version CANNOT be blank!" }
+          if ($minorVer -eq $null) { throw "Minor version CANNOT be blank!" }
+          if ($buildVer -eq $null) { throw "Build version CANNOT be blank!" }
+          if ($revVer -eq $null) { throw "Revision version CANNOT be blank (it must always be set to 0)!" }
 
-            write-host "$msgPrefix Setting AssemblyFileVersion to $newVersion"
-            $_.Replace($origVersion, $newVersion)
-          } else {
-            $_
+          $newFile = Get-Content $pathToFile -encoding "UTF8" | foreach-object {
+            if ($_.StartsWith("[assembly: AssemblyFileVersion")) {
+              $verStart = $_.IndexOf("(")
+              $verEnd = $_.IndexOf(")", $verStart)
+              $origVersion = $_.SubString($verStart+2, $verEnd-$verStart-3)
+              
+              $segments=$origVersion.Split(".")
+              
+              #default values for each segment
+              $v1="1"
+              $v2="0"
+              $v3="0"
+              $v4="0"
+              
+              #assign them based on what was found
+              if ($segments.Length -gt 0) { $v1=$segments[0] }
+              if ($segments.Length -gt 1) { $v2=$segments[1] } 
+              if ($segments.Length -gt 2) { $v3=$segments[2] } 
+              if ($segments.Length -gt 3) { $v4=$segments[3] } 
+              
+              $v1 = $majorVer
+              $v2 = $minorVer
+              $v3 = $buildVer
+              $v4 = $revVer
+              
+              $newVersion = "$v1.$v2.$v3.$v4"
+              
+              write-host "$msgPrefix Setting AssemblyFileVersion to $newVersion"
+              $_.Replace($origVersion, $newVersion)
+            }  else {
+              $_
+            } 
           }
+          
+          $newfile | set-Content $assemblyInfoPath -encoding "UTF8"
         }
-        $newfile | set-Content $assemblyInfoPath -encoding "UTF8"
+
+        $assemblyInfoPath = "src\MediaFileManager\MediaFileManager.Desktop\Properties\AssemblyInfo.cs"
+        $major = Get-Date -Format "yyyy"
+        $minor = Get-Date -Format "Mdd"
+        $build = $env:GITHUB_RUN_NUMBER
+        $rev = "0"
+
+        SetAssemblyFileVersion $assemblyInfoPath $major $minor $build $rev
 
     # Install the .NET Core workload
     - name: Install .NET Core
