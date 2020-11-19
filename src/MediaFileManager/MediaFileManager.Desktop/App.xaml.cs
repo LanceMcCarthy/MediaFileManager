@@ -70,7 +70,7 @@ namespace MediaFileManager.Desktop
             {
                 dataContext.ProgressValue = i;
 
-                Thread.Sleep(30);
+                Thread.Sleep(20);
 
                 dataContext.Footer = i < 50 ? "Hi! Loading resources, this will be quick." : "Just a little bit more...";
             }
