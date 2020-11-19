@@ -14,7 +14,7 @@
 		<Platforms>AnyCPU</Platforms>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<NoWarn>1701;1702;1051;1303;1063</NoWarn>
+		<NoWarn>1701;1702;1051;1303;1063;1416;1031;1001</NoWarn>
 	</PropertyGroup>
 	<ItemGroup>
 		<None Remove="Images\SplashscreenImage.png" />
@@ -26,8 +26,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AppCenter.Analytics" Version="3.4.3" />
-		<PackageReference Include="Microsoft.AppCenter.Crashes" Version="3.4.3" />
+		<PackageReference Include="MarkdownSharp" Version="2.0.5" />
+		<PackageReference Include="Microsoft.AppCenter.Analytics" Version="4.0.0" />
+		<PackageReference Include="Microsoft.AppCenter.Crashes" Version="4.0.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
 			<Version>3.3.1</Version>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -43,7 +44,9 @@
 		<PackageReference Include="Telerik.Windows.Controls.GridView.for.Wpf" Version="2020.3.1020" />
 		<PackageReference Include="Telerik.Windows.Controls.Input.for.Wpf" Version="2020.3.1020" />
 		<PackageReference Include="Telerik.Windows.Controls.Navigation.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Controls.RichTextBox.for.Wpf" Version="2020.3.1020" />
 		<PackageReference Include="Telerik.Windows.Data.for.Wpf" Version="2020.3.1020" />
+		<PackageReference Include="Telerik.Windows.Documents.Core" Version="2020.3.1019" />
 		<PackageReference Include="Telerik.Windows.Themes.Crystal.for.Wpf" Version="2020.3.1020" />
 		<PackageReference Include="Telerik.Windows.Themes.Expression_Dark.for.Wpf" Version="2020.3.1020" />
 		<PackageReference Include="Telerik.Windows.Themes.Fluent.for.Wpf" Version="2020.3.1020" />

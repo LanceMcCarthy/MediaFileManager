@@ -4,7 +4,7 @@ using System.Windows.Controls;
 using MediaFileManager.Desktop.Helpers;
 using MediaFileManager.Desktop.Views;
 
-namespace MediaFileManager.Desktop
+namespace MediaFileManager.Desktop.Windows
 {
     public partial class MainWindow : Window
     {
@@ -43,7 +43,7 @@ namespace MediaFileManager.Desktop
                     SelectedViewBorder.Child = new MusicFilesView();
                 }
 
-                this.Title = $"Media File Manager - {selectedItem}";
+                Title = $"Media File Manager - {selectedItem}";
 
                 Properties.Settings.Default.SelectedViewIndex = FileTypeComboBox.SelectedIndex;
 
@@ -70,6 +70,11 @@ namespace MediaFileManager.Desktop
                 Properties.Settings.Default.PreferredTheme = selectedThemeName;
                 Properties.Settings.Default.Save();
             } 
+        }
+
+        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            new AboutWindow().Show();
         }
     }
 }
