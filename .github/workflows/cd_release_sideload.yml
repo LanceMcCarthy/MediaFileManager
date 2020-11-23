@@ -122,7 +122,7 @@ jobs:
     # This automatically distributes the sideLoad package, which users can visit the index.html page and run the appinstaller
     - name: Uploading appInstaller to Azure Blob
       id: sideload-blob-upload
-      uses: LanceMcCarthy/Action-AzureBlobUpload@v1.7
+      uses: LanceMcCarthy/Action-AzureBlobUpload@v1.8
       with:
         connection_string: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
         container_name: general-app-files
