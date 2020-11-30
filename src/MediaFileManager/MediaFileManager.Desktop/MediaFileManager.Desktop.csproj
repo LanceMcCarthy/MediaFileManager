@@ -34,7 +34,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.Windows.CsWinRT" Version="1.0.1" />
+		<PackageReference Include="Microsoft.Windows.CsWinRT" Version="1.1.0" />
 		<PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.1" />
 		<PackageReference Include="taglib-sharp-netstandard2.0" Version="2.1.0" />
 		<PackageReference Include="Telerik.Windows.Controls.Data.for.Wpf" Version="2020.3.1020" />
