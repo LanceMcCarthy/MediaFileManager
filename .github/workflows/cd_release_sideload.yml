@@ -128,7 +128,7 @@ jobs:
         container_name: general-app-files
         source_folder: src\MediaFileManager\PackageProject\SideLoadPackages\
         destination_folder: Installers/MediaFileManager
-        clean_destination_folder: true
+        clean_destination_folder: false
 
     # ZIP up the sideload packages for GitHub release using Powershell
     - name: Create SideLoadPackages.zip
