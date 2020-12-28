@@ -1,7 +1,13 @@
+param([string]$appxPathParam)
+
+if (-not (Test-Path -Path $PSBoundParameters["appxPathParam"])) {
+    Write-Error "The appxupload file does not exist. Double check that you have passed the file path as a parameter and the file exists." -ErrorAction Stop
+}
+
 Set-ExecutionPolicy RemoteSigned -Force
 
 # Prepare materials from previous steps and runner environment variables
-$appxUploadFilePath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:UWP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
+$appxUploadFilePath = $PSBoundParameters["appxPathParam"]
 $username = $env:PartnerCenterClientId
 $password = ConvertTo-SecureString $env:PartnerCenterClientSecret -AsPlainText -Force
 $appStoreId = $env:PartnerCenterStoreId
