@@ -124,13 +124,13 @@ jobs:
     # This automatically distributes the sideLoad package, which users can visit the index.html page and run the appinstaller
     - name: Uploading appInstaller to Azure Blob
       id: sideload-blob-upload
-      uses: LanceMcCarthy/Action-AzureBlobUpload@v1.7
+      uses: LanceMcCarthy/Action-AzureBlobUpload@v1.7.1
       with:
         connection_string: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
         container_name: general-app-files
         source_folder: src\MediaFileManager\PackageProject\SideLoadPackages\
         destination_folder: Installers/MediaFileManager
-        clean_destination_folder: true
+        clean_destination_folder: false
 
     # ZIP up the sideload packages for GitHub release using Powershell
     - name: Create SideLoadPackages.zip
@@ -167,7 +167,10 @@ jobs:
     # Use Store Broker to publish to Microsoft Store
     - name: Submit to Partner Center (aka DevCenter)
       shell: pwsh
-      run: ./.scripts/SubmitToMsftStore.ps1
+      run: |
+        $appxuploadPath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:APP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
+
+        ./.scripts/SubmitToMsftStore.ps1 $appxuploadPath
 
     # ZIP up the store upload packages using Powershell
     - name: Create StoreUploadPackages.zip
