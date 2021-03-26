@@ -77,7 +77,7 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
       with:
-        vs-version: '[16.8,16.9)'
+        vs-version: '[16.9,16.10)'
 
     - name: NuGet Restore
       run: dotnet restore src\MediaFileManager\MediaFileManager.sln --configfile src\nuget.config --runtime $env:RID
