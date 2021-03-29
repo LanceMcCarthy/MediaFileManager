@@ -1,6 +1,6 @@
 # MediaFileManager
 
-Media File Manager is a UWP-packaged WPF application for easily naming media files that need a specific  naming paradigm ([see this 50 second video](https://youtu.be/5U7rmrJXwWw)).
+Media File Manager is a UWP-packaged WPF application for easily naming media files that need a specific  naming paradigm ([see this 50 second video](https://youtu.be/5U7rmrJXwWw)) .
 
 | Workflow | Status |
 |--------|--------|
