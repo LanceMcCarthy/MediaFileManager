@@ -9,21 +9,7 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-
-    env:
-      CERTIFICATE_FILENAME: LancelotSoftwareLLC.pfx
-      TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-      TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
-      Actions_Allow_Unsecure_Commands: true # so we can set environment variable at the job level
-      WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
-      UwpProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
-      RID: win-x86 # https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
-      TargetPlatform: x86
-      Configuration: Debug
-      BuildMode: CI
-      AppxPackageSigningEnabled: False
-      AppxBundle: Never
-
+    
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -77,15 +63,38 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
       with:
-        vs-version: '[16.8,16.9)'
+        vs-version: '[16.9,16.10)'
 
+    # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: NuGet Restore
-      run: dotnet restore src\MediaFileManager\MediaFileManager.sln --configfile src\nuget.config --runtime $env:RID
+      run: dotnet restore $env:SolutionPath --configfile $env:NugetConfigPath --runtime $env:RID
+      env:
+        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
+        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+        SolutionPath: src\MediaFileManager\MediaFileManager.sln
+        NugetConfigPath: src\nuget.config
+        RID: win-x86 
 
-    # Restore WPF project
+    # Restore WPF project to populate the obj folder (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: Build the Wpf application to populate the obj folder
-      run: msbuild $env:WpfProjectPath /t:Restore /p:Configuration=Debug /p:RuntimeIdentifier=$env:RID
+      run: msbuild $env:WpfProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID
+      env:
+        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
+        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+        WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+        Configuration: Debug
+        RID: win-x86 
 
-    # Build the WAP project
+    # Build the WAP project. BuildMode is set to CI so we do not have to generate actual packages.
     - name: Build the Windows Application Packaging Project (wapproj) 
       run: msbuild $env:UwpProjectPath /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
+      env:
+        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
+        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+        UwpProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
+        RID: win-x86 # https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
+        TargetPlatform: x86
+        Configuration: Debug
+        BuildMode: CI
+        AppxBundle: Never
+        AppxPackageSigningEnabled: False
