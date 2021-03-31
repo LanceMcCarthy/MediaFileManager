@@ -117,6 +117,7 @@ jobs:
         $appxuploadPath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:APP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
         ./.scripts/SubmitToMsftStore.ps1 $appxuploadPath
       env:
+        UwpBundlePlatform: x86 #package bundles, eg. x86|x64|arm|arm64
         PartnerCenterClientId: ${{ secrets.PARTNER_CENTER_CLIENT_ID }}
         PartnerCenterClientSecret: ${{ secrets.PARTNER_CENTER_CLIENT_SECRET }}
         PartnerCenterStoreId: 9PD3JFK7W5MB
