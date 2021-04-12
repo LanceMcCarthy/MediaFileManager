@@ -20,6 +20,7 @@
                 <ColumnDefinition Width="2*"/>
                 <ColumnDefinition/>
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <telerik:RadComboBox x:Name="FileTypeComboBox" 
@@ -32,10 +33,15 @@
                                  Margin="2,4,2,4" 
                                  Grid.Column="1"/>
 
-            <Button Content="About"
+            <Button Content="Help"
                     Margin="2,4,4,4"
                     Grid.Column="2"
-                    Click="ButtonBase_OnClick"/>
+                    Click="HelpButton_OnClick" />
+
+            <Button Content="About"
+                    Margin="2,4,4,4"
+                    Grid.Column="3"
+                    Click="AboutButton_OnClick"/>
         </Grid>
         
         <Border x:Name="SelectedViewBorder"
