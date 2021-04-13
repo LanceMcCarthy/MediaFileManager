@@ -1,11 +1,11 @@
-﻿using System.Globalization;
+﻿using Microsoft.AppCenter;
+using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
+using System.Globalization;
 using System.Threading;
 using System.Windows;
 using System.Windows.Media;
-using Telerik.Windows.Controls;
 using Telerik.Windows.Controls.SplashScreen;
-using Microsoft.AppCenter;
-using Microsoft.AppCenter.Crashes;
 
 namespace MediaFileManager.Desktop
 {
@@ -16,9 +16,10 @@ namespace MediaFileManager.Desktop
             InitializeComponent();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
         protected override async void OnStartup(StartupEventArgs e)
         {
-            var dataContext = (SplashScreenDataContext)RadSplashScreenManager.SplashScreenDataContext;
+            var dataContext = (SplashScreenDataContext)Telerik.Windows.Controls.RadSplashScreenManager.SplashScreenDataContext;
             dataContext.ImagePath = "/MediaFileManager.Desktop;component/Images/SplashScreenImage.png";
             dataContext.ImageWidth = 600;
             dataContext.ImageHeight = 400;
@@ -30,18 +31,18 @@ namespace MediaFileManager.Desktop
             dataContext.MinValue = 0;
             dataContext.MaxValue = 100;
 
-            RadSplashScreenManager.Show();
+            Telerik.Windows.Controls.RadSplashScreenManager.Show();
 
             // AppCenter
             AppCenter.Start(MediaFileManager.Desktop.Properties.Settings.Default.AppCenterAnalyticsKey, 
-                typeof(Microsoft.AppCenter.Analytics.Analytics), 
-                typeof(Microsoft.AppCenter.Crashes.Crashes));
+                typeof(Analytics), 
+                typeof(Crashes));
 
             // Just use general region, not actual location.
             AppCenter.SetCountryCode(RegionInfo.CurrentRegion.TwoLetterISORegionName);
 
             // Option 1 (good for beta releases) - Hard coding the choice for beta release of the app
-            // Crashes.NotifyUserConfirmation(UserConfirmation.AlwaysSend);
+            Crashes.NotifyUserConfirmation(UserConfirmation.AlwaysSend);
 
             // Option 2 (good for production releases) - Wait until first time it crashes, then ask user what they want to do.
             var hasCrashed = await Crashes.HasCrashedInLastSessionAsync().ConfigureAwait(true);
@@ -65,7 +66,7 @@ namespace MediaFileManager.Desktop
                 }
             }
 
-            // Temporary faking the loading indicator
+            // Temporarily pausing 5 seconds for the loading indicator, will be used for real data in the future
             for (var i = 0; i < 100; i++)
             {
                 dataContext.ProgressValue = i;
@@ -75,7 +76,7 @@ namespace MediaFileManager.Desktop
                 dataContext.Footer = i < 50 ? "Hi! Loading resources, this will be quick." : "Just a little bit more...";
             }
 
-            RadSplashScreenManager.Close();
+            Telerik.Windows.Controls.RadSplashScreenManager.Close();
 
             base.OnStartup(e);
         }
