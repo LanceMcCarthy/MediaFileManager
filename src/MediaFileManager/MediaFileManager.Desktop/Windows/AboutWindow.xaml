@@ -5,12 +5,33 @@
                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                    xmlns:local="clr-namespace:MediaFileManager.Desktop.Windows"
                    xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
+                   xmlns:ucs="clr-namespace:MediaFileManager.Desktop.UserControls"
                    mc:Ignorable="d"
                    Header="About"
-                   Height="600"
-                   Width="980">
-    <Grid>
-        <TextBlock x:Name="AboutTextBlock" />
-    </Grid>
-    
+                   Height="400"
+                   Width="600">
+    <StackPanel>
+
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Center">
+            <TextBlock Text="Media File Manager v."
+                       FontSize="18"
+                       FontWeight="SemiBold" />
+            <TextBlock x:Name="VersionTextBlock"
+                       FontSize="18"
+                       FontWeight="SemiBold" />
+        </StackPanel>
+
+        <TextBlock Text="Copyright 2017-2021, Lancelot Software"
+                   HorizontalAlignment="Center"
+                   FontSize="14" />
+
+        <ucs:AnimatedLogo />
+        
+        <TextBlock Text="Media File Manager is a UWP-packaged WPF application for easily naming thousands of files that use a specific naming paradigm."
+                   TextWrapping="Wrap"
+                   HorizontalAlignment="Center"
+                   TextAlignment="Center"
+                   Margin="10,0,10,0" />
+    </StackPanel>
 </telerik:RadWindow>

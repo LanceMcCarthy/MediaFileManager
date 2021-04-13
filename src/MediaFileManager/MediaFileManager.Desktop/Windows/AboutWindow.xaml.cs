@@ -17,11 +17,10 @@ namespace MediaFileManager.Desktop.Windows
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
         private void AboutWindow_Loaded(object sender, System.Windows.RoutedEventArgs e)
         {
+            var version = "";
             try
             {
-                var uwpPackageVersion = $"{Package.Current.Id.Version.Major}.{Package.Current.Id.Version.Minor}.{Package.Current.Id.Version.Build}";
-
-                Header = $"Media File Manager (v.{uwpPackageVersion}) - About";
+                version = $"{Package.Current.Id.Version.Major}.{Package.Current.Id.Version.Minor}.{Package.Current.Id.Version.Build}";
             }
             catch (Exception ex)
             {
@@ -29,10 +28,12 @@ namespace MediaFileManager.Desktop.Windows
                 {
                     { "AboutWindow_Loaded Exception", ex.Message }
                 });
+
+                version = $"Error: {ex.Message.Substring(0,20)}";
             }
             finally
             {
-
+                VersionTextBlock.Text = version;
             }
         }
     }

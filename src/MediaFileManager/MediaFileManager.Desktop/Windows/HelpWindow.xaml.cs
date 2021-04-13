@@ -18,12 +18,10 @@ namespace MediaFileManager.Desktop.Windows
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
-        private async void HelpWindow_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        private async void HelpWindow_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
-                this.Header = $"Media File Manager - Help";
-
                 using var client = new HttpClient();
                 var markdownText = await client.GetStringAsync(new Uri("https://raw.githubusercontent.com/LanceMcCarthy/MediaFileManager/main/.github/other/help.md")).ConfigureAwait(true);
 
