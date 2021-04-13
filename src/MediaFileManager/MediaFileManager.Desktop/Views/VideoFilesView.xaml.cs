@@ -12,7 +12,6 @@ using System.Windows.Media;
 using MediaFileManager.Desktop.Models;
 using Microsoft.AppCenter.Crashes;
 using Telerik.Windows.Controls;
-using Analytics = Microsoft.AppCenter.Analytics.Analytics;
 
 namespace MediaFileManager.Desktop.Views
 {
@@ -25,21 +24,22 @@ namespace MediaFileManager.Desktop.Views
         private readonly ObservableCollection<string> episodes;
         private readonly ObservableCollection<string> renamedEpisodesPreviewList;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
         public VideoFilesView()
         {
             InitializeComponent();
 
-            this.openFolderDialog = new RadOpenFolderDialog { Owner = this, ExpandToCurrentDirectory = false };
+            openFolderDialog = new RadOpenFolderDialog { Owner = this, ExpandToCurrentDirectory = false };
 
-            SeasonsListBox.ItemsSource = this.seasons = new ObservableCollection<string>();
-            EpisodesListBox.ItemsSource = this.episodes = new ObservableCollection<string>();
-            EpisodeRenamedPreviewListBox.ItemsSource = this.renamedEpisodesPreviewList = new ObservableCollection<string>();
-            StatusListBox.ItemsSource = this.statusMessages = new ObservableCollection<OutputMessage>();
+            SeasonsListBox.ItemsSource = seasons = new ObservableCollection<string>();
+            EpisodesListBox.ItemsSource = episodes = new ObservableCollection<string>();
+            EpisodeRenamedPreviewListBox.ItemsSource = renamedEpisodesPreviewList = new ObservableCollection<string>();
+            StatusListBox.ItemsSource = statusMessages = new ObservableCollection<OutputMessage>();
 
-            this.renumberWorker = new BackgroundWorker { WorkerReportsProgress = true };
-            this.renumberWorker.DoWork += RenumberWorker_DoWork;
-            this.renumberWorker.ProgressChanged += RenumberWorker_ProgressChanged;
-            this.renumberWorker.RunWorkerCompleted += RenumberWorker_RunWorkerCompleted;
+            renumberWorker = new BackgroundWorker { WorkerReportsProgress = true };
+            renumberWorker.DoWork += RenumberWorker_DoWork;
+            renumberWorker.ProgressChanged += RenumberWorker_ProgressChanged;
+            renumberWorker.RunWorkerCompleted += RenumberWorker_RunWorkerCompleted;
 
             WriteOutput("Ready, open a folder to begin.", OutputMessageLevel.Success);
 
@@ -48,6 +48,7 @@ namespace MediaFileManager.Desktop.Views
 
         #region Source operations
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
         private void SelectFolderButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -64,7 +65,7 @@ namespace MediaFileManager.Desktop.Views
                     // Need to bump up one level from the last folder location
                     var topDirectoryInfo = Directory.GetParent(Properties.Settings.Default.LastFolder);
 
-                    this.openFolderDialog.InitialDirectory = topDirectoryInfo.FullName;
+                    openFolderDialog.InitialDirectory = topDirectoryInfo.FullName;
 
                     WriteOutput("Starting at saved folder.", OutputMessageLevel.Normal);
                 }
@@ -73,16 +74,16 @@ namespace MediaFileManager.Desktop.Views
                     WriteOutput("No saved folder, starting at root.", OutputMessageLevel.Warning);
                 }
 
-                this.openFolderDialog.ShowDialog();
+                openFolderDialog.ShowDialog();
 
-                if (this.openFolderDialog.DialogResult != true)
+                if (openFolderDialog.DialogResult != true)
                 {
                     WriteOutput("Canceled folder selection.", OutputMessageLevel.Normal);
                     return;
                 }
                 else
                 {
-                    Properties.Settings.Default.LastFolder = this.openFolderDialog.FileName;
+                    Properties.Settings.Default.LastFolder = openFolderDialog.FileName;
                     Properties.Settings.Default.Save();
                 }
 
@@ -90,33 +91,33 @@ namespace MediaFileManager.Desktop.Views
 
                 LocalBusyIndicator.BusyContent = "searching for seasons...";
 
-                var seasonsResult = Directory.EnumerateDirectories(this.openFolderDialog.FileName).ToList();
+                var seasonsResult = Directory.EnumerateDirectories(openFolderDialog.FileName).ToList();
 
-                this.seasons.Clear();
+                seasons.Clear();
 
                 foreach (var season in seasonsResult)
                 {
-                    this.seasons.Add(season);
+                    seasons.Add(season);
 
                     LocalBusyIndicator.BusyContent = $"added {season}";
                 }
 
-                if (this.seasons.Count == 0)
+                if (seasons.Count == 0)
                 {
                     WriteOutput("No seasons detected, make sure there are subfolders with season number.", OutputMessageLevel.Warning);
                 }
-                else if (this.seasons.Count == 1)
+                else if (seasons.Count == 1)
                 {
-                    WriteOutput($"Opened '{Path.GetFileName(this.openFolderDialog.FileName)}' ({this.seasons.Count} season).", OutputMessageLevel.Success);
+                    WriteOutput($"Opened '{Path.GetFileName(openFolderDialog.FileName)}' ({seasons.Count} season).", OutputMessageLevel.Success);
                 }
                 else
                 {
-                    WriteOutput($"Opened '{Path.GetFileName(this.openFolderDialog.FileName)}' ({this.seasons.Count} seasons).", OutputMessageLevel.Success);
+                    WriteOutput($"Opened '{Path.GetFileName(openFolderDialog.FileName)}' ({seasons.Count} seasons).", OutputMessageLevel.Success);
                 }
 
-                Analytics.TrackEvent("Video Folder Opened", new Dictionary<string, string>
+                Microsoft.AppCenter.Analytics.Analytics.TrackEvent("Video Folder Opened", new Dictionary<string, string>
                 {
-                    { "Seasons", this.seasons.Count.ToString(CultureInfo.InvariantCulture) }
+                    { "Seasons", seasons.Count.ToString(CultureInfo.InvariantCulture) }
                 });
             }
             catch (Exception ex)
@@ -139,9 +140,10 @@ namespace MediaFileManager.Desktop.Views
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
         private void SeasonsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            this.episodes.Clear();
+            episodes.Clear();
 
             foreach (string season in SeasonsListBox.SelectedItems)
             {
@@ -149,7 +151,7 @@ namespace MediaFileManager.Desktop.Views
 
                 foreach (var filePath in episodesResult)
                 {
-                    this.episodes.Add(filePath);
+                    episodes.Add(filePath);
                 }
             }
 
@@ -159,14 +161,14 @@ namespace MediaFileManager.Desktop.Views
             }
             else if (SeasonsListBox.SelectedItems.Count == 1)
             {
-                WriteOutput($"{Path.GetFileName(this.openFolderDialog.FileName)} selected ({this.episodes.Count} episodes).", OutputMessageLevel.Informational);
+                WriteOutput($"{Path.GetFileName(openFolderDialog.FileName)} selected ({episodes.Count} episodes).", OutputMessageLevel.Informational);
             }
             else
             {
-                WriteOutput($"{SeasonsListBox.SelectedItems.Count} seasons selected ({this.episodes.Count} total episodes).", OutputMessageLevel.Informational);
+                WriteOutput($"{SeasonsListBox.SelectedItems.Count} seasons selected ({episodes.Count} total episodes).", OutputMessageLevel.Informational);
             }
 
-            Analytics.TrackEvent("Season Selection", new Dictionary<string, string>
+            Microsoft.AppCenter.Analytics.Analytics.TrackEvent("Season Selection", new Dictionary<string, string>
             {
                 { "Selected Seasons", SeasonsListBox.SelectedItems.Count.ToString(CultureInfo.InvariantCulture) }
             });
@@ -201,7 +203,7 @@ namespace MediaFileManager.Desktop.Views
             Reset();
             WriteOutput("Reset complete! Open a folder to continue.", OutputMessageLevel.Success);
 
-            Analytics.TrackEvent("User Reset", new Dictionary<string, string>
+            Microsoft.AppCenter.Analytics.Analytics.TrackEvent("User Reset", new Dictionary<string, string>
             {
                 { "View Type" , "Videos" }
             });
@@ -221,6 +223,7 @@ namespace MediaFileManager.Desktop.Views
             UpdateFileNameButton.IsEnabled = !string.IsNullOrEmpty(OriginalTextBox_Renaming?.Text);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
         private async void UpdateFileNameButton_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(OriginalTextBox_Renaming.Text))
@@ -301,9 +304,9 @@ namespace MediaFileManager.Desktop.Views
 
             RefreshEpisodesList();
 
-            Analytics.TrackEvent("Episode Renaming Complete", new Dictionary<string, string>
+            Microsoft.AppCenter.Analytics.Analytics.TrackEvent("Episode Renaming Complete", new Dictionary<string, string>
             {
-                { "Total Episodes", this.episodes.Count.ToString(CultureInfo.InvariantCulture) },
+                { "Total Episodes", episodes.Count.ToString(CultureInfo.InvariantCulture) },
                 { "Episodes Renamed", EpisodesListBox.SelectedItems.Count.ToString(CultureInfo.InvariantCulture) }
             });
 
@@ -347,6 +350,7 @@ namespace MediaFileManager.Desktop.Views
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
         private void RenumberingButton_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(OriginalTextBox_Renumbering?.Text))
@@ -386,9 +390,9 @@ namespace MediaFileManager.Desktop.Views
             LocalBusyIndicator.IsIndeterminate = false;
             LocalBusyIndicator.ProgressValue = 0;
 
-            if (this.renamedEpisodesPreviewList.Any())
+            if (renamedEpisodesPreviewList.Any())
             {
-                this.renamedEpisodesPreviewList.Clear();
+                renamedEpisodesPreviewList.Clear();
             }
 
             var selectedEpisodes = EpisodesListBox.SelectedItems.Cast<string>().ToList();
@@ -459,7 +463,7 @@ namespace MediaFileManager.Desktop.Views
                         FileName = newName
                     };
 
-                    this.renumberWorker.ReportProgress(progressParameter.PercentComplete, progressParameter);
+                    renumberWorker.ReportProgress(progressParameter.PercentComplete, progressParameter);
                 }
 
                 e.Result = new WorkerResult()
@@ -479,6 +483,7 @@ namespace MediaFileManager.Desktop.Views
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
         private void RenumberWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             if (e.UserState is WorkerProgress resultParam)
@@ -489,26 +494,27 @@ namespace MediaFileManager.Desktop.Views
                 // If this is a preview run, populate the preview ListBox
                 if (resultParam.IsPreview)
                 {
-                    this.renamedEpisodesPreviewList.Add(resultParam.FileName);
+                    renamedEpisodesPreviewList.Add(resultParam.FileName);
                 }
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
         private void RenumberWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             if (e.Result is WorkerResult resultParameter)
             {
                 WriteOutput(resultParameter.FinalMessage, OutputMessageLevel.Success);
 
-                Analytics.TrackEvent("Episode Renumbering Complete", new Dictionary<string, string>
+                Microsoft.AppCenter.Analytics.Analytics.TrackEvent("Episode Renumbering Complete", new Dictionary<string, string>
                 {
-                    { "Total Episodes", this.episodes.Count.ToString(CultureInfo.InvariantCulture) },
+                    { "Total Episodes", episodes.Count.ToString(CultureInfo.InvariantCulture) },
                     { "Episodes Renumbered", EpisodesListBox.SelectedItems.Count.ToString(CultureInfo.InvariantCulture) }
                 });
 
                 if (!resultParameter.IsPreview)
                 {
-                    this.renamedEpisodesPreviewList.Clear();
+                    renamedEpisodesPreviewList.Clear();
 
                     RefreshEpisodesList();
 
@@ -532,6 +538,7 @@ namespace MediaFileManager.Desktop.Views
             LocalBusyIndicator.ProgressValue = 0;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
         private void ApproveResultButton_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(OriginalTextBox_Renumbering?.Text))
@@ -565,7 +572,7 @@ namespace MediaFileManager.Desktop.Views
                 return;
             }
 
-            Analytics.TrackEvent("Renumbering Preview Approved");
+            Microsoft.AppCenter.Analytics.Analytics.TrackEvent("Renumbering Preview Approved");
 
             LocalBusyIndicator.IsBusy = true;
             LocalBusyIndicator.Visibility = Visibility.Visible;
@@ -584,23 +591,24 @@ namespace MediaFileManager.Desktop.Views
             });
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
         private void CancelResultButton_Click(object sender, RoutedEventArgs e)
         {
-            this.renamedEpisodesPreviewList.Clear();
+            renamedEpisodesPreviewList.Clear();
 
             EpisodesPane.IsSelected = true;
 
             ApproveResultButton.IsEnabled = false;
             CancelResultButton.IsEnabled = false;
 
-            Analytics.TrackEvent("Cancel Results Preview");
+            Microsoft.AppCenter.Analytics.Analytics.TrackEvent("Cancel Results Preview");
         }
 
         #endregion
 
         private void RefreshEpisodesList()
         {
-            this.episodes.Clear();
+            episodes.Clear();
 
             foreach (string season in SeasonsListBox.SelectedItems)
             {
@@ -620,13 +628,13 @@ namespace MediaFileManager.Desktop.Views
                 {
                     if (Path.HasExtension(filePath))
                     {
-                        this.episodes.Add(filePath);
+                        episodes.Add(filePath);
 
                         WriteOutput($"Adding {filePath}...", OutputMessageLevel.Normal, true);
                     }
                 }
 
-                WriteOutput($"Refreshed {folderName} {this.episodes.Count} episodes.", OutputMessageLevel.Normal, true);
+                WriteOutput($"Refreshed {folderName} {episodes.Count} episodes.", OutputMessageLevel.Normal, true);
             }
         }
 
@@ -641,9 +649,9 @@ namespace MediaFileManager.Desktop.Views
             ReplacementTextBox.Text = string.Empty;
             SeasonNumberTextBox.Text = string.Empty;
 
-            this.seasons.Clear();
-            this.episodes.Clear();
-            this.statusMessages.Clear();
+            seasons.Clear();
+            episodes.Clear();
+            statusMessages.Clear();
         }
 
         private void WriteOutput(string text, OutputMessageLevel level, bool removeLastItem = false)
@@ -671,9 +679,9 @@ namespace MediaFileManager.Desktop.Views
 
             if (Dispatcher.CheckAccess())
             {
-                if (removeLastItem && this.statusMessages.Count > 0)
+                if (removeLastItem && statusMessages.Count > 0)
                 {
-                    this.statusMessages.Remove(this.statusMessages.LastOrDefault());
+                    statusMessages.Remove(statusMessages.LastOrDefault());
                 }
 
                 var message = new OutputMessage
@@ -682,16 +690,17 @@ namespace MediaFileManager.Desktop.Views
                     MessageColor = messageColor
                 };
 
-                this.statusMessages.Add(message);
+                statusMessages.Add(message);
+
                 StatusListBox.ScrollIntoView(message);
             }
             else
             {
                 Dispatcher.Invoke(() =>
                 {
-                    if (removeLastItem && this.statusMessages.Count > 0)
+                    if (removeLastItem && statusMessages.Count > 0)
                     {
-                        this.statusMessages.Remove(this.statusMessages.LastOrDefault());
+                        statusMessages.Remove(statusMessages.LastOrDefault());
                     }
 
                     var message = new OutputMessage
@@ -700,7 +709,8 @@ namespace MediaFileManager.Desktop.Views
                         MessageColor = messageColor
                     };
 
-                    this.statusMessages.Add(message);
+                    statusMessages.Add(message);
+
                     StatusListBox.ScrollIntoView(message);
                 });
             }
@@ -708,7 +718,7 @@ namespace MediaFileManager.Desktop.Views
 
         private void VideoFilesView_Unloaded(object sender, RoutedEventArgs e)
         {
-            this.renumberWorker.Dispose();
+            renumberWorker.Dispose();
         }
     }
 }

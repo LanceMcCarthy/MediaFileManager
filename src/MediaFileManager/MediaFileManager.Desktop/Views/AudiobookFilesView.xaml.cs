@@ -23,26 +23,28 @@ namespace MediaFileManager.Desktop.Views
         private readonly ObservableCollection<string> audiobookTitles;
         private readonly ObservableCollection<AudiobookFile> audiobookFiles;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
         public AudiobookFilesView()
         {
             InitializeComponent();
 
-            this.openFolderDialog = new RadOpenFolderDialog { Owner = this, ExpandToCurrentDirectory = false };
+            openFolderDialog = new RadOpenFolderDialog { Owner = this, ExpandToCurrentDirectory = false };
 
-            StatusListBox.ItemsSource = this.statusMessages = new ObservableCollection<OutputMessage>();
-            AudiobookTitlesListBox.ItemsSource = this.audiobookTitles = new ObservableCollection<string>();
-            AudiobookFilesGridView.ItemsSource = this.audiobookFiles = new ObservableCollection<AudiobookFile>();
+            StatusListBox.ItemsSource = statusMessages = new ObservableCollection<OutputMessage>();
+            AudiobookTitlesListBox.ItemsSource = audiobookTitles = new ObservableCollection<string>();
+            AudiobookFilesGridView.ItemsSource = audiobookFiles = new ObservableCollection<AudiobookFile>();
 
-            this.backgroundWorker = new BackgroundWorker { WorkerReportsProgress = true };
-            this.backgroundWorker.DoWork += BackgroundWorker_DoWork;
-            this.backgroundWorker.ProgressChanged += BackgroundWorker_ProgressChanged;
-            this.backgroundWorker.RunWorkerCompleted += BackgroundWorker_RunWorkerCompleted;
+            backgroundWorker = new BackgroundWorker { WorkerReportsProgress = true };
+            backgroundWorker.DoWork += BackgroundWorker_DoWork;
+            backgroundWorker.ProgressChanged += BackgroundWorker_ProgressChanged;
+            backgroundWorker.RunWorkerCompleted += BackgroundWorker_RunWorkerCompleted;
 
             WriteOutput("Ready, open an author folder to begin.", OutputMessageLevel.Success);
 
-            this.Unloaded += AudiobookFilesView_Unloaded;
+            Unloaded += AudiobookFilesView_Unloaded;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
         private void SelectAuthorFolderButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -59,7 +61,7 @@ namespace MediaFileManager.Desktop.Views
                     // Need to bump up one level from the last folder location
                     var topDirectoryInfo = Directory.GetParent(Properties.Settings.Default.LastFolder);
 
-                    this.openFolderDialog.InitialDirectory = topDirectoryInfo.FullName;
+                    openFolderDialog.InitialDirectory = topDirectoryInfo.FullName;
 
                     WriteOutput("Starting at saved folder.", OutputMessageLevel.Normal);
                 }
@@ -68,16 +70,16 @@ namespace MediaFileManager.Desktop.Views
                     WriteOutput("No saved folder, starting at root.", OutputMessageLevel.Warning);
                 }
 
-                this.openFolderDialog.ShowDialog();
+                openFolderDialog.ShowDialog();
 
-                if (this.openFolderDialog.DialogResult != true)
+                if (openFolderDialog.DialogResult != true)
                 {
                     WriteOutput("Canceled folder selection.", OutputMessageLevel.Normal);
                     return;
                 }
                 else
                 {
-                    Properties.Settings.Default.LastFolder = this.openFolderDialog.FileName;
+                    Properties.Settings.Default.LastFolder = openFolderDialog.FileName;
                     Properties.Settings.Default.Save();
                 }
 
@@ -85,34 +87,34 @@ namespace MediaFileManager.Desktop.Views
 
                 LocalBusyIndicator.BusyContent = "searching for albums...";
 
-                var folders = Directory.EnumerateDirectories(this.openFolderDialog.FileName).ToList();
+                var folders = Directory.EnumerateDirectories(openFolderDialog.FileName).ToList();
 
-                this.audiobookTitles.Clear();
+                audiobookTitles.Clear();
 
                 foreach (var folder in folders)
                 {
-                    this.audiobookTitles.Add(folder);
+                    audiobookTitles.Add(folder);
 
                     LocalBusyIndicator.BusyContent = $"added {folder}";
                 }
 
-                switch (this.audiobookTitles.Count)
+                switch (audiobookTitles.Count)
                 {
                     case 0:
                         WriteOutput("No titles detected.", OutputMessageLevel.Error);
                         MessageBox.Show("The selected Author's folder should have subfolders, each subfolder should be named with the audiobook's title.", "No Titles Available.");
                         break;
                     case 1:
-                        WriteOutput($"Opened {Path.GetFileName(this.openFolderDialog.FileName)}' ({this.audiobookTitles.Count} title).", OutputMessageLevel.Success);
+                        WriteOutput($"Opened {Path.GetFileName(openFolderDialog.FileName)}' ({audiobookTitles.Count} title).", OutputMessageLevel.Success);
                         break;
                     default:
-                        WriteOutput($"Opened {Path.GetFileName(this.openFolderDialog.FileName)} ({this.audiobookTitles.Count} titles).", OutputMessageLevel.Success);
+                        WriteOutput($"Opened {Path.GetFileName(openFolderDialog.FileName)} ({audiobookTitles.Count} titles).", OutputMessageLevel.Success);
                         break;
                 }
 
                 Analytics.TrackEvent("Audiobook Folder Opened", new Dictionary<string, string>
                 {
-                    { "Audiobook Titles Loaded", $"{this.audiobookTitles.Count}" }
+                    { "Audiobook Titles Loaded", $"{audiobookTitles.Count}" }
                 });
             }
             catch (Exception ex)
@@ -140,6 +142,7 @@ namespace MediaFileManager.Desktop.Views
             RefreshFileList();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
         private void AudiobookFilesGridView_OnSelectionChanged(object sender, SelectionChangeEventArgs e)
         {
             if (e.AddedItems == null)
@@ -186,6 +189,7 @@ namespace MediaFileManager.Desktop.Views
             UpdateTagsButton.IsEnabled = !string.IsNullOrEmpty((sender as RadWatermarkTextBox)?.Text);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
         private void SetTagsButton_Click(object sender, RoutedEventArgs e)
         {
             if (SetAlbumNameCheckBox.IsChecked == true && string.IsNullOrEmpty(AlbumNameTextBox.Text))
@@ -211,7 +215,7 @@ namespace MediaFileManager.Desktop.Views
                 { "Set Book Title Enabled", $"{SetAlbumNameCheckBox.IsChecked}" },
                 { "Set Author Name Enabled", $"{SetArtistNameCheckBox.IsChecked}" },
                 { "Selected Audiobook files", $"{AudiobookFilesGridView.SelectedItems.Count}" },
-                { "Authors", $"{this.audiobookTitles.Count}" }
+                { "Authors", $"{audiobookTitles.Count}" }
             });
 
             LocalBusyIndicator.IsBusy = true;
@@ -271,7 +275,7 @@ namespace MediaFileManager.Desktop.Views
                                 tagLibFile.Save();
 
                                 // Report progress
-                                this.backgroundWorker.ReportProgress(i / tagParams.AudiobookFiles.Count * 100);
+                                backgroundWorker.ReportProgress(i / tagParams.AudiobookFiles.Count * 100);
                             }
                         }
 
@@ -288,6 +292,7 @@ namespace MediaFileManager.Desktop.Views
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
         private void BackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             LocalBusyIndicator.ProgressValue = e.ProgressPercentage;
@@ -297,6 +302,7 @@ namespace MediaFileManager.Desktop.Views
             WriteOutput($"Updating tags, {e.ProgressPercentage}%...", OutputMessageLevel.Informational, true);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
         private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             if (e.Result == null)
@@ -317,9 +323,10 @@ namespace MediaFileManager.Desktop.Views
             LocalBusyIndicator.ProgressValue = 0;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
         private void RefreshFileList()
         {
-            this.audiobookFiles.Clear();
+            audiobookFiles.Clear();
 
             foreach (string album in AudiobookTitlesListBox.SelectedItems)
             {
@@ -368,7 +375,7 @@ namespace MediaFileManager.Desktop.Views
 
                     tagLibFile?.Dispose();
 
-                    this.audiobookFiles.Add(audiobookFile);
+                    audiobookFiles.Add(audiobookFile);
                 }
             }
 
@@ -378,11 +385,11 @@ namespace MediaFileManager.Desktop.Views
             }
             else if (AudiobookTitlesListBox.SelectedItems.Count == 1)
             {
-                WriteOutput($"{Path.GetFileName(this.openFolderDialog.FileName)} selected ({this.audiobookFiles.Count} files).", OutputMessageLevel.Informational);
+                WriteOutput($"{Path.GetFileName(openFolderDialog.FileName)} selected ({audiobookFiles.Count} files).", OutputMessageLevel.Informational);
             }
             else
             {
-                WriteOutput($"{AudiobookTitlesListBox.SelectedItems.Count} selected ({this.audiobookFiles.Count} total files).", OutputMessageLevel.Informational);
+                WriteOutput($"{AudiobookTitlesListBox.SelectedItems.Count} selected ({audiobookFiles.Count} total files).", OutputMessageLevel.Informational);
             }
         }
 
@@ -395,9 +402,9 @@ namespace MediaFileManager.Desktop.Views
             SetTitleCheckBox.IsChecked = true;
             SetArtistNameCheckBox.IsChecked = true;
 
-            this.audiobookTitles.Clear();
-            this.audiobookFiles.Clear();
-            this.statusMessages.Clear();
+            audiobookTitles.Clear();
+            audiobookFiles.Clear();
+            statusMessages.Clear();
         }
 
         private void WriteOutput(string text, OutputMessageLevel level, bool removeLastItem = false)
@@ -412,11 +419,11 @@ namespace MediaFileManager.Desktop.Views
                 _ => Colors.Gray
             };
 
-            if (this.Dispatcher.CheckAccess())
+            if (Dispatcher.CheckAccess())
             {
-                if (removeLastItem && this.statusMessages.Count > 0)
+                if (removeLastItem && statusMessages.Count > 0)
                 {
-                    this.statusMessages.Remove(this.statusMessages.LastOrDefault());
+                    statusMessages.Remove(statusMessages.LastOrDefault());
                 }
 
                 var message = new OutputMessage
@@ -425,16 +432,17 @@ namespace MediaFileManager.Desktop.Views
                     MessageColor = messageColor
                 };
 
-                this.statusMessages.Add(message);
+                statusMessages.Add(message);
+
                 StatusListBox.ScrollIntoView(message);
             }
             else
             {
-                this.Dispatcher.Invoke(() =>
+                Dispatcher.Invoke(() =>
                 {
-                    if (removeLastItem && this.statusMessages.Count > 0)
+                    if (removeLastItem && statusMessages.Count > 0)
                     {
-                        this.statusMessages.Remove(this.statusMessages.LastOrDefault());
+                        statusMessages.Remove(statusMessages.LastOrDefault());
                     }
 
                     var message = new OutputMessage
@@ -443,7 +451,8 @@ namespace MediaFileManager.Desktop.Views
                         MessageColor = messageColor
                     };
 
-                    this.statusMessages.Add(message);
+                    statusMessages.Add(message);
+
                     StatusListBox.ScrollIntoView(message);
                 });
             }
@@ -451,7 +460,7 @@ namespace MediaFileManager.Desktop.Views
 
         private void AudiobookFilesView_Unloaded(object sender, RoutedEventArgs e)
         {
-            this.backgroundWorker.Dispose();
+            backgroundWorker.Dispose();
         }
     }
 }
