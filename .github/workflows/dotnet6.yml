@@ -157,11 +157,11 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: v.${{ env.APP_VERSION }}
-        release_name: Media File Manager v.${{ env.APP_VERSION }}
+        tag_name: v.${{ env.APP_VERSION }}-net6.0
+        release_name: Media File Manager v.${{ env.APP_VERSION }} - .NET 6.0 Preview
         draft: false
-        prerelease: false
-        body_path: .github\other\releasebody.md
+        prerelease: true
+        body_path: .github\other\preview_releasebody.md
 
     # Add SideLoad artifacts to GitHub Release (via https://github.com/actions/upload-release-asset)
     - name: Uploading SideLoad Release asset
