@@ -63,7 +63,7 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
       with:
-        vs-version: '[16.9,16.10)'
+        vs-version: '[16.9,16.10]'
 
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: NuGet Restore
