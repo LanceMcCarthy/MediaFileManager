@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net5.0-windows10.0.19041.0</TargetFramework>
+		<TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
 		<UseWPF>true</UseWPF>
 		<RootNamespace>MediaFileManager.Desktop</RootNamespace>
 		<AssemblyName>MediaFileManager.Desktop</AssemblyName>
@@ -20,11 +20,11 @@
 		<NoWarn>1701;1702;1051;1303;1063;1416;1031;1001</NoWarn>
 	</PropertyGroup>
 	<ItemGroup>
-		<None Remove="Images\SplashscreenImage.png" />
+		<None Remove="Images\SplashScreenLogo.png" />
 	</ItemGroup>
 	<ItemGroup>
-		<Content Include="Images\SplashScreenImage.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		<Content Include="Images\SplashScreenLogo.png">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
 
@@ -73,16 +73,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="Images\MainIcon.ico">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="Properties\Settings.settings">
 			<Generator>PublicSettingsSingleFileGenerator</Generator>
 			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
 		</None>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Content Update="Images\MainLogo.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
 	</ItemGroup>
 
 </Project>
