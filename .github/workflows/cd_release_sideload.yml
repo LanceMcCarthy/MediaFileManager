@@ -28,15 +28,16 @@ jobs:
 
     # Install the .NET Core workload
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v1.7.2
+      uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '5.0.x'
+        dotnet-version: '6.0'
+        include-prerelease: True
     
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
       with:
-        vs-version: '[16.9,16.10)'
+        vs-version: '16.10'
     
     # Restore NuGet packages using the nuget config (package sources authenticate using environment variable and nuget.config)
     - name: NuGet Restore
@@ -128,7 +129,7 @@ jobs:
     # This automatically distributes the sideLoad package, which users can visit the index.html page and run the appinstaller
     - name: Uploading appInstaller to Azure Blob
       id: sideload-blob-upload
-      uses: LanceMcCarthy/Action-AzureBlobUpload@v1.8.2
+      uses: LanceMcCarthy/Action-AzureBlobUpload@v1.9.0
       with:
         connection_string: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
         container_name: general-app-files

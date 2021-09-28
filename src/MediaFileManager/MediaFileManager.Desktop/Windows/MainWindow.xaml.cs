@@ -72,7 +72,14 @@ namespace MediaFileManager.Desktop.Windows
             } 
         }
 
-        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
+        private void HelpButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            new HelpWindow().Show();
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
+        private void AboutButton_OnClick(object sender, RoutedEventArgs e)
         {
             new AboutWindow().Show();
         }
