@@ -73,6 +73,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="Images\MainIcon.ico">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="Properties\Settings.settings">
 			<Generator>PublicSettingsSingleFileGenerator</Generator>
 			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -80,7 +83,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Update="Images\MainLogo.png">
+	  <Content Update="Images\MainLogoImage.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	</ItemGroup>
