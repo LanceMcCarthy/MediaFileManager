@@ -136,7 +136,7 @@ jobs:
     - name: Submit to Partner Center (aka DevCenter)
       shell: pwsh
       run: |
-        $appxuploadPath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:APP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
+        $appxuploadPath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:APP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.msixupload"
         ./.scripts/SubmitToMsftStore.ps1 $appxuploadPath
       env:
         UwpBundlePlatform: x86 #package bundles, eg. x86|x64|arm|arm64
