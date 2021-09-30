@@ -1,0 +1,41 @@
+﻿<UserControl x:Class="MediaFileManager.Desktop.UserControls.LoadingControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:MediaFileManager.Desktop.UserControls"
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
+             mc:Ignorable="d"
+             d:DesignHeight="450"
+             d:DesignWidth="800">
+
+    <Grid Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Image Source="{Binding ImagePath, FallbackValue=Images\SplashScreenLogo.png}"
+               Width="{Binding ImageWidth}"
+               Height="{Binding ImageHeight}"
+               Stretch="{Binding ImageStretch, FallbackValue=Fill}"
+               Grid.Row="0" />
+
+        <Border Margin="10"
+                BorderBrush="White"
+                BorderThickness="1"
+                Grid.Row="1">
+            <telerik:RadProgressBar Minimum="{Binding Minimum}"
+                                    Maximum="{Binding Maximum}"
+                                    Value="{Binding Value}"
+                                    VerticalAlignment="Bottom"
+                                    Height="10"/>
+        </Border>
+
+        <TextBlock Text="{Binding Footer, FallbackValue=Loading...}"
+                   Margin="5,2"
+                   HorizontalAlignment="Center"
+                   Grid.Row="2" />
+    </Grid>
+</UserControl>

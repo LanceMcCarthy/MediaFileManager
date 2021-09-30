@@ -2,21 +2,13 @@
 
 Media File Manager is a UWP-packaged WPF application for easily naming media files that need a specific  naming paradigm ([see this 50 second video](https://youtu.be/5U7rmrJXwWw)) .
 
-| Workflow | Status |
-|--------|--------|
-| Main | ![Main](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Main/badge.svg) |
-| Release (sideload) | ![Release (sideload)](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Release%20(sideload)/badge.svg) |
-| Release (Microsoft Store) | ![Release (Microsoft Store)](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Release%20(Microsoft%20Store)/badge.svg) |
-| Release (all) | ![Release (all)](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Release%20(all)/badge.svg) |
+| Workflow | Status | Installation Options |
+|--------|--------|-----|
+| Main | ![Main](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Main/badge.svg) | n/a |
+| Prerelease  | ![Release (sideload)](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Release%20(sideload)/badge.svg) | [AppInstaller (sideload)](https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/index.html) |
+| Microsoft Store | ![Release (Microsoft Store)](https://github.com/LanceMcCarthy/MediaFileManager/workflows/Release%20(Microsoft%20Store)/badge.svg) | [Microsoft Store](https://www.microsoft.com/en-us/p/media-file-manager/9pd3jfk7w5mb) |
 
 > This repository also serves as a real-world example using GitHub Actions to build and distribute a WPF application to the Microsoft Store and MSIX AppInstaller via Azure Storage.
-
-## Installation Options
-
-You can install the app directly from the Microsoft Store or from the SideLoad distribution.
-
-* [Microsoft Store (stable)](https://www.microsoft.com/en-us/p/media-file-manager/9pd3jfk7w5mb)
-* [AppInstaller Web Site (prerelease)](https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/index.html)
 
 ## Video File Operations
 
@@ -50,13 +42,13 @@ All the selected episodes have been renamed as long as there was text that match
 
 ### Stage 1 - Opening the author folder
 
-Similar to video files, you can choose a fodler to open. In the case of an audiobook, that is usually the Author.
+Similar to video files, you can choose a folder to open. In the case of an audio book, that is usually the Author.
 
 ![open author folder](https://user-images.githubusercontent.com/3520532/90906130-2cd9d500-e39f-11ea-9182-580479d9eb7d.png)
 
 ### Stage 2 - Setting Tags
 
-Next, you select the subfolder that contains the book's files and do the tag setting.
+Next, you select the sub-folder that contains the book's files and do the tag setting.
 
 1. Select the folder containing the book's files
 2. Select all the files for that book
@@ -64,4 +56,4 @@ Next, you select the subfolder that contains the book's files and do the tag set
 4. Select the checkboxes to set what mp3 tag data you want to set
 5. Click the `Update Tags` button to save the information to the selected files.
 
-![audiobook file tag operations](https://user-images.githubusercontent.com/3520532/90906831-3a438f00-e3a0-11ea-8103-b59272d9b7d6.png)
+![audio book file tag operations](https://user-images.githubusercontent.com/3520532/90906831-3a438f00-e3a0-11ea-8103-b59272d9b7d6.png)
