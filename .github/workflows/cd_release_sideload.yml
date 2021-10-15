@@ -15,6 +15,8 @@ jobs:
       with:
         fetch-depth: 0
     
+    # ******************| ASSEMBLY AND MANIFEST VERSIONING |********************* #
+    
     # Create my own version number with a specific format using date. ex: 2020.805.1.0
     - uses: Amadevus/pwsh-script@v2
       id: version-creator
@@ -23,51 +25,6 @@ jobs:
           $buildDay = Get-Date -Format "yyyy.Mdd"
           $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
           Set-ActionVariable APP_VERSION $ver
-    
-    # ******************| TOOL INSTALL and DEPENDENCY RESTORE |********************* #
-
-    # Install the .NET Core workload
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v1.7.2
-      with:
-        dotnet-version: '6.0'
-        include-prerelease: True
-    
-    # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
-    - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1.0.2
-      with:
-        vs-version: '16.10'
-    
-    # Restore NuGet packages using the nuget config (package sources authenticate using environment variable and nuget.config)
-    - name: NuGet Restore
-      run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path --runtime $env:RID
-      env:
-        NuGetConfig_Path: src\nuget.config
-        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }} # this env variable is used in the nuget.config
-        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }} # this env variable is used in the nuget.config
-        RID: win-x86
-        Solution_Path: src\MediaFileManager\MediaFileManager.sln
-        
-    # Restore the application
-    - name:  Restore the Wpf application to populate the obj folder
-      run: msbuild $env:WpfProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID
-      env:
-        RID: win-x86
-        Configuration: Release
-        WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
-
-    # ************************| BUILD AND DISTRIBUTION |************************ #
-
-    # Decode the Base64 encoded Pfx
-    - name: Decode the Pfx
-      run: |
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
-        $currentDirectory = Get-Location
-        $certificatePath = Join-Path -Path $currentDirectory -ChildPath src\MediaFileManager\PackageProject -AdditionalChildPath $env:SigningCertificate
-        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
-      env:
-        SigningCertificate: LancelotSoftwareLLC.pfx # For UWP package signing
     
     # Update the appxmanifest for SideLoad (and signing with PFX)
     - name: Update manifest version
@@ -86,7 +43,7 @@ jobs:
         PackageProperties_DisplayName: "Media File Manager"
         PackageProperties_PublisherDisplayName: "Lancelot Software"
         ApplicationVisualElements_DisplayName: "Media File Manager"
-    
+        
     # Updates the WPF project's assembly version number.
     - name: Update WPF Assembly version
       run: |
@@ -107,6 +64,69 @@ jobs:
         }
         $assemblyInfoPath = "src\MediaFileManager\MediaFileManager.Desktop\Properties\AssemblyInfo.cs"
         SetAssemblyFileVersion $assemblyInfoPath $env:APP_VERSION
+        
+    # ******************| TOOL INSTALL and DEPENDENCY RESTORE |********************* #
+    
+    # Install the .NET Core workload
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0'
+        include-prerelease: True
+    
+    # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v1.0.2
+      
+    # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
+    - name: DotNet Restore - solution
+      run: dotnet restore $env:SolutionPath --configfile $env:NugetConfigPath --runtime $env:RID
+      env:
+        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
+        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+        SolutionPath: src\MediaFileManager\MediaFileManager.sln
+        NugetConfigPath: src\nuget.config
+        RID: win-x86 
+    
+    # In order to generate project.assets.json, we need to use nuget.exe for the wapproject
+    - name: NuGet Restore - Wapp Project (to ensure assets.json is available)
+      run: nuget restore $env:WappProject_Path -ConfigFile $env:NuGetConfig_Path
+      env:
+        NuGetConfig_Path: src\nuget.config
+        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
+        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+        WappProject_Path: src\MediaFileManager\PackageProject\PackageProject.wapproj
+        
+    # Restore NuGet packages using the nuget config (package sources authenticate using environment variable and nuget.config)
+    - name: NuGet Restore - Solution
+      run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path --runtime $env:RID
+      env:
+        NuGetConfig_Path: src\nuget.config
+        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }} # this env variable is used in the nuget.config
+        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }} # this env variable is used in the nuget.config
+        RID: win-x86
+        Solution_Path: src\MediaFileManager\MediaFileManager.sln
+        
+    # Restore the application
+    - name:  Restore the Wpf application to populate the obj folder
+      run: msbuild $env:WpfProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID
+      env:
+        RID: win-x86
+        Configuration: Release
+        WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+
+
+    # ************************| BUILD AND DISTRIBUTION |************************ #
+
+    # Decode the Base64 encoded Pfx
+    - name: Decode the Pfx
+      run: |
+        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
+        $currentDirectory = Get-Location
+        $certificatePath = Join-Path -Path $currentDirectory -ChildPath src\MediaFileManager\PackageProject -AdditionalChildPath $env:SigningCertificate
+        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
+      env:
+        SigningCertificate: LancelotSoftwareLLC.pfx # For UWP package signing
     
     # Build using SideLoad and AppInstaller instructions (requires code signing)
     - name: Build wapproj for Sideloading
