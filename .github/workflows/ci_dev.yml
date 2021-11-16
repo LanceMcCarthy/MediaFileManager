@@ -102,6 +102,7 @@ jobs:
     # output will be src\MediaFileManager\MediaFileManager.Desktop\bin\x64\Release\net6.0-windows10.0.18362.0\win-x64\AppPackages\MediaFileManager.Desktop_2021.722.1.0_Test
     - name: Build the Wpf application to populate the obj folder
       run: msbuild $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:TargetPlatform /p:GenerateAppxPackageOnBuild=$env:GenerateMsix /p:UapAppxPackageBuildMode=$env:BuildMode /p:PackageCertificateKeyFile=$env:CertFilePath /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled
+      env:
         ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
         CertFilePath: src\MediaFileManager\LancelotSoftwareLLC.pfx
         CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
