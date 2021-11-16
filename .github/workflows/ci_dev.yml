@@ -12,7 +12,7 @@ jobs:
     env:
       Actions_Allow_Unsecure_Commands: true # Allows job-wide variables
       RID: win-x64
-      Platform: x86
+      Platform: x64
       TFM: net6.0-windows10.0.18362.0
       Config: Release
     
@@ -122,7 +122,7 @@ jobs:
 
         $dest_path = D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\Packages\_${{ env.TFM }}\${{ env.RID }}\SideLoadPackages.zip
         Write-Output dest_path
-        
+
         Compress-Archive -Path $env:source_path -DestinationPath $env:dest_path
 
     # Add SideLoad artifacts to GitHub Release (via https://github.com/actions/upload-release-asset)
