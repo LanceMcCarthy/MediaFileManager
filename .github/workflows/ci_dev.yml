@@ -9,6 +9,12 @@ on:
 jobs:
   build:
     runs-on: windows-2022
+    env:
+      Actions_Allow_Unsecure_Commands: true # Allows job-wide variables
+      RID: win-x64
+      Platform: x86
+      TFM: net6.0-windows10.0.18362.0
+      Config: Release
     
     steps:
     - name: Checkout
@@ -63,35 +69,65 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.1
 
-    # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
-    - name: DotNet Restore
-      run: dotnet restore $env:SolutionPath --configfile $env:NugetConfigPath --runtime $env:RID
-      env:
-        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
-        SolutionPath: src\MediaFileManager\MediaFileManager.sln
-        NugetConfigPath: src\nuget.config
-        RID: win-x86
+    # Decode the Base64 encoded Pfx
+    - name: Decode the Pfx
+      run: |
+        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
+        $currentDirectory = Get-Location
+        $certificatePath = "src\MediaFileManager\LancelotSoftwareLLC.pfx"
+        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
 
-    # In order to generate project.assets.json, we need to use nuget.exe for the wapproject
-    - name: NuGet Restore Wapp Project (to ensure assets.json is available)
-      run: nuget restore $env:WappProject_Path -ConfigFile $env:NuGetConfig_Path
+    # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
+    - name: Use dotnet restore
+      run: dotnet restore $env:ProjectPath --configfile $env:NugetConfigPath --runtime $env:Runtime
       env:
-        NuGetConfig_Path: src\nuget.config
         TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
         TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
-        WappProject_Path: src\MediaFileManager\PackageProject\PackageProject.wapproj
+        ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+        NugetConfigPath: src\nuget.config
+        Runtime: ${{ env.RID }}
+
+    # Restore using msbuild to restore the obj folder with platform specific
+    - name: USe msbuild Restore
+      run: msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:Runtime /p:Platform=$env:TargetPlatform
+      env:
+        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
+        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+        ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+        Runtime: ${{ env.RID }}
+        TargetPlatform: ${{ env.Platform }}
+        Configuration: ${{ env.Config }}
 
     # Single project MSIX can build and product MSIX package the WPF at the same (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
+    # output will be src\MediaFileManager\MediaFileManager.Desktop\bin\x64\Release\net6.0-windows10.0.18362.0\win-x64\AppPackages\MediaFileManager.Desktop_2021.722.1.0_Test
     - name: Build the Wpf application to populate the obj folder
-      run: msbuild $env:WpfProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:TargetPlatform /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
+      run: msbuild $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:TargetPlatform /p:GenerateAppxPackageOnBuild=$env:GenerateMsix /p:UapAppxPackageBuildMode=$env:BuildMode /p:PackageCertificateKeyFile=$env:CertFilePath /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled
+        ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+        CertFilePath: src\MediaFileManager\LancelotSoftwareLLC.pfx
+        CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
+        CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
+        Configuration: ${{ env.Config }}
+        RID: ${{ env.RID }}
+        TargetPlatform: ${{ env.Platform }}
+        BuildMode: SideLoadOnly
+        AppxPackageSigningEnabled: true
+        GenerateMsix: true
+
+    # ZIP up the sideload packages for GitHub release using Powershell
+    - name: Create SideLoadPackages.zip
+      run: Compress-Archive -Path $env:source_path -DestinationPath $env:dest_path
       env:
-        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
-        WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
-        Configuration: Debug
-        RID: win-x86 
-        TargetPlatform: x86
-        BuildMode: CI
-        AppxBundle: Never
-        AppxPackageSigningEnabled: False
+        source_path: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\MediaFileManager.Desktop\bin\${{ env.Platform }}\Release\${{ env.TFM }}\${{ env.RID }}\AppPackages\MediaFileManager.Desktop_${{ $env:APP_VERSION }}_Test\*
+        dest_path: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\Packages\_${{ env.TFM }}\${{ env.RID }}\SideLoadPackages.zip
+
+    # Add SideLoad artifacts to GitHub Release (via https://github.com/actions/upload-release-asset)
+    - name: Uploading MSIX
+      id: upload-msix
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\Packages\_${{ env.TFM }}\${{ env.RID }}\SideLoadPackages.zip
+        asset_name: SideLoadPackages_${{ env.TFM }}_${{ env.RID }}.zip
+        asset_content_type: application/zip
