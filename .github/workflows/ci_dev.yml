@@ -118,7 +118,7 @@ jobs:
     - name: Create SideLoadPackages.zip
       run: Compress-Archive -Path $env:source_path -DestinationPath $env:dest_path
       env:
-        source_path: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\MediaFileManager.Desktop\bin\${{ env.Platform }}\Release\${{ env.TFM }}\${{ env.RID }}\AppPackages\MediaFileManager.Desktop_${{ $env:APP_VERSION }}_Test\*
+        source_path: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\MediaFileManager.Desktop\bin\${{ env.Platform }}\Release\${{ env.TFM }}\${{ env.RID }}\AppPackages\MediaFileManager.Desktop_${{ env:APP_VERSION }}_Test\*
         dest_path: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\Packages\_${{ env.TFM }}\${{ env.RID }}\SideLoadPackages.zip
 
     # Add SideLoad artifacts to GitHub Release (via https://github.com/actions/upload-release-asset)
