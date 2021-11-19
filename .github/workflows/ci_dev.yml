@@ -149,8 +149,8 @@ jobs:
       id: gather
       shell: pwsh
       run: |
-        $workspaceFolder = ${{ env.GITHUB_WORKSPACE }} 
-        $binfolder = Join-Path -Path $workspaceFolder -ChildPath "src\MediaFileManager\MediaFileManager.Desktop\bin\"
+        $currentDirectory = Get-Location
+        $binfolder = Join-Path -Path $currentDirectory -ChildPath "src\MediaFileManager\MediaFileManager.Desktop\bin\"
         $msixFiles = Get-ChildItem -Path $binfolder -Recurse -Include MediaFileManager*.msix
 
         if($count -gt 0){
