@@ -79,60 +79,176 @@ jobs:
 
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: Use dotnet restore
-      run: dotnet restore $env:ProjectPath --configfile $env:NugetConfigPath --runtime $env:Runtime
+      run: dotnet restore $env:ProjectPath --configfile $env:NugetConfigPath 
       env:
         TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
         TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
         ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
         NugetConfigPath: src\nuget.config
-        Runtime: ${{ env.RID }}
 
     # Restore using msbuild to restore the obj folder with platform specific
-    - name: USe msbuild Restore
-      run: msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:Runtime /p:Platform=$env:TargetPlatform
-      env:
-        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
-        ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
-        Runtime: ${{ env.RID }}
-        TargetPlatform: ${{ env.Platform }}
-        Configuration: ${{ env.Config }}
+    # - name: Use msbuild Restore
+    #   run: msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:Runtime /p:Platform=$env:TargetPlatform
+    #   env:
+    #     TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
+    #     TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+    #     ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+    #     Runtime: ${{ env.RID }}
+    #     TargetPlatform: ${{ env.Platform }}
+    #     Configuration: ${{ env.Config }}
 
     # Single project MSIX can build and product MSIX package the WPF at the same (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     # output will be src\MediaFileManager\MediaFileManager.Desktop\bin\x64\Release\net6.0-windows10.0.18362.0\win-x64\AppPackages\MediaFileManager.Desktop_2021.722.1.0_Test
-    - name: Build the Wpf application to populate the obj folder
-      run: msbuild $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:TargetPlatform /p:GenerateAppxPackageOnBuild=$env:GenerateMsix /p:UapAppxPackageBuildMode=$env:BuildMode /p:PackageCertificateKeyFile=$env:CertFilePath /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled
+    # - name: Build the Wpf application to populate the obj folder
+    #   run: msbuild $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:TargetPlatform /p:GenerateAppxPackageOnBuild=$env:GenerateMsix /p:UapAppxPackageBuildMode=$env:BuildMode /p:PackageCertificateKeyFile=$env:CertFilePath /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled
+    #   env:
+    #     ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+    #     CertFilePath: src\MediaFileManager\LancelotSoftwareLLC.pfx
+    #     CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
+    #     CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
+    #     Configuration: ${{ env.Config }}
+    #     RID: ${{ env.RID }}
+    #     TargetPlatform: ${{ env.Platform }}
+    #     BuildMode: SideLoadOnly
+    #     AppxPackageSigningEnabled: true
+    #     GenerateMsix: true
+
+    - name: Build and gather x86 and x64 MSIX packages
+      id: builder
+      run: |
+        echo "Restoring 64 bit obj..."
+
+        msbuild.exe $env:ProjectPath /t:Restore /p:Configuration="Release" /p:RuntimeIdentifier="win-x64" /p:Platform="x64"
+
+        echo "Building 64 bit app and creating an MSIX package..."
+
+        msbuild.exe $env:ProjectPath /p:Configuration="Release" /p:RuntimeIdentifier="win-x64" /p:Platform="x64" /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled="True" /p:PackageCertificateThumbprint=$env:CertThumbprint /p:PackageCertificatePassword=$env:CertPrivateKey /p:GenerateAppxPackageOnBuild=true /p:PackageCertificateKeyFile=$env:CertFilePath
+
+        echo "Restoring 32 bit obj..."
+        
+        msbuild.exe $env:ProjectPath /t:Restore /p:Configuration="Release" /p:RuntimeIdentifier="win-x86" /p:Platform="x86"
+
+        echo "Building 32 bit app and creating an MSIX package..."
+
+        msbuild.exe $env:ProjectPath /p:Configuration="Release" /p:RuntimeIdentifier="win-x86" /p:Platform="x86" /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled="True" /p:PackageCertificateThumbprint=$env:CertThumbprint /p:PackageCertificatePassword=$env:CertPrivateKey /p:GenerateAppxPackageOnBuild=true /p:PackageCertificateKeyFile=$env:CertFilePath
+
+        echo "Done building individual MSIX files."
       env:
         ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
         CertFilePath: src\MediaFileManager\LancelotSoftwareLLC.pfx
         CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
         CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
-        Configuration: ${{ env.Config }}
-        RID: ${{ env.RID }}
-        TargetPlatform: ${{ env.Platform }}
-        BuildMode: SideLoadOnly
-        AppxPackageSigningEnabled: true
-        GenerateMsix: true
 
-    # ZIP up the sideload packages for GitHub release using Powershell
-    - name: Create SideLoadPackages.zip
+    - name: Copy MSIX files into temporary working folder
+      id: gather
+      shell: pwsh
       run: |
-        $source_path = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\MediaFileManager.Desktop\bin\${{ env.Platform }}\Release\${{ env.TFM }}\${{ env.RID }}\AppPackages\MediaFileManager.Desktop_$env:APP_VERSION_Test\*"
-        Write-Output $source_path
+        $workspaceFolder = ${{ env.GITHUB_WORKSPACE }} 
+        $binfolder = Join-Path -Path $workspaceFolder -ChildPath "src\MediaFileManager\MediaFileManager.Desktop\bin\"
+        $msixFiles = Get-ChildItem -Path $binfolder -Recurse -Include MediaFileManager*.msix
 
-        $dest_path = D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\Packages\_${{ env.TFM }}\${{ env.RID }}\SideLoadPackages.zip
-        Write-Output dest_path
+        if($count -gt 0){
+          echo "Discovered $count MSIX files"
+        } else {
+          echo "There were no MSIX files in the source folder."
+          exit 1
+        }
+        
+        echo "Creating a new Msix Working Folder..."
 
-        Compress-Archive -Path $env:source_path -DestinationPath $env:dest_path
+        $currentDirectory = Get-Location
+        $tempMsixFolder = Join-Path -Path $currentDirectory -ChildPath "MsixFiles\"
+        New-Item -Path $tempMsixFolder -ItemType Directory -Force
 
+        $msixFiles | ForEach-Object {
+          Copy-Item -Path $_ -Destination $tempMsixFolder
+          echo "Successfully copied $_ to $tempMsixFolder"
+        }
+
+        echo "Creating new folder for msixbundles to be saved to..."
+        $msixBundlesFolder = Join-Path -Path $tempMsixFolder -ChildPath "MsixBundles\"
+        New-Item -Path $msixBundlesFolder -ItemType Directory -Force
+        echo "Created $msixBundlesFolder"
+
+        $prefix = 'MediaFileManager.Desktop_'
+        $bundleVersion = "$env:APP_VERSION"
+        $suffix = '_x86_x64.msixbundle'
+
+        echo "Combining msixbundle filename parts..."
+        $bfn = $prefix + $bundleVersion + $suffix
+        echo "Filename set to: $bfn"
+        
+        echo "Combining msixbundle filename parts..."
+        $bundleFilePath = Join-Path -Path $msixBundlesFolder -ChildPath $bfn
+        echo "Bundle file path set to: $bundleFilePath."
+        
+        echo "::set-output name=msix_folderpath::$tempMsixFolder"
+        echo "::set-output name=msixbundle_filepath::$bundleFilePath"
+        echo "::set-output name=msixbundle_version::$bundleVersion"
+
+    - name: Verify Gather Output
+      shell: pwsh
+      run: |
+        $a = "${{ steps.gather.outputs.msix_folderpath }}"
+        $b = "${{ steps.gather.outputs.msixbundle_version }}"
+        $c = "${{ steps.gather.outputs.msixbundle_filepath }}"
+        echo "Msix Folder Path: $a"
+        echo "Desired Bundle Version: $b"
+        echo "Desired Bundle Path: $c"
+
+    - name: Bundle and Sign msixbundle
+      id: bundler
+      uses: LanceMcCarthy/Action-MsixBundler@v1.0.0
+      with:
+        msix-folder: ${{ steps.gather.outputs.msix_folderpath }}
+        msixbundle-filepath: ${{ steps.gather.outputs.msixbundle_filepath }}
+        msixbundle-version: ${{ steps.gather.outputs.msixbundle_version }}
+        enable-bundle-signing: true
+        certificate-path: 'src\MediaFileManager\LancelotSoftwareLLC.pfx'
+        certificate-private-key: ${{ secrets.LancelotSoftwareCert_Key }}
+        sdk-version: "10.0.19041.0"
+    
+    - name: Verify Signed Bundle Output
+      shell: pwsh
+      run: |
+        $filePath = "${{ steps.bundler.outputs.msixbundle_path }}"
+        echo "Generated msixbundle path => $filePath"
+        $fileExists = Test-Path -Path $filePath -PathType Leaf
+        echo "Validate msixbundle exists => $fileExists"
+
+    # # ZIP up the sideload packages for GitHub release using Powershell
+    # - name: Create SideLoadPackages.zip
+    #   run: |
+    #     $source_path = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\MediaFileManager.Desktop\bin\${{ env.Platform }}\Release\${{ env.TFM }}\${{ env.RID }}\AppPackages\MediaFileManager.Desktop_$env:APP_VERSION_Test\*"
+    #     Write-Output $source_path
+
+    #     $dest_path = D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\Packages\_${{ env.TFM }}\${{ env.RID }}\SideLoadPackages.zip
+    #     Write-Output dest_path
+
+    #     Compress-Archive -Path $env:source_path -DestinationPath $env:dest_path
+    # ************************| GITHUB RELEASE |************************ #
+
+    # Create a new GitHub Release tagged with the build version number (via https://github.com/actions/create-release)
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v.${{ env.APP_VERSION }}
+        release_name: Media File Manager v.${{ env.APP_VERSION }}
+        draft: true
+        prerelease: true
+        body: "A release of the dev test branch"
+    
     # Add SideLoad artifacts to GitHub Release (via https://github.com/actions/upload-release-asset)
-    - name: Uploading MSIX
+    - name: Upload MSIX Bundle
       id: upload-msix
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\Packages\_${{ env.TFM }}\${{ env.RID }}\SideLoadPackages.zip
-        asset_name: SideLoadPackages_${{ env.TFM }}_${{ env.RID }}.zip
+        asset_path: ${{ steps.bundler.outputs.msixbundle_path }}
+        asset_name: MediaFileManager.Desktop.${{ env.APP_VERSION }}._x86_x64.msix
         asset_content_type: application/zip
