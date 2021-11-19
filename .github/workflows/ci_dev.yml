@@ -86,6 +86,10 @@ jobs:
         ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
         NugetConfigPath: src\nuget.config
 
+    # ******************************************************************************************************* #
+    # ********** OLD BUILD AND RESTORE - BEING REPLACED BY SINGLE-PROJECT MSIX build AND BUNDLING *********** #
+    # ******************************************************************************************************* #
+
     # Restore using msbuild to restore the obj folder with platform specific
     # - name: Use msbuild Restore
     #   run: msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:Runtime /p:Platform=$env:TargetPlatform
@@ -113,6 +117,8 @@ jobs:
     #     AppxPackageSigningEnabled: true
     #     GenerateMsix: true
 
+    # ******************************************************************************************************* #
+
     - name: Build and gather x86 and x64 MSIX packages
       id: builder
       run: |
@@ -125,7 +131,7 @@ jobs:
         msbuild.exe $env:ProjectPath /p:Configuration="Release" /p:RuntimeIdentifier="win-x64" /p:Platform="x64" /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled="True" /p:PackageCertificateThumbprint=$env:CertThumbprint /p:PackageCertificatePassword=$env:CertPrivateKey /p:GenerateAppxPackageOnBuild=true /p:PackageCertificateKeyFile=$env:CertFilePath
 
         echo "Restoring 32 bit obj..."
-        
+
         msbuild.exe $env:ProjectPath /t:Restore /p:Configuration="Release" /p:RuntimeIdentifier="win-x86" /p:Platform="x86"
 
         echo "Building 32 bit app and creating an MSIX package..."
@@ -216,16 +222,6 @@ jobs:
         $fileExists = Test-Path -Path $filePath -PathType Leaf
         echo "Validate msixbundle exists => $fileExists"
 
-    # # ZIP up the sideload packages for GitHub release using Powershell
-    # - name: Create SideLoadPackages.zip
-    #   run: |
-    #     $source_path = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\MediaFileManager.Desktop\bin\${{ env.Platform }}\Release\${{ env.TFM }}\${{ env.RID }}\AppPackages\MediaFileManager.Desktop_$env:APP_VERSION_Test\*"
-    #     Write-Output $source_path
-
-    #     $dest_path = D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\Packages\_${{ env.TFM }}\${{ env.RID }}\SideLoadPackages.zip
-    #     Write-Output dest_path
-
-    #     Compress-Archive -Path $env:source_path -DestinationPath $env:dest_path
     # ************************| GITHUB RELEASE |************************ #
 
     # Create a new GitHub Release tagged with the build version number (via https://github.com/actions/create-release)
