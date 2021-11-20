@@ -69,10 +69,14 @@ jobs:
     - name: Decode the Pfx
       id: save-pfx
       run: |
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
+        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LANCELOTSOFTWARECERT_BASE64 }}")
         $currentDirectory = Get-Location
         $certificateFilePath = Join-Path -Path $currentDirectory -ChildPath "src\MediaFileManager\LancelotSoftwareLLC.pfx"
         [IO.File]::WriteAllBytes("$certificateFilePath", $pfx_cert_byte)
+
+        # Not required, but could import the certificate to the local user's tusted store (Cert:\CurrentUser\Root)
+        # Import-PfxCertificate -FilePath $certificateFilePath -CertStoreLocation Cert:\CurrentUser\Root -Password ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
+
         echo "::set-output name=pfx_file_path::$certificateFilePath"
 
     - name: Use dotnet restore
@@ -88,14 +92,12 @@ jobs:
         msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform
 
         # Build project and package MSIX
-        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled="True" /p:PackageCertificateThumbprint=$env:CertThumbprint /p:PackageCertificatePassword=$env:CertPrivateKey /p:GenerateAppxPackageOnBuild=true /p:PackageCertificateKeyFile=$env:CertFilePath
+        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled=$env:SignPackage /p:GenerateAppxPackageOnBuild=true
       env:
-        CertFilePath: "${{ steps.save-pfx.outputs.pfx_file_path }}"
-        CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
-        CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
         RID: "win-x86"
         Platform: "x86"
         Configuration: "Release"
+        SignPackage: false # Not needed because we are signing the final msixbundle instead
 
     - name: Build x64 MSIX package
       id: buildx64
@@ -104,14 +106,12 @@ jobs:
         msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform
 
         # Build and package MSIX
-        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled="True" /p:PackageCertificateThumbprint=$env:CertThumbprint /p:PackageCertificatePassword=$env:CertPrivateKey /p:GenerateAppxPackageOnBuild=true /p:PackageCertificateKeyFile=$env:CertFilePath
+        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled=$env:SignPackage
       env:
-        CertFilePath: "${{ steps.save-pfx.outputs.pfx_file_path }}"
-        CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
-        CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
         RID: "win-x64"
         Platform: "x64"
         Configuration: "Release"
+        SignPackage: false # Not needed because we are signing the final msixbundle instead
 
     - name: Copy MSIX files into temporary working folder
       id: gather
@@ -179,7 +179,7 @@ jobs:
         msixbundle-version: ${{ steps.gather.outputs.msixbundle_version }}
         enable-bundle-signing: true
         certificate-path: "${{ steps.save-pfx.outputs.pfx_file_path }}"
-        certificate-private-key: ${{ secrets.LancelotSoftwareCert_Key }}
+        certificate-private-key: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
         sdk-version: "10.0.19041.0"
     
     - name: Verify Signed Bundle Output
