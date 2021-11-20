@@ -11,7 +11,6 @@ jobs:
     runs-on: windows-2022
     env:
       TFM: net6.0-windows10.0.18362.0
-      Config: Release
       ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       NugetConfigPath: src\nuget.config
     
@@ -83,7 +82,7 @@ jobs:
         TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
 
     - name: Build x86 MSIX package
-      id: buildx64
+      id: buildx86
       run: |
         # Restore for TFM
         msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform
