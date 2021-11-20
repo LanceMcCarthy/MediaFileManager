@@ -10,11 +10,10 @@ jobs:
   build:
     runs-on: windows-2022
     env:
-      Actions_Allow_Unsecure_Commands: true # Allows job-wide variables
-      RID: win-x64
-      Platform: x64
       TFM: net6.0-windows10.0.18362.0
       Config: Release
+      ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+      NugetConfigPath: src\nuget.config
     
     steps:
     - name: Checkout
@@ -22,20 +21,18 @@ jobs:
       with:
         fetch-depth: 0
     
-    # Create my own version number with a specific format using date. ex: 2020.805.1.0
-    - uses: Amadevus/pwsh-script@v2
+    - name: Generate version number with date and workflow Run Number
       id: version-creator
-      with:
-        script: |
-          $buildDay = Get-Date -Format "yyyy.Mdd"
-          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
-          Set-ActionVariable APP_VERSION $ver
+      run: |
+        $buildDay = Get-Date -Format "yyyy.Mdd"
+        $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+        echo "::set-output name=APP_VERSION::$ver"
 
-    # Update the UWP package version
+    # Update the Package.appxmanifest version
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$env:APP_VERSION"
+        $manifest.Package.Identity.Version = "${{ steps.version-creator.outputs.APP_VERSION }}"
         $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
     
     # Updates the WPF project's assembly version number.
@@ -47,7 +44,7 @@ jobs:
               $verStart = $_.IndexOf("(")
               $verEnd = $_.IndexOf(")", $verStart)
               $origVersion = $_.SubString($verStart+2, $verEnd-$verStart-3)
-              $newVersion = "$env:APP_VERSION"
+              $newVersion = "${{ steps.version-creator.outputs.APP_VERSION }}"
               write-host "Setting AssemblyFileVersion from $origVersion to $newVersion"
               $_.Replace($origVersion, $newVersion)
             }  else {
@@ -57,101 +54,73 @@ jobs:
           $newfile | Set-Content $assemblyInfoPath -encoding "UTF8"
         }
         $assemblyInfoPath = "src\MediaFileManager\MediaFileManager.Desktop\Properties\AssemblyInfo.cs"
-        SetAssemblyFileVersion $assemblyInfoPath $env:APP_VERSION
+        SetAssemblyFileVersion $assemblyInfoPath "${{ steps.version-creator.outputs.APP_VERSION }}"
 
-    # Install the .NET Core workload
-    - name: Install .NET Core
+    # Install the .NET 6 workload
+    - name: Install .NET 6
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '6.0'
 
-    # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
+    # Add msbuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.1
 
     # Decode the Base64 encoded Pfx
     - name: Decode the Pfx
+      id: save-pfx
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
         $currentDirectory = Get-Location
-        $certificatePath = "src\MediaFileManager\LancelotSoftwareLLC.pfx"
+        $certificateFilePath = Path-Join -Path $currentDirectory -ChildPath "src\MediaFileManager\LancelotSoftwareLLC.pfx"
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
+        echo "::set-output name=pfx_file_path::$certificateFilePath"
 
-    # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: Use dotnet restore
       run: dotnet restore $env:ProjectPath --configfile $env:NugetConfigPath 
       env:
         TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
         TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
-        ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
-        NugetConfigPath: src\nuget.config
 
-    # ******************************************************************************************************* #
-    # ********** OLD BUILD AND RESTORE - BEING REPLACED BY SINGLE-PROJECT MSIX build AND BUNDLING *********** #
-    # ******************************************************************************************************* #
-
-    # Restore using msbuild to restore the obj folder with platform specific
-    # - name: Use msbuild Restore
-    #   run: msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:Runtime /p:Platform=$env:TargetPlatform
-    #   env:
-    #     TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-    #     TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
-    #     ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
-    #     Runtime: ${{ env.RID }}
-    #     TargetPlatform: ${{ env.Platform }}
-    #     Configuration: ${{ env.Config }}
-
-    # Single project MSIX can build and product MSIX package the WPF at the same (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
-    # output will be src\MediaFileManager\MediaFileManager.Desktop\bin\x64\Release\net6.0-windows10.0.18362.0\win-x64\AppPackages\MediaFileManager.Desktop_2021.722.1.0_Test
-    # - name: Build the Wpf application to populate the obj folder
-    #   run: msbuild $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:TargetPlatform /p:GenerateAppxPackageOnBuild=$env:GenerateMsix /p:UapAppxPackageBuildMode=$env:BuildMode /p:PackageCertificateKeyFile=$env:CertFilePath /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled
-    #   env:
-    #     ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
-    #     CertFilePath: src\MediaFileManager\LancelotSoftwareLLC.pfx
-    #     CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
-    #     CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
-    #     Configuration: ${{ env.Config }}
-    #     RID: ${{ env.RID }}
-    #     TargetPlatform: ${{ env.Platform }}
-    #     BuildMode: SideLoadOnly
-    #     AppxPackageSigningEnabled: true
-    #     GenerateMsix: true
-
-    # ******************************************************************************************************* #
-
-    - name: Build and gather x86 and x64 MSIX packages
-      id: builder
+    - name: Build x86 MSIX package
+      id: buildx64
       run: |
-        echo "Restoring 64 bit obj..."
+        # Restore for TFM
+        msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform
 
-        msbuild.exe $env:ProjectPath /t:Restore /p:Configuration="Release" /p:RuntimeIdentifier="win-x64" /p:Platform="x64"
-
-        echo "Building 64 bit app and creating an MSIX package..."
-
-        msbuild.exe $env:ProjectPath /p:Configuration="Release" /p:RuntimeIdentifier="win-x64" /p:Platform="x64" /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled="True" /p:PackageCertificateThumbprint=$env:CertThumbprint /p:PackageCertificatePassword=$env:CertPrivateKey /p:GenerateAppxPackageOnBuild=true /p:PackageCertificateKeyFile=$env:CertFilePath
-
-        echo "Restoring 32 bit obj..."
-
-        msbuild.exe $env:ProjectPath /t:Restore /p:Configuration="Release" /p:RuntimeIdentifier="win-x86" /p:Platform="x86"
-
-        echo "Building 32 bit app and creating an MSIX package..."
-
-        msbuild.exe $env:ProjectPath /p:Configuration="Release" /p:RuntimeIdentifier="win-x86" /p:Platform="x86" /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled="True" /p:PackageCertificateThumbprint=$env:CertThumbprint /p:PackageCertificatePassword=$env:CertPrivateKey /p:GenerateAppxPackageOnBuild=true /p:PackageCertificateKeyFile=$env:CertFilePath
-
-        echo "Done building individual MSIX files."
+        # Build project and package MSIX
+        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled="True" /p:PackageCertificateThumbprint=$env:CertThumbprint /p:PackageCertificatePassword=$env:CertPrivateKey /p:GenerateAppxPackageOnBuild=true /p:PackageCertificateKeyFile=$env:CertFilePath
       env:
-        ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
-        CertFilePath: src\MediaFileManager\LancelotSoftwareLLC.pfx
+        CertFilePath: "${{ steps.save-pfx.outputs.pfx_file_path }}"
         CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
         CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
+        RID: "win-x86"
+        Platform: "x86"
+        Configuration: "Release"
+
+    - name: Build x64 MSIX package
+      id: buildx64
+      run: |
+        # Restore for TFM
+        msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform
+
+        # Build and package MSIX
+        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled="True" /p:PackageCertificateThumbprint=$env:CertThumbprint /p:PackageCertificatePassword=$env:CertPrivateKey /p:GenerateAppxPackageOnBuild=true /p:PackageCertificateKeyFile=$env:CertFilePath
+      env:
+        CertFilePath: "${{ steps.save-pfx.outputs.pfx_file_path }}"
+        CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
+        CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
+        RID: "win-x64"
+        Platform: "x64"
+        Configuration: "Release"
 
     - name: Copy MSIX files into temporary working folder
       id: gather
       shell: pwsh
       run: |
         $currentDirectory = Get-Location
-        $binfolder = Join-Path -Path $currentDirectory -ChildPath "src\MediaFileManager\MediaFileManager.Desktop\bin\"
-        $msixFiles = Get-ChildItem -Path $binfolder -Recurse -Include MediaFileManager*.msix
+        $projectFolder = Split-Path -Path $currentDirectory -Parent
+        $msixFiles = Get-ChildItem -Path $projectFolder -Recurse -Include MediaFileManager*.msix
 
         if($count -gt 0){
           echo "Discovered $count MSIX files"
@@ -177,14 +146,12 @@ jobs:
         echo "Created $msixBundlesFolder"
 
         $prefix = 'MediaFileManager.Desktop_'
-        $bundleVersion = "$env:APP_VERSION"
+        $bundleVersion = "${{ steps.version-creator.outputs.APP_VERSION }}"
         $suffix = '_x86_x64.msixbundle'
 
         echo "Combining msixbundle filename parts..."
         $bfn = $prefix + $bundleVersion + $suffix
         echo "Filename set to: $bfn"
-        
-        echo "Combining msixbundle filename parts..."
         $bundleFilePath = Join-Path -Path $msixBundlesFolder -ChildPath $bfn
         echo "Bundle file path set to: $bundleFilePath."
         
@@ -201,6 +168,8 @@ jobs:
         echo "Msix Folder Path: $a"
         echo "Desired Bundle Version: $b"
         echo "Desired Bundle Path: $c"
+        $folderExists = Test-Path -Path $a -PathType Container
+        echo "Validate: Folder exists => $folderExists"
 
     - name: Bundle and Sign msixbundle
       id: bundler
@@ -210,7 +179,7 @@ jobs:
         msixbundle-filepath: ${{ steps.gather.outputs.msixbundle_filepath }}
         msixbundle-version: ${{ steps.gather.outputs.msixbundle_version }}
         enable-bundle-signing: true
-        certificate-path: 'src\MediaFileManager\LancelotSoftwareLLC.pfx'
+        certificate-path: "${{ steps.save-pfx.outputs.pfx_file_path }}"
         certificate-private-key: ${{ secrets.LancelotSoftwareCert_Key }}
         sdk-version: "10.0.19041.0"
     
@@ -231,8 +200,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: v.${{ env.APP_VERSION }}
-        release_name: Media File Manager v.${{ env.APP_VERSION }}
+        tag_name: "v.${{ steps.version-creator.outputs.APP_VERSION }}"
+        release_name: "Media File Manager v.${{ steps.version-creator.outputs.APP_VERSION }}"
         draft: true
         prerelease: true
         body: "A release of the dev test branch"
@@ -246,5 +215,5 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ steps.bundler.outputs.msixbundle_path }}
-        asset_name: MediaFileManager.Desktop.${{ env.APP_VERSION }}._x86_x64.msix
+        asset_name: "MediaFileManager.Desktop.${{ steps.version-creator.outputs.APP_VERSION }}._x86_x64.msix"
         asset_content_type: application/zip
