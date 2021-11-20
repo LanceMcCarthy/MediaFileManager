@@ -71,7 +71,7 @@ jobs:
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
         $currentDirectory = Get-Location
-        $certificateFilePath = Join-Path -Path $currentDirectory -ChildPath "src\MediaFileManager\LancelotSoftwareLLC.pfx"
+        $certificateFilePath = Join-Path -Path $currentDirectory -ChildPath "LancelotSoftwareLLC.pfx"
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
         echo "::set-output name=pfx_file_path::$certificateFilePath"
 
