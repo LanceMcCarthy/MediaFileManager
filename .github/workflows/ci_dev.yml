@@ -92,13 +92,15 @@ jobs:
         msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform
 
         # Build project and package MSIX
-        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled=$env:SignPackage
+        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled=$env:SignPackage /p:PackageCertificateKeyFile=$env:PfxFilePath /p:PackageCertificatePassword=$env:PfxPrivateKey
       env:
         RID: "win-x86"
         Platform: "x86"
         Configuration: "Release"
         GenerateMsixPackage: true
-        SignPackage: false # Not needed because we are signing the final msixbundle instead
+        SignPackage: true
+        PfxFilePath: ${{ steps.save-pfx.outputs.pfx_file_path }}
+        PfxPrivateKey: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
 
     - name: Build x64 MSIX package
       id: buildx64
@@ -107,13 +109,15 @@ jobs:
         msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform
 
         # Build and package MSIX
-        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled=$env:SignPackage
+        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled=$env:SignPackage /p:PackageCertificateKeyFile=$env:PfxFilePath /p:PackageCertificatePassword=$env:PfxPrivateKey
       env:
         RID: "win-x64"
         Platform: "x64"
         Configuration: "Release"
         GenerateMsixPackage: true
-        SignPackage: false # Not needed because we are signing the final msixbundle instead
+        SignPackage: true
+        PfxFilePath: ${{ steps.save-pfx.outputs.pfx_file_path }}
+        PfxPrivateKey: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
 
     - name: Copy MSIX files into temporary working folder
       id: gather
@@ -180,7 +184,7 @@ jobs:
         msixbundle-filepath: ${{ steps.gather.outputs.msixbundle_filepath }}
         msixbundle-version: ${{ steps.gather.outputs.msixbundle_version }}
         enable-bundle-signing: true
-        certificate-path: "${{ steps.save-pfx.outputs.pfx_file_path }}"
+        certificate-path: ${{ steps.save-pfx.outputs.pfx_file_path }}
         certificate-private-key: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
         sdk-version: "10.0.19041.0"
     
@@ -205,7 +209,7 @@ jobs:
         release_name: "Media File Manager v.${{ steps.version-creator.outputs.APP_VERSION }}"
         draft: true
         prerelease: true
-        body: "A release of the dev test branch"
+        body_path: .github\other\releasebody.md
     
     # Add SideLoad artifacts to GitHub Release (via https://github.com/actions/upload-release-asset)
     - name: Upload MSIX Bundle
