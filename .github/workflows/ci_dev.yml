@@ -78,8 +78,8 @@ jobs:
         $PlaceholderUser = "JohnDoe"
         $Cred = New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList $PlaceholderUser, $PfxPassAsSecString
 
-        # import the certificate to the local user's tusted store (Cert:\CurrentUser\Root)
-        Import-PfxCertificate -FilePath $certificateFilePath -CertStoreLocation Cert:\CurrentUser\Root -Password $Cred.Password
+        # import the certificate to the local user's tusted store (Cert:\CurrentUser\My)
+        Import-PfxCertificate -FilePath $certificateFilePath -CertStoreLocation Cert:\CurrentUser\My -Password $Cred.Password
 
         echo "::set-output name=pfx_file_path::$certificateFilePath"
       env:
@@ -207,10 +207,10 @@ jobs:
     - name: Delete PFX
       shell: pwsh
       run: |
-        Get-ChildItem -Path Cert:\CurrentUser\Root | Where-Object { $_.Thumbprint -eq $env:PfxThumbrint } | ForEach-Object { Remove-Item -Path "Cert:\CurrentUser\Root\$($_.Thumbprint)" -Recurse -Verbose }
+        Get-ChildItem -Path Cert:\CurrentUser\My | Where-Object { $_.Thumbprint -eq $env:PfxThumbrint } | ForEach-Object { Remove-Item -Path "Cert:\CurrentUser\My\$($_.Thumbprint)" -Recurse -Verbose }
 
         # confirm deleted
-        $matchingCerts = Get-ChildItem -Path Cert:\CurrentUser\Root | Where-Object { $_.Thumbprint -eq $env:PfxThumbrint }
+        $matchingCerts = Get-ChildItem -Path Cert:\CurrentUser\My | Where-Object { $_.Thumbprint -eq $env:PfxThumbrint }
         $count = $matchingCerts.count
 
         if($count -gt 0){
