@@ -232,7 +232,7 @@ jobs:
         release_name: "Media File Manager v.${{ steps.version-creator.outputs.APP_VERSION }}"
         draft: true
         prerelease: true
-        body_path: .github\other\releasebody.md
+        body_path: .github\other\development_releasebody.md
     
     # Add SideLoad artifacts to GitHub Release (via https://github.com/actions/upload-release-asset)
     - name: Upload MSIX Bundle
