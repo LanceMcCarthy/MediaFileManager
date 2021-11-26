@@ -66,7 +66,7 @@ jobs:
       uses: microsoft/setup-msbuild@v1.1
 
     # Decode the Base64 encoded Pfx
-    - name: Decode the Pfx
+    - name: Install PFX
       id: save-pfx
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LANCELOTSOFTWARECERT_BASE64 }}")
@@ -74,8 +74,8 @@ jobs:
         $certificateFilePath = Join-Path -Path $currentDirectory -ChildPath "src\MediaFileManager\LancelotSoftwareLLC.pfx"
         [IO.File]::WriteAllBytes("$certificateFilePath", $pfx_cert_byte)
 
-        # Not required, but could import the certificate to the local user's tusted store (Cert:\CurrentUser\Root)
-        # Import-PfxCertificate -FilePath $certificateFilePath -CertStoreLocation Cert:\CurrentUser\Root -Password ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
+        # import the certificate to the local user's tusted store (Cert:\CurrentUser\Root)
+        Import-PfxCertificate -FilePath $certificateFilePath -CertStoreLocation Cert:\CurrentUser\Root -Password ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
 
         echo "::set-output name=pfx_file_path::$certificateFilePath"
 
@@ -92,7 +92,7 @@ jobs:
         msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform
 
         # Build project and package MSIX
-        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled=$env:SignPackage /p:PackageCertificateKeyFile=$env:PfxFilePath /p:PackageCertificatePassword=$env:PfxPrivateKey
+        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled=$env:SignPackage /p:PackageCertificateKeyFile=$env:PfxFilePath /p:PackageCertificatePassword=$env:PfxPrivateKey /p:PackageCertificateThumbprint=$env:PfxThumbprint
       env:
         RID: "win-x86"
         Platform: "x86"
@@ -101,6 +101,7 @@ jobs:
         SignPackage: true
         PfxFilePath: ${{ steps.save-pfx.outputs.pfx_file_path }}
         PfxPrivateKey: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
+        PfxThumbprint: ${{ secrets.LANCELOTSOFTWARECERT_THUMBPRINT }}
 
     - name: Build x64 MSIX package
       id: buildx64
@@ -109,7 +110,7 @@ jobs:
         msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform
 
         # Build and package MSIX
-        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled=$env:SignPackage /p:PackageCertificateKeyFile=$env:PfxFilePath /p:PackageCertificatePassword=$env:PfxPrivateKey
+        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled=$env:SignPackage /p:PackageCertificateKeyFile=$env:PfxFilePath /p:PackageCertificatePassword=$env:PfxPrivateKey /p:PackageCertificateThumbprint=$env:PfxThumbprint
       env:
         RID: "win-x64"
         Platform: "x64"
@@ -118,6 +119,7 @@ jobs:
         SignPackage: true
         PfxFilePath: ${{ steps.save-pfx.outputs.pfx_file_path }}
         PfxPrivateKey: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
+        PfxThumbprint: ${{ secrets.LANCELOTSOFTWARECERT_THUMBPRINT }}
 
     - name: Copy MSIX files into temporary working folder
       id: gather
@@ -195,6 +197,13 @@ jobs:
         echo "Generated msixbundle path => $filePath"
         $fileExists = Test-Path -Path $filePath -PathType Leaf
         echo "Validate msixbundle exists => $fileExists"
+
+    - name: Delete PFX
+      shell: pwsh
+      run: |
+        Get-ChildItem -Path Cert:\LocalMachine\Root | Where-Object { $_.Thumbprint -eq $env:PfxThumbrint } | ForEach-Object { Remove-Item -Path "Cert:\LocalMachine\Root\$($_.Thumbprint)" -Recurse -Verbose }
+      env:
+        PfxThumbrint: ${{ secrets.LANCELOTSOFTWARECERT_THUMBPRINT }}
 
     # ************************| GITHUB RELEASE |************************ #
 
