@@ -71,15 +71,12 @@ jobs:
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LANCELOTSOFTWARECERT_BASE64 }}")
         $currentDirectory = Get-Location
-        $certificateFilePath = Join-Path -Path $currentDirectory -ChildPath "src\MediaFileManager\LancelotSoftwareLLC.pfx"
+        $certificateFilePath = Join-Path -Path $currentDirectory -ChildPath "LancelotSoftwareLLC.pfx"
         [IO.File]::WriteAllBytes("$certificateFilePath", $pfx_cert_byte)
 
-        $PfxPassAsSecString = ConvertTo-SecureString -String $env:PfxPassword -Force -AsPlainText
-        $PlaceholderUser = "JohnDoe"
-        $Cred = New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList $PlaceholderUser, $PfxPassAsSecString
-
         # import the certificate to the local user's tusted store (Cert:\CurrentUser\My)
-        Import-PfxCertificate -FilePath $certificateFilePath -CertStoreLocation Cert:\CurrentUser\My -Password $Cred.Password -y
+        #$PfxPassAsSecString = ConvertTo-SecureString -String $env:PfxPassword -Force -AsPlainText
+        #Import-PfxCertificate -FilePath $certificateFilePath -CertStoreLocation Cert:\CurrentUser\My -Password $PfxPassAsSecString
 
         echo "::set-output name=pfx_file_path::$certificateFilePath"
       env:
@@ -105,7 +102,7 @@ jobs:
         Configuration: "Release"
         GenerateMsixPackage: true
         SignPackage: true
-        PfxFilePath: ${{ steps.save-pfx.outputs.pfx_file_path }}
+        PfxFilePath: LancelotSoftwareLLC.pfx
         PfxPrivateKey: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
         PfxThumbprint: ${{ secrets.LANCELOTSOFTWARECERT_THUMBPRINT }}
 
@@ -123,7 +120,7 @@ jobs:
         Configuration: "Release"
         GenerateMsixPackage: true
         SignPackage: true
-        PfxFilePath: ${{ steps.save-pfx.outputs.pfx_file_path }}
+        PfxFilePath: LancelotSoftwareLLC.pfx
         PfxPrivateKey: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
         PfxThumbprint: ${{ secrets.LANCELOTSOFTWARECERT_THUMBPRINT }}
 
@@ -204,23 +201,23 @@ jobs:
         $fileExists = Test-Path -Path $filePath -PathType Leaf
         echo "Validate msixbundle exists => $fileExists"
 
-    - name: Delete PFX
-      shell: pwsh
-      run: |
-        Get-ChildItem -Path Cert:\CurrentUser\My | Where-Object { $_.Thumbprint -eq $env:PfxThumbrint } | ForEach-Object { Remove-Item -Path "Cert:\CurrentUser\My\$($_.Thumbprint)" -Recurse -Verbose }
+    # - name: Delete PFX
+    #   shell: pwsh
+    #   run: |
+    #     Get-ChildItem -Path Cert:\CurrentUser\My | Where-Object { $_.Thumbprint -eq $env:PfxThumbrint } | ForEach-Object { Remove-Item -Path "Cert:\CurrentUser\My\$($_.Thumbprint)" -Recurse -Verbose }
 
-        # confirm deleted
-        $matchingCerts = Get-ChildItem -Path Cert:\CurrentUser\My | Where-Object { $_.Thumbprint -eq $env:PfxThumbrint }
-        $count = $matchingCerts.count
+    #     # confirm deleted
+    #     $matchingCerts = Get-ChildItem -Path Cert:\CurrentUser\My | Where-Object { $_.Thumbprint -eq $env:PfxThumbrint }
+    #     $count = $matchingCerts.count
 
-        if($count -gt 0){
-            echo "Code signing certificate was not removed from GitHub Runner"
-            exit 1
-        } else {
-            echo "Found $count matching code signing certificates in the store."
-        }
-      env:
-        PfxThumbrint: ${{ secrets.LANCELOTSOFTWARECERT_THUMBPRINT }}
+    #     if($count -gt 0){
+    #         echo "Code signing certificate was not removed from GitHub Runner"
+    #         exit 1
+    #     } else {
+    #         echo "Found $count matching code signing certificates in the store."
+    #     }
+    #   env:
+    #     PfxThumbrint: ${{ secrets.LANCELOTSOFTWARECERT_THUMBPRINT }}
 
     # ************************| GITHUB RELEASE |************************ #
 
