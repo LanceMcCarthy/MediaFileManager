@@ -79,7 +79,7 @@ jobs:
         $Cred = New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList $PlaceholderUser, $PfxPassAsSecString
 
         # import the certificate to the local user's tusted store (Cert:\CurrentUser\My)
-        Import-PfxCertificate -FilePath $certificateFilePath -CertStoreLocation Cert:\CurrentUser\My -Password $Cred.Password
+        Import-PfxCertificate -FilePath $certificateFilePath -CertStoreLocation Cert:\CurrentUser\My -Password $Cred.Password -y
 
         echo "::set-output name=pfx_file_path::$certificateFilePath"
       env:
