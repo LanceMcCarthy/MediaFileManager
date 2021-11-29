@@ -67,28 +67,33 @@ jobs:
 
     # Decode the Base64 encoded Pfx
     - name: Install PFX
+      shell: pwsh
       id: savepfx
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
         $currentDirectory = Get-Location
-        $certificatePath = Join-Path -Path $currentDirectory -ChildPath src\MediaFileManager\PackageProject -AdditionalChildPath "LancelotSoftwareLLC.pfx"
-        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
+        $certificatePath = Join-Path -Path $currentDirectory -ChildPath "src" -AdditionalChildPath "LancelotSoftwareLLC.pfx"
+
+        echo "Before write $certificatePath"
+        [IO.File]::WriteAllBytes($certificatePath, $pfx_cert_byte)
+        echo "After write $certificatePath"
 
         # import the certificate to the local user's tusted store (Cert:\CurrentUser\My)
-        #$PfxPassAsSecString = ConvertTo-SecureString -String $env:PfxPassword -Force -AsPlainText
-        #Import-PfxCertificate -FilePath $certificatePath -CertStoreLocation Cert:\CurrentUser\My -Password $PfxPassAsSecString
+        # $PfxPassAsSecString = ConvertTo-SecureString -String $env:PfxPassword -Force -AsPlainText
+        # Import-PfxCertificate -FilePath $certificatePath -CertStoreLocation Cert:\CurrentUser\My -Password $PfxPassAsSecString
 
-        echo "::set-output name=pfx_path::$certificatePath"
+        ::set-output name=pfxpath::$certificatePath
       env:
         PfxPassword: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
 
     - name: Verify PFX location
       run: |
-        $pfxPath = ${{ steps.savepfx.outputs.pfx_path }}
+        $pfxPath = "${{ steps.savepfx.outputs.pfxpath }}"
         
         $fileExists = Test-Path -Path $pfxPath -PathType Leaf
+
         if($fileExists){
-          echo echo $pfxPath
+          echo "Path is $pfxPath"
         } else {
           exit 1
         }
@@ -113,7 +118,7 @@ jobs:
         Configuration: "Release"
         GenerateMsixPackage: true
         SignPackage: true
-        PfxFilePath: ${{ steps.savepfx.outputs.pfx_path }}
+        PfxFilePath: src/LancelotSoftwareLLC.pfx
         PfxPrivateKey: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
         PfxThumbprint: ${{ secrets.LANCELOTSOFTWARECERT_THUMBPRINT }}
 
@@ -131,7 +136,7 @@ jobs:
         Configuration: "Release"
         GenerateMsixPackage: true
         SignPackage: true
-        PfxFilePath: ${{ steps.savepfx.outputs.pfx_path }}
+        PfxFilePath: ${{ steps.savepfx.outputs.pfxpath }}
         PfxPrivateKey: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
         PfxThumbprint: ${{ secrets.LANCELOTSOFTWARECERT_THUMBPRINT }}
 
@@ -200,7 +205,7 @@ jobs:
         msixbundle-filepath: ${{ steps.gather.outputs.msixbundle_filepath }}
         msixbundle-version: ${{ steps.gather.outputs.msixbundle_version }}
         enable-bundle-signing: true
-        certificate-path: ${{ steps.savepfx.outputs.pfx_path }}
+        certificate-path: ${{ steps.savepfx.outputs.pfxpath }}
         certificate-private-key: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
         sdk-version: "10.0.19041.0"
     
