@@ -81,8 +81,8 @@ jobs:
         # import the certificate to the local user's tusted store (Cert:\CurrentUser\My)
         # $PfxPassAsSecString = ConvertTo-SecureString -String $env:PfxPassword -Force -AsPlainText
         # Import-PfxCertificate -FilePath $certificatePath -CertStoreLocation Cert:\CurrentUser\My -Password $PfxPassAsSecString
-
-        ::set-output name=pfxpath::$certificatePath
+        
+        echo "::set-output name=pfxpath::$certificatePath"
       env:
         PfxPassword: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
 
