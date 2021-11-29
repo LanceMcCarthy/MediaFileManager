@@ -73,14 +73,11 @@ jobs:
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
         $currentDirectory = Get-Location
         $certificatePath = Join-Path -Path $currentDirectory -ChildPath "src" -AdditionalChildPath "LancelotSoftwareLLC.pfx"
-
-        echo "Before write $certificatePath"
         [IO.File]::WriteAllBytes($certificatePath, $pfx_cert_byte)
-        echo "After write $certificatePath"
 
         # import the certificate to the local user's tusted store (Cert:\CurrentUser\My)
-        # $PfxPassAsSecString = ConvertTo-SecureString -String $env:PfxPassword -Force -AsPlainText
-        # Import-PfxCertificate -FilePath $certificatePath -CertStoreLocation Cert:\CurrentUser\My -Password $PfxPassAsSecString
+        $PfxPassAsSecString = ConvertTo-SecureString -String $env:PfxPassword -Force -AsPlainText
+        Import-PfxCertificate -FilePath $certificatePath -CertStoreLocation Cert:\CurrentUser\My -Password $PfxPassAsSecString
         
         echo "::set-output name=pfxpath::$certificatePath"
       env:
@@ -111,7 +108,7 @@ jobs:
         msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform
 
         # Build project and package MSIX
-        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:UapAppxPackageBuildMode="SideloadOnly" /p:AppxPackageSigningEnabled=$env:SignPackage /p:PackageCertificateKeyFile=$env:PfxFilePath /p:PackageCertificatePassword=$env:PfxPrivateKey /p:PackageCertificateThumbprint=$env:PfxThumbprint
+        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:UapAppxPackageBuildMode="SideloadOnly" /p:AppxPackageSigningEnabled=$env:SignPackage /p:PackageCertificateThumbprint=$env:PfxThumbprint
       env:
         RID: "win-x86"
         Platform: "x86"
@@ -129,7 +126,7 @@ jobs:
         msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform
 
         # Build and package MSIX
-        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:UapAppxPackageBuildMode="SideloadOnly" /p:AppxPackageSigningEnabled=$env:SignPackage /p:PackageCertificateKeyFile=$env:PfxFilePath /p:PackageCertificatePassword=$env:PfxPrivateKey /p:PackageCertificateThumbprint=$env:PfxThumbprint
+        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:UapAppxPackageBuildMode="SideloadOnly" /p:PackageCertificateThumbprint=$env:PfxThumbprint
       env:
         RID: "win-x64"
         Platform: "x64"
@@ -166,6 +163,12 @@ jobs:
           echo "Successfully copied $_ to $tempMsixFolder"
         }
 
+        $x64msixFile = Get-ChildItem -Path $tempMsixFolder -Include *x64*.msix
+        echo "::set-output name=msix_x64File::$x64msixFile"
+
+        $x86msixFile = Get-ChildItem -Path $tempMsixFolder -Include *x86*.msix
+        echo "::set-output name=msix_x86File::$x86msixFile"
+
         echo "Creating new folder for msixbundles to be saved to..."
         $msixBundlesFolder = Join-Path -Path $tempMsixFolder -ChildPath "MsixBundles\"
         New-Item -Path $msixBundlesFolder -ItemType Directory -Force
@@ -178,9 +181,10 @@ jobs:
         echo "Combining msixbundle filename parts..."
         $bfn = $prefix + $bundleVersion + $suffix
         echo "Filename set to: $bfn"
+
         $bundleFilePath = Join-Path -Path $msixBundlesFolder -ChildPath $bfn
         echo "Bundle file path set to: $bundleFilePath."
-        
+
         echo "::set-output name=msix_folderpath::$tempMsixFolder"
         echo "::set-output name=msixbundle_filepath::$bundleFilePath"
         echo "::set-output name=msixbundle_version::$bundleVersion"
@@ -208,7 +212,7 @@ jobs:
         certificate-path: ${{ steps.savepfx.outputs.pfxpath }}
         certificate-private-key: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
         sdk-version: "10.0.19041.0"
-    
+
     - name: Verify Signed Bundle Output
       shell: pwsh
       run: |
@@ -250,14 +254,37 @@ jobs:
         prerelease: true
         body_path: .github\other\development_releasebody.md
     
-    # Add SideLoad artifacts to GitHub Release (via https://github.com/actions/upload-release-asset)
+    # Add artifacts to GitHub Release (via https://github.com/actions/upload-release-asset)
+
+    - name: Upload 64bit MSIX
+      id: upload-x64msix
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ steps.gather.outputs.msix_x64File }}
+        asset_name: "MediaFileManager.Desktop.${{ steps.version-creator.outputs.APP_VERSION }}.x64.msix"
+        asset_content_type: application/zip
+    
+    - name: Upload 32bit MSIX Bundle
+      id: upload-x86msix
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ steps.gather.outputs.msix_x86File }}
+        asset_name: "MediaFileManager.Desktop.${{ steps.version-creator.outputs.APP_VERSION }}._x86.msix"
+        asset_content_type: application/zip
+    
     - name: Upload MSIX Bundle
-      id: upload-msix
+      id: upload-msixbundle
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ steps.bundler.outputs.msixbundle_path }}
-        asset_name: "MediaFileManager.Desktop.${{ steps.version-creator.outputs.APP_VERSION }}._x86_x64.msix"
+        asset_name: "MediaFileManager.Desktop.${{ steps.version-creator.outputs.APP_VERSION }}._x86_x64.msixbundle"
         asset_content_type: application/zip
