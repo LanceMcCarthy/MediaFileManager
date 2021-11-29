@@ -88,6 +88,17 @@ jobs:
         TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
         TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
 
+    - name: Verify PFX location
+      run: |
+        $pfxPath = ${{ steps.save-pfx.outputs.pfx_file_path }}
+        
+        $fileExists = Test-Path -Path $pfxPath -PathType Leaf
+        if($fileExists){
+          echo echo $pfxPath
+        } else {
+          exit 1
+        }
+
     - name: Build x86 MSIX package
       id: buildx86
       run: |
@@ -102,7 +113,7 @@ jobs:
         Configuration: "Release"
         GenerateMsixPackage: true
         SignPackage: true
-        PfxFilePath: LancelotSoftwareLLC.pfx
+        PfxFilePath: ${{ steps.save-pfx.outputs.pfx_file_path }}
         PfxPrivateKey: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
         PfxThumbprint: ${{ secrets.LANCELOTSOFTWARECERT_THUMBPRINT }}
 
@@ -120,7 +131,7 @@ jobs:
         Configuration: "Release"
         GenerateMsixPackage: true
         SignPackage: true
-        PfxFilePath: LancelotSoftwareLLC.pfx
+        PfxFilePath: ${{ steps.save-pfx.outputs.pfx_file_path }}
         PfxPrivateKey: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
         PfxThumbprint: ${{ secrets.LANCELOTSOFTWARECERT_THUMBPRINT }}
 
