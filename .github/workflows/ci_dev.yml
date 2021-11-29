@@ -67,30 +67,24 @@ jobs:
 
     # Decode the Base64 encoded Pfx
     - name: Install PFX
-      id: save-pfx
+      id: savepfx
       run: |
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LANCELOTSOFTWARECERT_BASE64 }}")
+        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
         $currentDirectory = Get-Location
-        $certificateFilePath = Join-Path -Path $currentDirectory -ChildPath "LancelotSoftwareLLC.pfx"
-        [IO.File]::WriteAllBytes("$certificateFilePath", $pfx_cert_byte)
+        $certificatePath = Join-Path -Path $currentDirectory -ChildPath src\MediaFileManager\PackageProject -AdditionalChildPath "LancelotSoftwareLLC.pfx"
+        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
 
         # import the certificate to the local user's tusted store (Cert:\CurrentUser\My)
         #$PfxPassAsSecString = ConvertTo-SecureString -String $env:PfxPassword -Force -AsPlainText
-        #Import-PfxCertificate -FilePath $certificateFilePath -CertStoreLocation Cert:\CurrentUser\My -Password $PfxPassAsSecString
+        #Import-PfxCertificate -FilePath $certificatePath -CertStoreLocation Cert:\CurrentUser\My -Password $PfxPassAsSecString
 
-        echo "::set-output name=pfx_file_path::$certificateFilePath"
+        echo "::set-output name=pfx_path::$certificatePath"
       env:
         PfxPassword: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
-    
-    - name: Use dotnet restore
-      run: dotnet restore $env:ProjectPath --configfile $env:NugetConfigPath 
-      env:
-        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
 
     - name: Verify PFX location
       run: |
-        $pfxPath = ${{ steps.save-pfx.outputs.pfx_file_path }}
+        $pfxPath = ${{ steps.savepfx.outputs.pfx_path }}
         
         $fileExists = Test-Path -Path $pfxPath -PathType Leaf
         if($fileExists){
@@ -98,6 +92,12 @@ jobs:
         } else {
           exit 1
         }
+    
+    - name: Use dotnet restore
+      run: dotnet restore $env:ProjectPath --configfile $env:NugetConfigPath 
+      env:
+        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
+        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
 
     - name: Build x86 MSIX package
       id: buildx86
@@ -113,7 +113,7 @@ jobs:
         Configuration: "Release"
         GenerateMsixPackage: true
         SignPackage: true
-        PfxFilePath: ${{ steps.save-pfx.outputs.pfx_file_path }}
+        PfxFilePath: ${{ steps.savepfx.outputs.pfx_path }}
         PfxPrivateKey: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
         PfxThumbprint: ${{ secrets.LANCELOTSOFTWARECERT_THUMBPRINT }}
 
@@ -131,7 +131,7 @@ jobs:
         Configuration: "Release"
         GenerateMsixPackage: true
         SignPackage: true
-        PfxFilePath: ${{ steps.save-pfx.outputs.pfx_file_path }}
+        PfxFilePath: ${{ steps.savepfx.outputs.pfx_path }}
         PfxPrivateKey: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
         PfxThumbprint: ${{ secrets.LANCELOTSOFTWARECERT_THUMBPRINT }}
 
@@ -200,7 +200,7 @@ jobs:
         msixbundle-filepath: ${{ steps.gather.outputs.msixbundle_filepath }}
         msixbundle-version: ${{ steps.gather.outputs.msixbundle_version }}
         enable-bundle-signing: true
-        certificate-path: ${{ steps.save-pfx.outputs.pfx_file_path }}
+        certificate-path: ${{ steps.savepfx.outputs.pfx_path }}
         certificate-private-key: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
         sdk-version: "10.0.19041.0"
     
