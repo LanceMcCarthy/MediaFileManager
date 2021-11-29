@@ -95,7 +95,7 @@ jobs:
         msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform
 
         # Build project and package MSIX
-        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled=$env:SignPackage /p:PackageCertificateKeyFile=$env:PfxFilePath /p:PackageCertificatePassword=$env:PfxPrivateKey /p:PackageCertificateThumbprint=$env:PfxThumbprint
+        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:UapAppxPackageBuildMode="SideloadOnly" /p:AppxPackageSigningEnabled=$env:SignPackage /p:PackageCertificateKeyFile=$env:PfxFilePath /p:PackageCertificatePassword=$env:PfxPrivateKey /p:PackageCertificateThumbprint=$env:PfxThumbprint
       env:
         RID: "win-x86"
         Platform: "x86"
@@ -113,7 +113,7 @@ jobs:
         msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform
 
         # Build and package MSIX
-        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:UapMsixPackageBuildMode="SideloadOnly" /p:MsixPackageSigningEnabled=$env:SignPackage /p:PackageCertificateKeyFile=$env:PfxFilePath /p:PackageCertificatePassword=$env:PfxPrivateKey /p:PackageCertificateThumbprint=$env:PfxThumbprint
+        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:UapAppxPackageBuildMode="SideloadOnly" /p:AppxPackageSigningEnabled=$env:SignPackage /p:PackageCertificateKeyFile=$env:PfxFilePath /p:PackageCertificatePassword=$env:PfxPrivateKey /p:PackageCertificateThumbprint=$env:PfxThumbprint
       env:
         RID: "win-x64"
         Platform: "x64"
