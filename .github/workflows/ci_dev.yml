@@ -118,7 +118,7 @@ jobs:
         Configuration: "Release"
         GenerateMsixPackage: true
         SignPackage: true
-        PfxFilePath: src/LancelotSoftwareLLC.pfx
+        PfxFilePath: ${{ steps.savepfx.outputs.pfxpath }}
         PfxPrivateKey: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
         PfxThumbprint: ${{ secrets.LANCELOTSOFTWARECERT_THUMBPRINT }}
 
