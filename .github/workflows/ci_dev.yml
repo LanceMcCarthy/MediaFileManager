@@ -170,12 +170,14 @@ jobs:
 
           # Output Variable for x64 package's file path
           if($_.Name -like '*x64*'){
-            echo "::set-output name=msix_x64FilePath::$_.FullName"
+            $filePath = $_.FullName
+            echo "::set-output name=msix_x64FilePath::$filePath"
           }
 
           # Output Variable for x86 package's file path
           if($_.Name -like '*x86*'){
-            echo "::set-output name=msix_x86FilePath::$_.FullName"
+            $filePath = $_.FullName
+            echo "::set-output name=msix_x86FilePath::$filePath"
           }
         }
 
