@@ -167,13 +167,17 @@ jobs:
         $msixFiles | ForEach-Object {
           Copy-Item -Path $_ -Destination $tempMsixFolder
           echo "Successfully copied $_ to $tempMsixFolder"
+
+          # Output Variable for x64 package's file path
+          if($_.Name -like '*x64*'){
+            echo "::set-output name=msix_x64FilePath::$_.FullName"
+          }
+
+          # Output Variable for x86 package's file path
+          if($_.Name -like '*x86*'){
+            echo "::set-output name=msix_x86FilePath::$_.FullName"
+          }
         }
-
-        $x64msixFile = Get-ChildItem -Path $tempMsixFolder -Include *x64*.msix
-        echo "::set-output name=msix_x64File::$x64msixFile"
-
-        $x86msixFile = Get-ChildItem -Path $tempMsixFolder -Include *x86*.msix
-        echo "::set-output name=msix_x86File::$x86msixFile"
 
         echo "Creating new folder for msixbundles to be saved to..."
         $msixBundlesFolder = Join-Path -Path $tempMsixFolder -ChildPath "MsixBundles\"
@@ -269,7 +273,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.gather.outputs.msix_x64File }}
+        asset_path: ${{ steps.gather.outputs.msix_x64FilePath }}
         asset_name: "MediaFileManager.Desktop.${{ steps.version-creator.outputs.APP_VERSION }}.x64.msix"
         asset_content_type: application/zip
     
@@ -280,7 +284,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.gather.outputs.msix_x86File }}
+        asset_path: ${{ steps.gather.outputs.msix_x86FilePath }}
         asset_name: "MediaFileManager.Desktop.${{ steps.version-creator.outputs.APP_VERSION }}._x86.msix"
         asset_content_type: application/zip
     
