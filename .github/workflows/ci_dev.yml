@@ -108,12 +108,15 @@ jobs:
         msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform
 
         # Build project and package MSIX
-        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:UapAppxPackageBuildMode="SideloadOnly" /p:AppxPackageSigningEnabled=$env:SignPackage /p:PackageCertificateThumbprint=$env:PfxThumbprint
+        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:AppxBundlePlatforms="$env:AppxBundlePlatforms" /p:UapAppxPackageBuildMode=$env:AppxPackageBuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:SignPackage /p:PackageCertificateThumbprint=$env:PfxThumbprint
       env:
         RID: "win-x86"
         Platform: "x86"
         Configuration: "Release"
         GenerateMsixPackage: true
+        AppxBundle: Never
+        AppxBundlePlatforms: x86
+        AppxPackageBuildMode: SideloadOnly
         SignPackage: true
         PfxFilePath: ${{ steps.savepfx.outputs.pfxpath }}
         PfxPrivateKey: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
@@ -126,12 +129,15 @@ jobs:
         msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform
 
         # Build and package MSIX
-        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:UapAppxPackageBuildMode="SideloadOnly" /p:PackageCertificateThumbprint=$env:PfxThumbprint
+        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:AppxBundlePlatforms="$env:AppxBundlePlatforms" /p:UapAppxPackageBuildMode=$env:AppxPackageBuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateThumbprint=$env:PfxThumbprint
       env:
         RID: "win-x64"
         Platform: "x64"
         Configuration: "Release"
         GenerateMsixPackage: true
+        AppxBundle: Never
+        AppxBundlePlatforms: x64
+        AppxPackageBuildMode: SideloadOnly
         SignPackage: true
         PfxFilePath: ${{ steps.savepfx.outputs.pfxpath }}
         PfxPrivateKey: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
