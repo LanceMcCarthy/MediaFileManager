@@ -215,7 +215,7 @@ jobs:
 
     - name: Bundle and Sign msixbundle
       id: bundler
-      uses: LanceMcCarthy/Action-MsixBundler@v1.0.0
+      uses: LanceMcCarthy/Action-MsixBundler@v1
       with:
         msix-folder: ${{ steps.gather.outputs.msix_folderpath }}
         msixbundle-filepath: ${{ steps.gather.outputs.msixbundle_filepath }}
