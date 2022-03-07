@@ -1,0 +1,302 @@
+# If you are looking for guidance for your builds, see https://github.com/microsoft/github-actions-for-desktop-apps
+name: Development
+
+on:
+  push:
+    branches:
+      - main-dev
+
+jobs:
+  build:
+    runs-on: windows-2022
+    env:
+      TFM: net6.0-windows10.0.18362.0
+      ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+      NugetConfigPath: src\nuget.config
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    
+    - name: Generate version number with date and workflow Run Number
+      id: version-creator
+      run: |
+        $buildDay = Get-Date -Format "yyyy.Mdd"
+        $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+        echo "::set-output name=APP_VERSION::$ver"
+
+    # Update the Package.appxmanifest version
+    - name: Update manifest version
+      run: |
+        [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
+        $manifest.Package.Identity.Version = "${{ steps.version-creator.outputs.APP_VERSION }}"
+        $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
+    
+    # Updates the WPF project's assembly version number.
+    - name: Update WPF Assembly version
+      run: |
+        function SetAssemblyFileVersion([string]$pathToFile, [string]$newVersion) {
+          $newFile = Get-Content $pathToFile -encoding "UTF8" | foreach-object {
+            if ($_.StartsWith("[assembly: AssemblyFileVersion")) {
+              $verStart = $_.IndexOf("(")
+              $verEnd = $_.IndexOf(")", $verStart)
+              $origVersion = $_.SubString($verStart+2, $verEnd-$verStart-3)
+              $newVersion = "${{ steps.version-creator.outputs.APP_VERSION }}"
+              write-host "Setting AssemblyFileVersion from $origVersion to $newVersion"
+              $_.Replace($origVersion, $newVersion)
+            }  else {
+              $_
+            } 
+          }
+          $newfile | Set-Content $assemblyInfoPath -encoding "UTF8"
+        }
+        $assemblyInfoPath = "src\MediaFileManager\MediaFileManager.Desktop\Properties\AssemblyInfo.cs"
+        SetAssemblyFileVersion $assemblyInfoPath "${{ steps.version-creator.outputs.APP_VERSION }}"
+
+    # Install the .NET 6 workload
+    - name: Install .NET 6
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0'
+
+    # Add msbuild to the PATH: https://github.com/microsoft/setup-msbuild
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v1.1
+
+    # Decode the Base64 encoded Pfx
+    - name: Install PFX
+      shell: pwsh
+      id: savepfx
+      run: |
+        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
+        $currentDirectory = Get-Location
+        $certificatePath = Join-Path -Path $currentDirectory -ChildPath "src" -AdditionalChildPath "LancelotSoftwareLLC.pfx"
+        [IO.File]::WriteAllBytes($certificatePath, $pfx_cert_byte)
+
+        # import the certificate to the local user's tusted store (Cert:\CurrentUser\My)
+        $PfxPassAsSecString = ConvertTo-SecureString -String $env:PfxPassword -Force -AsPlainText
+        Import-PfxCertificate -FilePath $certificatePath -CertStoreLocation Cert:\CurrentUser\My -Password $PfxPassAsSecString
+        
+        echo "::set-output name=pfxpath::$certificatePath"
+      env:
+        PfxPassword: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
+
+    - name: Verify PFX location
+      run: |
+        $pfxPath = "${{ steps.savepfx.outputs.pfxpath }}"
+        
+        $fileExists = Test-Path -Path $pfxPath -PathType Leaf
+
+        if($fileExists){
+          echo "Path is $pfxPath"
+        } else {
+          exit 1
+        }
+    
+    - name: Use dotnet restore
+      run: dotnet restore $env:ProjectPath --configfile $env:NugetConfigPath 
+      env:
+        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
+        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+
+    - name: Build x86 MSIX package
+      id: buildx86
+      run: |
+        # Restore for TFM
+        msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform
+
+        # Build project and package MSIX
+        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:AppxBundlePlatforms="$env:AppxBundlePlatforms" /p:UapAppxPackageBuildMode=$env:AppxPackageBuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:SignPackage /p:PackageCertificateThumbprint=$env:PfxThumbprint
+      env:
+        RID: "win-x86"
+        Platform: "x86"
+        Configuration: "Release"
+        GenerateMsixPackage: true
+        AppxBundle: Never
+        AppxBundlePlatforms: x86
+        AppxPackageBuildMode: SideloadOnly
+        SignPackage: true
+        PfxFilePath: ${{ steps.savepfx.outputs.pfxpath }}
+        PfxPrivateKey: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
+        PfxThumbprint: ${{ secrets.LANCELOTSOFTWARECERT_THUMBPRINT }}
+
+    - name: Build x64 MSIX package
+      id: buildx64
+      run: |
+        # Restore for TFM
+        msbuild.exe $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform
+
+        # Build and package MSIX
+        msbuild.exe $env:ProjectPath /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID /p:Platform=$env:Platform /p:GenerateAppxPackageOnBuild=$env:GenerateMsixPackage /p:AppxBundlePlatforms="$env:AppxBundlePlatforms" /p:UapAppxPackageBuildMode=$env:AppxPackageBuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateThumbprint=$env:PfxThumbprint
+      env:
+        RID: "win-x64"
+        Platform: "x64"
+        Configuration: "Release"
+        GenerateMsixPackage: true
+        AppxBundle: Never
+        AppxBundlePlatforms: x64
+        AppxPackageBuildMode: SideloadOnly
+        SignPackage: true
+        PfxFilePath: ${{ steps.savepfx.outputs.pfxpath }}
+        PfxPrivateKey: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
+        PfxThumbprint: ${{ secrets.LANCELOTSOFTWARECERT_THUMBPRINT }}
+
+    - name: Copy MSIX files into temporary working folder
+      id: gather
+      shell: pwsh
+      run: |
+        $currentDirectory = Get-Location
+        $msixFiles = Get-ChildItem -Path $currentDirectory -Recurse -Include MediaFileManager*.msix
+
+        $count = $msixFiles.count
+
+        if($count -gt 0){
+          echo "Discovered $count MSIX files"
+        } else {
+          echo "There were NO MSIX files in the source folder."
+          exit 1
+        }
+        
+        echo "Creating a new Msix Working Folder..."
+
+        $tempMsixFolder = Join-Path -Path $currentDirectory -ChildPath "MsixFiles\"
+        New-Item -Path $tempMsixFolder -ItemType Directory -Force
+
+        $msixFiles | ForEach-Object {
+          Copy-Item -Path $_ -Destination $tempMsixFolder
+          echo "Successfully copied $_ to $tempMsixFolder"
+
+          # Output Variable for x64 package's file path
+          if($_.Name -like '*x64*'){
+            $filePath = $_.FullName
+            echo "::set-output name=msix_x64FilePath::$filePath"
+          }
+
+          # Output Variable for x86 package's file path
+          if($_.Name -like '*x86*'){
+            $filePath = $_.FullName
+            echo "::set-output name=msix_x86FilePath::$filePath"
+          }
+        }
+
+        echo "Creating new folder for msixbundles to be saved to..."
+        $msixBundlesFolder = Join-Path -Path $tempMsixFolder -ChildPath "MsixBundles\"
+        New-Item -Path $msixBundlesFolder -ItemType Directory -Force
+        echo "Created $msixBundlesFolder"
+
+        $prefix = 'MediaFileManager.Desktop_'
+        $bundleVersion = "${{ steps.version-creator.outputs.APP_VERSION }}"
+        $suffix = '_x86_x64.msixbundle'
+
+        echo "Combining msixbundle filename parts..."
+        $bfn = $prefix + $bundleVersion + $suffix
+        echo "Filename set to: $bfn"
+
+        $bundleFilePath = Join-Path -Path $msixBundlesFolder -ChildPath $bfn
+        echo "Bundle file path set to: $bundleFilePath."
+
+        echo "::set-output name=msix_folderpath::$tempMsixFolder"
+        echo "::set-output name=msixbundle_filepath::$bundleFilePath"
+        echo "::set-output name=msixbundle_version::$bundleVersion"
+
+    - name: Verify Gather Output
+      shell: pwsh
+      run: |
+        $a = "${{ steps.gather.outputs.msix_folderpath }}"
+        $b = "${{ steps.gather.outputs.msixbundle_version }}"
+        $c = "${{ steps.gather.outputs.msixbundle_filepath }}"
+        echo "Msix Folder Path: $a"
+        echo "Desired Bundle Version: $b"
+        echo "Desired Bundle Path: $c"
+        $folderExists = Test-Path -Path $a -PathType Container
+        echo "Validate: Folder exists => $folderExists"
+
+    - name: Bundle and Sign msixbundle
+      id: bundler
+      uses: LanceMcCarthy/Action-MsixBundler@v1
+      with:
+        msix-folder: ${{ steps.gather.outputs.msix_folderpath }}
+        msixbundle-filepath: ${{ steps.gather.outputs.msixbundle_filepath }}
+        msixbundle-version: ${{ steps.gather.outputs.msixbundle_version }}
+        enable-bundle-signing: true
+        certificate-path: ${{ steps.savepfx.outputs.pfxpath }}
+        certificate-private-key: ${{ secrets.LANCELOTSOFTWARECERT_KEY }}
+        sdk-version: "10.0.19041.0"
+
+    - name: Verify Signed Bundle Output
+      shell: pwsh
+      run: |
+        $filePath = "${{ steps.bundler.outputs.msixbundle_path }}"
+        echo "Generated msixbundle path => $filePath"
+        $fileExists = Test-Path -Path $filePath -PathType Leaf
+        echo "Validate msixbundle exists => $fileExists"
+
+    # - name: Delete PFX
+    #   shell: pwsh
+    #   run: |
+    #     Get-ChildItem -Path Cert:\CurrentUser\My | Where-Object { $_.Thumbprint -eq $env:PfxThumbrint } | ForEach-Object { Remove-Item -Path "Cert:\CurrentUser\My\$($_.Thumbprint)" -Recurse -Verbose }
+
+    #     # confirm deleted
+    #     $matchingCerts = Get-ChildItem -Path Cert:\CurrentUser\My | Where-Object { $_.Thumbprint -eq $env:PfxThumbrint }
+    #     $count = $matchingCerts.count
+
+    #     if($count -gt 0){
+    #         echo "Code signing certificate was not removed from GitHub Runner"
+    #         exit 1
+    #     } else {
+    #         echo "Found $count matching code signing certificates in the store."
+    #     }
+    #   env:
+    #     PfxThumbrint: ${{ secrets.LANCELOTSOFTWARECERT_THUMBPRINT }}
+
+    # ************************| GITHUB RELEASE |************************ #
+
+    # Create a new GitHub Release tagged with the build version number (via https://github.com/actions/create-release)
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: "v.${{ steps.version-creator.outputs.APP_VERSION }}"
+        release_name: "Media File Manager v.${{ steps.version-creator.outputs.APP_VERSION }}"
+        draft: true
+        prerelease: true
+        body_path: .github\other\development_releasebody.md
+    
+    # Add artifacts to GitHub Release (via https://github.com/actions/upload-release-asset)
+
+    - name: Upload 64bit MSIX
+      id: upload-x64msix
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ steps.gather.outputs.msix_x64FilePath }}
+        asset_name: "MediaFileManager.Desktop.${{ steps.version-creator.outputs.APP_VERSION }}.x64.msix"
+        asset_content_type: application/zip
+    
+    - name: Upload 32bit MSIX Bundle
+      id: upload-x86msix
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ steps.gather.outputs.msix_x86FilePath }}
+        asset_name: "MediaFileManager.Desktop.${{ steps.version-creator.outputs.APP_VERSION }}._x86.msix"
+        asset_content_type: application/zip
+    
+    - name: Upload MSIX Bundle
+      id: upload-msixbundle
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ steps.bundler.outputs.msixbundle_path }}
+        asset_name: "MediaFileManager.Desktop.${{ steps.version-creator.outputs.APP_VERSION }}._x86_x64.msixbundle"
+        asset_content_type: application/zip

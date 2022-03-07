@@ -1,10 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows10.0.22000.0</TargetFramework>
-    <WindowsSdkPackageVersion>10.0.22000.21</WindowsSdkPackageVersion>
-    <UseWindowsSdkPreview>true</UseWindowsSdkPreview>
-    <UseWPF>true</UseWPF>
+		<TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+		<TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
+		<UseWPF>true</UseWPF>
 		<RootNamespace>MediaFileManager.Desktop</RootNamespace>
 		<AssemblyName>MediaFileManager.Desktop</AssemblyName>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -15,20 +14,15 @@
 		<ApplicationIcon>Images\MainIcon.ico</ApplicationIcon>
 		<Platforms>AnyCPU</Platforms>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
-        <Platforms>x86;x64;arm64</Platforms>
-        <RuntimeIdentifiers>win10-x86;win10-x64;</RuntimeIdentifiers>
+		<Platforms>x86;x64;arm64</Platforms>
+		<RuntimeIdentifiers>win10-x86;win10-x64;</RuntimeIdentifiers>
+		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+		<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 	</PropertyGroup>
+
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<NoWarn>1701;1702;1051;1303;1063;1416;1031;1001</NoWarn>
 	</PropertyGroup>
-	<ItemGroup>
-		<None Remove="Images\SplashScreenLogo.png" />
-	</ItemGroup>
-	<ItemGroup>
-		<Content Include="Images\SplashScreenLogo.png">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="MarkdownSharp" Version="2.0.5" />
@@ -38,32 +32,32 @@
 		<PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.22000.196" />
 		<PackageReference Include="taglib-sharp-netstandard2.0" Version="2.1.0" />
 		<PackageReference Include="Microsoft.ProjectReunion" Version="0.8.6" />
-    <PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="0.8.6" />
+        <PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="0.8.6" />
 		<Manifest Include="$(ApplicationManifest)" />
-		<PackageReference Include="Telerik.Windows.Controls.Data.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Controls.Docking.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Controls.FileDialogs.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Controls.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Controls.GridView.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Controls.Input.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Controls.Navigation.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Controls.RichTextBox.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Data.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Documents.Core" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Themes.Crystal.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Themes.Expression_Dark.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Themes.Fluent.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Themes.Green.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Themes.Material.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Themes.Office2013.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Themes.Office2016.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Themes.Summer.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Themes.Transparent.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Themes.Vista.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Themes.VisualStudio2013.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Themes.VisualStudio2019.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Themes.Windows7.for.Wpf" Version="2021.3.1109" />
-		<PackageReference Include="Telerik.Windows.Themes.Windows8.for.Wpf" Version="2021.3.1109" />
+		<PackageReference Include="Telerik.Windows.Controls.Data.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Controls.Docking.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Controls.FileDialogs.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Controls.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Controls.GridView.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Controls.Input.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Controls.Navigation.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Controls.RichTextBox.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Data.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Documents.Core" Version="2022.1.217" />
+		<PackageReference Include="Telerik.Windows.Themes.Crystal.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Themes.Expression_Dark.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Themes.Fluent.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Themes.Green.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Themes.Material.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Themes.Office2013.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Themes.Office2016.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Themes.Summer.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Themes.Transparent.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Themes.Vista.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Themes.VisualStudio2013.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Themes.VisualStudio2019.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Themes.Windows7.for.Wpf" Version="2022.1.222" />
+		<PackageReference Include="Telerik.Windows.Themes.Windows8.for.Wpf" Version="2022.1.222" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -76,12 +70,121 @@
 
 	<ItemGroup>
 		<None Update="Images\MainIcon.ico">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="Properties\Settings.settings">
 			<Generator>PublicSettingsSingleFileGenerator</Generator>
 			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
 		</None>
 	</ItemGroup>
+	<ItemGroup>
+		<None Remove="Images\LargeTile.scale-100.png" />
+		<None Remove="Images\LargeTile.scale-125.png" />
+		<None Remove="Images\LargeTile.scale-150.png" />
+		<None Remove="Images\LargeTile.scale-200.png" />
+		<None Remove="Images\LargeTile.scale-400.png" />
+		<None Remove="Images\SmallTile.scale-100.png" />
+		<None Remove="Images\SmallTile.scale-125.png" />
+		<None Remove="Images\SmallTile.scale-150.png" />
+		<None Remove="Images\SmallTile.scale-200.png" />
+		<None Remove="Images\SmallTile.scale-400.png" />
+		<None Remove="Images\SplashScreen.scale-100.png" />
+		<None Remove="Images\SplashScreen.scale-125.png" />
+		<None Remove="Images\SplashScreen.scale-150.png" />
+		<None Remove="Images\SplashScreen.scale-200.png" />
+		<None Remove="Images\SplashScreen.scale-400.png" />
+		<None Remove="Images\SplashScreenLogo.png" />
+		<None Remove="Images\Square150x150Logo.scale-100.png" />
+		<None Remove="Images\Square150x150Logo.scale-125.png" />
+		<None Remove="Images\Square150x150Logo.scale-150.png" />
+		<None Remove="Images\Square150x150Logo.scale-200.png" />
+		<None Remove="Images\Square150x150Logo.scale-400.png" />
+		<None Remove="Images\Square44x44Logo.altform-lightunplated_targetsize-16.png" />
+		<None Remove="Images\Square44x44Logo.altform-lightunplated_targetsize-24.png" />
+		<None Remove="Images\Square44x44Logo.altform-lightunplated_targetsize-256.png" />
+		<None Remove="Images\Square44x44Logo.altform-lightunplated_targetsize-32.png" />
+		<None Remove="Images\Square44x44Logo.altform-lightunplated_targetsize-48.png" />
+		<None Remove="Images\Square44x44Logo.altform-unplated_targetsize-16.png" />
+		<None Remove="Images\Square44x44Logo.altform-unplated_targetsize-24.png" />
+		<None Remove="Images\Square44x44Logo.altform-unplated_targetsize-256.png" />
+		<None Remove="Images\Square44x44Logo.altform-unplated_targetsize-32.png" />
+		<None Remove="Images\Square44x44Logo.altform-unplated_targetsize-48.png" />
+		<None Remove="Images\Square44x44Logo.scale-100.png" />
+		<None Remove="Images\Square44x44Logo.scale-125.png" />
+		<None Remove="Images\Square44x44Logo.scale-150.png" />
+		<None Remove="Images\Square44x44Logo.scale-200.png" />
+		<None Remove="Images\Square44x44Logo.scale-400.png" />
+		<None Remove="Images\Square44x44Logo.targetsize-16.png" />
+		<None Remove="Images\Square44x44Logo.targetsize-24.png" />
+		<None Remove="Images\Square44x44Logo.targetsize-256.png" />
+		<None Remove="Images\Square44x44Logo.targetsize-32.png" />
+		<None Remove="Images\Square44x44Logo.targetsize-48.png" />
+		<None Remove="Images\StoreLogo.scale-100.png" />
+		<None Remove="Images\StoreLogo.scale-125.png" />
+		<None Remove="Images\StoreLogo.scale-150.png" />
+		<None Remove="Images\StoreLogo.scale-200.png" />
+		<None Remove="Images\StoreLogo.scale-400.png" />
+		<None Remove="Images\Wide310x150Logo.scale-100.png" />
+		<None Remove="Images\Wide310x150Logo.scale-125.png" />
+		<None Remove="Images\Wide310x150Logo.scale-150.png" />
+		<None Remove="Images\Wide310x150Logo.scale-200.png" />
+		<None Remove="Images\Wide310x150Logo.scale-400.png" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="Images\LargeTile.scale-100.png" />
+		<Content Include="Images\LargeTile.scale-125.png" />
+		<Content Include="Images\LargeTile.scale-150.png" />
+		<Content Include="Images\LargeTile.scale-200.png" />
+		<Content Include="Images\LargeTile.scale-400.png" />
+		<Content Include="Images\SmallTile.scale-100.png" />
+		<Content Include="Images\SmallTile.scale-125.png" />
+		<Content Include="Images\SmallTile.scale-150.png" />
+		<Content Include="Images\SmallTile.scale-200.png" />
+		<Content Include="Images\SmallTile.scale-400.png" />
+		<Content Include="Images\SplashScreen.scale-100.png" />
+		<Content Include="Images\SplashScreen.scale-125.png" />
+		<Content Include="Images\SplashScreen.scale-150.png" />
+		<Content Include="Images\SplashScreen.scale-200.png" />
+		<Content Include="Images\SplashScreen.scale-400.png" />
+		<Content Include="Images\SplashScreenLogo.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Images\Square150x150Logo.scale-100.png" />
+		<Content Include="Images\Square150x150Logo.scale-125.png" />
+		<Content Include="Images\Square150x150Logo.scale-150.png" />
+		<Content Include="Images\Square150x150Logo.scale-200.png" />
+		<Content Include="Images\Square150x150Logo.scale-400.png" />
+		<Content Include="Images\Square44x44Logo.altform-lightunplated_targetsize-16.png" />
+		<Content Include="Images\Square44x44Logo.altform-lightunplated_targetsize-24.png" />
+		<Content Include="Images\Square44x44Logo.altform-lightunplated_targetsize-256.png" />
+		<Content Include="Images\Square44x44Logo.altform-lightunplated_targetsize-32.png" />
+		<Content Include="Images\Square44x44Logo.altform-lightunplated_targetsize-48.png" />
+		<Content Include="Images\Square44x44Logo.altform-unplated_targetsize-16.png" />
+		<Content Include="Images\Square44x44Logo.altform-unplated_targetsize-24.png" />
+		<Content Include="Images\Square44x44Logo.altform-unplated_targetsize-256.png" />
+		<Content Include="Images\Square44x44Logo.altform-unplated_targetsize-32.png" />
+		<Content Include="Images\Square44x44Logo.altform-unplated_targetsize-48.png" />
+		<Content Include="Images\Square44x44Logo.scale-100.png" />
+		<Content Include="Images\Square44x44Logo.scale-125.png" />
+		<Content Include="Images\Square44x44Logo.scale-150.png" />
+		<Content Include="Images\Square44x44Logo.scale-200.png" />
+		<Content Include="Images\Square44x44Logo.scale-400.png" />
+		<Content Include="Images\Square44x44Logo.targetsize-16.png" />
+		<Content Include="Images\Square44x44Logo.targetsize-24.png" />
+		<Content Include="Images\Square44x44Logo.targetsize-256.png" />
+		<Content Include="Images\Square44x44Logo.targetsize-32.png" />
+		<Content Include="Images\Square44x44Logo.targetsize-48.png" />
+		<Content Include="Images\StoreLogo.scale-100.png" />
+		<Content Include="Images\StoreLogo.scale-125.png" />
+		<Content Include="Images\StoreLogo.scale-150.png" />
+		<Content Include="Images\StoreLogo.scale-200.png" />
+		<Content Include="Images\StoreLogo.scale-400.png" />
+		<Content Include="Images\Wide310x150Logo.scale-100.png" />
+		<Content Include="Images\Wide310x150Logo.scale-125.png" />
+		<Content Include="Images\Wide310x150Logo.scale-150.png" />
+		<Content Include="Images\Wide310x150Logo.scale-200.png" />
+		<Content Include="Images\Wide310x150Logo.scale-400.png" />
+	</ItemGroup>
+
 
 </Project>

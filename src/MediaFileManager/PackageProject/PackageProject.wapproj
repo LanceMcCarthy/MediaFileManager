@@ -40,16 +40,17 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <EntryPointProjectUniqueName>..\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj</EntryPointProjectUniqueName>
     <PackageCertificateThumbprint>F59E815B12EB302AFB967D855BDEC315D27DB6B3</PackageCertificateThumbprint>
-    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+    <GenerateAppInstallerFile>True</GenerateAppInstallerFile>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
-    <AppxBundlePlatforms>x86</AppxBundlePlatforms>
-    <AppInstallerUpdateFrequency>0</AppInstallerUpdateFrequency>
-    <AppInstallerCheckForUpdateFrequency>OnApplicationRun</AppInstallerCheckForUpdateFrequency>
+    <AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>
+    <AppInstallerUpdateFrequency>12</AppInstallerUpdateFrequency>
+    <AppInstallerCheckForUpdateFrequency>Hourly</AppInstallerCheckForUpdateFrequency>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
     <GenerateTestArtifacts>False</GenerateTestArtifacts>
-    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+    <HoursBetweenUpdateChecks>12</HoursBetweenUpdateChecks>
     <ComputeFilesCopiedToPublishDir>False</ComputeFilesCopiedToPublishDir>
+    <AppInstallerUri>https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/</AppInstallerUri>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <AppxBundle>Always</AppxBundle>

@@ -5,8 +5,6 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaFileManager.Desktop", "MediaFileManager.Desktop\MediaFileManager.Desktop.csproj", "{48BFA162-9C25-4D80-AD49-A0B5795F4798}"
 EndProject
-Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "PackageProject", "PackageProject\PackageProject.wapproj", "{79EC2C31-3930-4C0B-AB9F-E4EA6BC8800B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -35,24 +33,6 @@ Global
 		{48BFA162-9C25-4D80-AD49-A0B5795F4798}.Release|x86.ActiveCfg = Release|x86
 		{48BFA162-9C25-4D80-AD49-A0B5795F4798}.Release|x86.Build.0 = Release|x86
 		{48BFA162-9C25-4D80-AD49-A0B5795F4798}.Release|x86.Deploy.0 = Release|x86
-		{79EC2C31-3930-4C0B-AB9F-E4EA6BC8800B}.Debug|ARM64.ActiveCfg = Debug|ARM64
-		{79EC2C31-3930-4C0B-AB9F-E4EA6BC8800B}.Debug|ARM64.Build.0 = Debug|ARM64
-		{79EC2C31-3930-4C0B-AB9F-E4EA6BC8800B}.Debug|ARM64.Deploy.0 = Debug|ARM64
-		{79EC2C31-3930-4C0B-AB9F-E4EA6BC8800B}.Debug|x64.ActiveCfg = Debug|x64
-		{79EC2C31-3930-4C0B-AB9F-E4EA6BC8800B}.Debug|x64.Build.0 = Debug|x64
-		{79EC2C31-3930-4C0B-AB9F-E4EA6BC8800B}.Debug|x64.Deploy.0 = Debug|x64
-		{79EC2C31-3930-4C0B-AB9F-E4EA6BC8800B}.Debug|x86.ActiveCfg = Debug|x86
-		{79EC2C31-3930-4C0B-AB9F-E4EA6BC8800B}.Debug|x86.Build.0 = Debug|x86
-		{79EC2C31-3930-4C0B-AB9F-E4EA6BC8800B}.Debug|x86.Deploy.0 = Debug|x86
-		{79EC2C31-3930-4C0B-AB9F-E4EA6BC8800B}.Release|ARM64.ActiveCfg = Release|ARM64
-		{79EC2C31-3930-4C0B-AB9F-E4EA6BC8800B}.Release|ARM64.Build.0 = Release|ARM64
-		{79EC2C31-3930-4C0B-AB9F-E4EA6BC8800B}.Release|ARM64.Deploy.0 = Release|ARM64
-		{79EC2C31-3930-4C0B-AB9F-E4EA6BC8800B}.Release|x64.ActiveCfg = Release|x64
-		{79EC2C31-3930-4C0B-AB9F-E4EA6BC8800B}.Release|x64.Build.0 = Release|x64
-		{79EC2C31-3930-4C0B-AB9F-E4EA6BC8800B}.Release|x64.Deploy.0 = Release|x64
-		{79EC2C31-3930-4C0B-AB9F-E4EA6BC8800B}.Release|x86.ActiveCfg = Release|x86
-		{79EC2C31-3930-4C0B-AB9F-E4EA6BC8800B}.Release|x86.Build.0 = Release|x86
-		{79EC2C31-3930-4C0B-AB9F-E4EA6BC8800B}.Release|x86.Deploy.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
