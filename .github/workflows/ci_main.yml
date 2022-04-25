@@ -11,13 +11,15 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
     env:
       TFM: net6.0-windows10.0.18362.0
       RID: win-x64
-      ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+      WappProject_Path: src\MediaFileManager\PackageProject\PackageProject.wapproj
+      WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+      SolutionPath: src\MediaFileManager\MediaFileManager.sln
       NugetConfigPath: src\nuget.config
-      Configuration: Debug
+      Configuration: Release
 
     steps:
     - name: Checkout
@@ -71,12 +73,11 @@ jobs:
       uses: microsoft/setup-msbuild@v1.1
 
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
-    - name: DotNet Restore
-      run: dotnet restore $env:SolutionPath --configfile $env:NugetConfigPath --runtime $env:RID
-      env:
-        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
-        SolutionPath: src\MediaFileManager\MediaFileManager.sln
+    # - name: DotNet Restore
+    #   run: dotnet restore $env:SolutionPath --configfile $env:NugetConfigPath --runtime $env:RID
+    #   env:
+    #     TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
+    #     TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
 
     # In order to generate project.assets.json, we need to use nuget.exe for the wapproject
     - name: NuGet Restore Wapp Project (to ensure assets.json is available)
@@ -84,19 +85,17 @@ jobs:
       env:
         TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
         TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
-        WappProject_Path: src\MediaFileManager\PackageProject\PackageProject.wapproj
 
-    # # Restore WPF project to populate the obj folder (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
-    # - name: Build the Wpf application to populate the obj folder
-    #   run: msbuild $env:WpfProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID
-    #   env:
-    #     TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-    #     TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
-    #     WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+    # Restore WPF project to populate the obj folder (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
+    - name: Build the Wpf application to populate the obj folder
+      run: msbuild $env:WpfProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID
+      env:
+        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
+        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
 
     # Build the WAP project. BuildMode is set to CI so we do not have to generate actual packages.
     - name: Build the Windows Application Packaging Project (wapproj) 
-      run: msbuild $env:UwpProjectPath /p:Platform=$env:TargetPlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
+      run: msbuild $env:WappProject_Path /p:Configuration=$env:Configuration /p:Platform=$env:TargetPlatform /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
       env:
         TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
         TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
