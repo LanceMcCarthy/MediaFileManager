@@ -8,30 +8,35 @@ on:
     paths:
       - "src/**/*"
       - ".github/workflows/ci_main.yml"
+
 jobs:
   build:
     runs-on: windows-latest
-    
+    env:
+      TFM: net6.0-windows10.0.18362.0
+      RID: win-x86
+      ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+      NugetConfigPath: src\nuget.config
+      Configuration: Debug
+
     steps:
     - name: Checkout
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
     
-    # Create my own version number with a specific format using date. ex: 2020.805.1.0
-    - uses: Amadevus/pwsh-script@v2
+    - name: Generate version number with date and workflow Run Number
       id: version-creator
-      with:
-        script: |
-          $buildDay = Get-Date -Format "yyyy.Mdd"
-          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
-          Set-ActionVariable APP_VERSION $ver
+      run: |
+        $buildDay = Get-Date -Format "yyyy.Mdd"
+        $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+        echo "::set-output name=APP_VERSION::$ver"
 
     # Update the UWP package version
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$env:APP_VERSION"
+        $manifest.Package.Identity.Version = "${{ steps.version-creator.outputs.APP_VERSION }}"
         $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
     
     # Updates the WPF project's assembly version number.
@@ -43,7 +48,7 @@ jobs:
               $verStart = $_.IndexOf("(")
               $verEnd = $_.IndexOf(")", $verStart)
               $origVersion = $_.SubString($verStart+2, $verEnd-$verStart-3)
-              $newVersion = "$env:APP_VERSION"
+              $newVersion = "${{ steps.version-creator.outputs.APP_VERSION }}"
               write-host "Setting AssemblyFileVersion from $origVersion to $newVersion"
               $_.Replace($origVersion, $newVersion)
             }  else {
@@ -53,34 +58,30 @@ jobs:
           $newfile | Set-Content $assemblyInfoPath -encoding "UTF8"
         }
         $assemblyInfoPath = "src\MediaFileManager\MediaFileManager.Desktop\Properties\AssemblyInfo.cs"
-        SetAssemblyFileVersion $assemblyInfoPath $env:APP_VERSION
+        SetAssemblyFileVersion $assemblyInfoPath "${{ steps.version-creator.outputs.APP_VERSION }}"
 
     # Install the .NET Core workload
     - name: Install .NET Core
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '6.0'
-        include-prerelease: True
 
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v1.1
 
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: DotNet Restore
-      run: dotnet restore $env:SolutionPath --configfile $env:NugetConfigPath --runtime $env:RID
+      run: dotnet restore $env:SolutionPath --configfile $env:NugetConfigPath
       env:
         TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
         TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
         SolutionPath: src\MediaFileManager\MediaFileManager.sln
-        NugetConfigPath: src\nuget.config
-        RID: win-x86 
 
     # In order to generate project.assets.json, we need to use nuget.exe for the wapproject
     - name: NuGet Restore Wapp Project (to ensure assets.json is available)
-      run: nuget restore $env:WappProject_Path -ConfigFile $env:NuGetConfig_Path
+      run: nuget restore $env:WappProject_Path -ConfigFile $env:NugetConfigPath
       env:
-        NuGetConfig_Path: src\nuget.config
         TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
         TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
         WappProject_Path: src\MediaFileManager\PackageProject\PackageProject.wapproj
@@ -92,8 +93,6 @@ jobs:
         TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
         TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
         WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
-        Configuration: Debug
-        RID: win-x86 
 
     # Build the WAP project. BuildMode is set to CI so we do not have to generate actual packages.
     - name: Build the Windows Application Packaging Project (wapproj) 
@@ -102,9 +101,7 @@ jobs:
         TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
         TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
         UwpProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
-        RID: win-x86 # https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
-        TargetPlatform: x86
-        Configuration: Debug
+        TargetPlatform: x64
         BuildMode: CI
         AppxBundle: Never
         AppxPackageSigningEnabled: False
