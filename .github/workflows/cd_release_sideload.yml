@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - release-sideload
+    paths:
+      - "src/**/*"
+      - ".github/workflows/cd_release_sideload.yml"
 
 jobs:
   build:

@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - release-microsoft-store
+    paths:
+      - "src/**/*"
+      - ".github/workflows/cd_release_msstore.yml"
 
 jobs:
   build:
