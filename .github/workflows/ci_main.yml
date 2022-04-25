@@ -86,13 +86,13 @@ jobs:
         TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
         WappProject_Path: src\MediaFileManager\PackageProject\PackageProject.wapproj
 
-    # Restore WPF project to populate the obj folder (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
-    - name: Build the Wpf application to populate the obj folder
-      run: msbuild $env:WpfProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID
-      env:
-        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
-        WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+    # # Restore WPF project to populate the obj folder (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
+    # - name: Build the Wpf application to populate the obj folder
+    #   run: msbuild $env:WpfProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID
+    #   env:
+    #     TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
+    #     TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+    #     WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
 
     # Build the WAP project. BuildMode is set to CI so we do not have to generate actual packages.
     - name: Build the Windows Application Packaging Project (wapproj) 
