@@ -9,7 +9,7 @@
   <Identity
     Name="61469LanceLotSoftware.MediaFileManager"
     Publisher="CN=&quot;Lancelot Software, LLC&quot;, O=&quot;Lancelot Software, LLC&quot;, L=NORTH BILLERICA, S=Massachusetts, C=US"
-    Version="2021.1126.31.0" />
+    Version="2022.516.1.0" />
 
   <Properties>
     <DisplayName>Media File Manager</DisplayName>
