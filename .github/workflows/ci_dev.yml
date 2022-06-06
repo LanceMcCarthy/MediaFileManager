@@ -59,12 +59,10 @@ jobs:
         TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
 
     # Build the WAP project. BuildMode is set to CI so we do not have to generate actual packages.
-    - name: Build the Windows Application Packaging Project (wapproj) 
-      run: msbuild $env:WappProject_Path /p:Configuration=$env:Configuration /p:Platform=$env:TargetPlatform /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
-      env:
-        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
-        TargetPlatform: x64
-        BuildMode: CI
-        AppxBundle: Never
-        AppxPackageSigningEnabled: False
+    #- name: Build the Windows Application Packaging Project (wapproj) 
+    #  run: msbuild $env:WappProject_Path /p:Configuration=$env:Configuration /p:Platform=$env:TargetPlatform /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
+    #  env:
+    #    TargetPlatform: x64
+    #    BuildMode: CI
+    #    AppxBundle: Never
+    #    AppxPackageSigningEnabled: False
