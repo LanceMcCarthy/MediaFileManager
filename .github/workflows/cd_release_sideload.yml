@@ -13,7 +13,7 @@ env:
   WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
   WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
   NugetConfigPath: src\nuget.config
-  RID: win-86
+  RID: win-x86
   TargetPlatform: "x86"
   UwpBundlePlatform: "x86"
   Configuration: Release
