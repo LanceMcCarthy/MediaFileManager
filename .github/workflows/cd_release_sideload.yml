@@ -38,17 +38,23 @@ jobs:
     # ******************| ASSEMBLY AND MANIFEST VERSIONING |********************* #
     
     # Create my own version number with a specific format using date. ex: 2020.805.1.0
-    - uses: Amadevus/pwsh-script@v2
-      id: version-creator
-      with:
-        script: |
-          $buildDay = Get-Date -Format "yyyy.Mdd"
-          $runNum = "${{ env.GITHUB_RUN_NUMBER }}"
-          echo "run number is $runNum" 
-          $ver = "$buildDay" + "." + $runNum + ".0"
-          echo $ver
-          Set-ActionVariable APP_VERSION $ver
+    # - uses: Amadevus/pwsh-script@v2
+    #   id: version-creator
+    #   with:
+    #     script: |
+    #       $buildDay = Get-Date -Format "yyyy.Mdd"
+    #       $runNum = "${{ env.GITHUB_RUN_NUMBER }}"
+    #       echo "run number is $runNum" 
+    #       $ver = "$buildDay" + "." + $runNum + ".0"
+    #       echo $ver
+    #       Set-ActionVariable APP_VERSION $ver
+    #       Write-Output "::set-env name=APP_VERSION::$ver"
 
+    - name: versioning
+      run: |
+        $buildDay = Get-Date -Format "yyyy.Mdd"
+        $ver = "$buildDay" + "." + "${{ env.GITHUB_RUN_NUMBER }}" + ".0"
+        Write-Output "::set-env name=APP_VERSION::$ver"
 
     # Update the appxmanifest for SideLoad (and signing with PFX)
     - name: Update manifest version
