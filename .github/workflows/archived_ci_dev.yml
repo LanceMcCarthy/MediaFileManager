@@ -1,5 +1,4 @@
-# If you are looking for guidance for your builds, see https://github.com/microsoft/github-actions-for-desktop-apps
-name: Development
+name: Dev (Single-Project MSIX Archived)
 
 on:
   push:
