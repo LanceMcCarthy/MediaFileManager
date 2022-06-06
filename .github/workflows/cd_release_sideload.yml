@@ -8,7 +8,24 @@ on:
     paths:
       - "src/**/*"
       - ".github/workflows/cd_release_sideload.yml"
-
+env:
+  SolutionPath: src\MediaFileManager\MediaFileManager.sln
+  WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
+  WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+  NugetConfigPath: src\nuget.config
+  RID: win
+  TargetPlatform: 'Any CPU'
+  UwpBundlePlatform: 'x86|x64|arm|arm64'
+  Configuration: Release
+  AppxPackageDir: 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\'
+  AppxBundle: Always
+  AppxPackageSigningEnabled: True
+  GenerateAppInstallerFile: True
+  BuildMode: SideloadOnly
+  AppInstUri: 'https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/'
+  SigningCertificate: LancelotSoftwareLLC.pfx
+  WapProjectDirectory: 'src\MediaFileManager\PackageProject'
+  
 jobs:
   build:
     runs-on: windows-latest
@@ -26,19 +43,19 @@ jobs:
       with:
         script: |
           $buildDay = Get-Date -Format "yyyy.Mdd"
-          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+          $ver = $buildDay + "." + ${{ env.GITHUB_RUN_NUMBER }} + ".0"
           Set-ActionVariable APP_VERSION $ver
     
     # Update the appxmanifest for SideLoad (and signing with PFX)
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$env:APP_VERSION"
-        $manifest.Package.Identity.Name = $env:PackageIdentity_Name
-        $manifest.Package.Identity.Publisher = $env:PackageIdentity_Publisher
-        $manifest.Package.Properties.DisplayName = $env:PackageProperties_DisplayName
-        $manifest.Package.Properties.PublisherDisplayName = $env:PackageProperties_PublisherDisplayName
-        $manifest.Package.Applications.Application.VisualElements.DisplayName = $env:ApplicationVisualElements_DisplayName
+        $manifest.Package.Identity.Version = "${{ env.APP_VERSION }}"
+        $manifest.Package.Identity.Name = ${{ env.PackageIdentity_Name }}
+        $manifest.Package.Identity.Publisher = ${{ env.PackageIdentity_Publisher }}
+        $manifest.Package.Properties.DisplayName = ${{ env.PackageProperties_DisplayName }}
+        $manifest.Package.Properties.PublisherDisplayName = ${{ env.PackageProperties_PublisherDisplayName }}
+        $manifest.Package.Applications.Application.VisualElements.DisplayName = ${{ env.ApplicationVisualElements_DisplayName }}
         $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
       env:
         PackageIdentity_Name: "61469LanceLotSoftware.MediaFileManager"
@@ -56,18 +73,19 @@ jobs:
               $verStart = $_.IndexOf("(")
               $verEnd = $_.IndexOf(")", $verStart)
               $origVersion = $_.SubString($verStart+2, $verEnd-$verStart-3)
-              $newVersion = "$env:APP_VERSION"
+              $newVersion = "${{ env.APP_VERSION }}"
               write-host "Setting AssemblyFileVersion from $origVersion to $newVersion"
               $_.Replace($origVersion, $newVersion)
             }  else {
               $_
-            } 
+            }
           }
           $newfile | Set-Content $assemblyInfoPath -encoding "UTF8"
         }
         $assemblyInfoPath = "src\MediaFileManager\MediaFileManager.Desktop\Properties\AssemblyInfo.cs"
-        SetAssemblyFileVersion $assemblyInfoPath $env:APP_VERSION
-        
+        SetAssemblyFileVersion $assemblyInfoPath ${{ env.APP_VERSION }}
+
+
     # ******************| TOOL INSTALL and DEPENDENCY RESTORE |********************* #
     
     # Install the .NET Core workload
@@ -75,7 +93,6 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '6.0'
-        include-prerelease: True
     
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
@@ -83,40 +100,29 @@ jobs:
       
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: DotNet Restore - solution
-      run: dotnet restore $env:SolutionPath --configfile $env:NugetConfigPath --runtime $env:RID
+      run: dotnet restore ${{ env.SolutionPath }} --configfile ${{ env.NugetConfigPath }} --runtime ${{ env.RID }}
       env:
         TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
         TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
-        SolutionPath: src\MediaFileManager\MediaFileManager.sln
-        NugetConfigPath: src\nuget.config
-        RID: win-x86 
     
     # In order to generate project.assets.json, we need to use nuget.exe for the wapproject
     - name: NuGet Restore - Wapp Project (to ensure assets.json is available)
-      run: nuget restore $env:WappProject_Path -ConfigFile $env:NuGetConfig_Path
+      run: nuget restore ${{ env.WappProjectPath }} -ConfigFile ${{ env.NugetConfigPath }}
       env:
         NuGetConfig_Path: src\nuget.config
         TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
         TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
-        WappProject_Path: src\MediaFileManager\PackageProject\PackageProject.wapproj
-        
+
     # Restore NuGet packages using the nuget config (package sources authenticate using environment variable and nuget.config)
-    - name: NuGet Restore - Solution
-      run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path --runtime $env:RID
-      env:
-        NuGetConfig_Path: src\nuget.config
-        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }} # this env variable is used in the nuget.config
-        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }} # this env variable is used in the nuget.config
-        RID: win-x86
-        Solution_Path: src\MediaFileManager\MediaFileManager.sln
-        
+    #- name: NuGet Restore - Solution
+    #  run: dotnet restore ${{ env.SolutionPath }} --configfile=${{ env.NuGetConfigPath }} --runtime ${{ env.RID }}
+    #  env:
+    #    TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
+    #    TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+
     # Restore the application
     - name:  Restore the Wpf application to populate the obj folder
-      run: msbuild $env:WpfProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID
-      env:
-        RID: win-x86
-        Configuration: Release
-        WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+      run: msbuild ${{ env.WpfProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier=${{ env.RID }} /p:Platform=${{ env.TargetPlatform }}
 
 
     # ************************| BUILD AND DISTRIBUTION |************************ #
@@ -126,27 +132,15 @@ jobs:
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
         $currentDirectory = Get-Location
-        $certificatePath = Join-Path -Path $currentDirectory -ChildPath src\MediaFileManager\PackageProject -AdditionalChildPath $env:SigningCertificate
+        $certificatePath = Join-Path -Path $currentDirectory -ChildPath 'src\MediaFileManager\PackageProject' -AdditionalChildPath ${{ env.SigningCertificate }}
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
-      env:
-        SigningCertificate: LancelotSoftwareLLC.pfx # For UWP package signing
     
     # Build using SideLoad and AppInstaller instructions (requires code signing)
     - name: Build wapproj for Sideloading
-      run: msbuild $env:Solution_Path /p:GenerateAppInstallerFile=$env:GenerateAppInstallerFile /p:AppInstallerUri=$env:AppInstUri /p:HoursBetweenUpdateChecks=6 /p:AppxPackageDir=$env:AppxPackageDir /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:PackageCertificateKeyFile=$env:SigningCertificate /p:PackageCertificatePassword=$env:CertPrivateKey /p:PackageCertificateThumbprint=$env:CertThumbprint /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled
+      run: msbuild ${{ env.SolutionPath }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppInstallerUri=${{ env.AppInstUri }} /p:HoursBetweenUpdateChecks=6 /p:AppxPackageDir=${{ env.AppxPackageDir }} /p:Platform=${{ env.UwpBundlePlatform }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:PackageCertificateKeyFile=${{ env.SigningCertificate }} /p:PackageCertificatePassword=${{ env.CertPrivateKey }} /p:PackageCertificateThumbprint=${{ env.CertThumbprint }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }}
       env:
-        AppxPackageDir: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\
-        AppxBundle: Always
-        AppxPackageSigningEnabled: True
-        GenerateAppInstallerFile: True
-        BuildMode: SideloadOnly
-        AppInstUri: https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/
-        UwpBundlePlatform: x86 #package bundles, eg. x86|x64|arm|arm64
-        Solution_Path: src\MediaFileManager\MediaFileManager.sln
-        Configuration: Release
-        SigningCertificate: LancelotSoftwareLLC.pfx
-        CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}  # For UWP package signing
-        CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }} # For UWP package signing
+        CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
+        CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
       
     # UPLOAD TO AZURE STORAGE BLOB
     # This automatically distributes the sideLoad package, which users can visit the index.html page and run the appinstaller
@@ -163,14 +157,11 @@ jobs:
 
     # ZIP up the sideload packages for GitHub release using Powershell
     - name: Create SideLoadPackages.zip
-      run: Compress-Archive -Path D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\* -DestinationPath D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\SideLoadPackages.zip
+      run: Compress-Archive -Path 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\*' -DestinationPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\SideLoadPackages.zip'
 
     # Remove the .pfx now that we're done with code signing
     - name: Remove the .pfx
-      run: Remove-Item -path $env:Wap_Project_Directory\$env:SigningCertificate
-      env:
-        Wap_Project_Directory: src\MediaFileManager\PackageProject
-        SigningCertificate: LancelotSoftwareLLC.pfx
+      run: Remove-Item -path ${{ env.WapProjectDirectory }}\${{ env.SigningCertificate }}
 
     # ************************| GITHUB RELEASE |************************ #
 
@@ -195,6 +186,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\SideLoadPackages.zip
+        asset_path: 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\SideLoadPackages.zip'
         asset_name: SideLoadPackages.zip
         asset_content_type: application/zip
