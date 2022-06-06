@@ -14,8 +14,8 @@ env:
   WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
   NugetConfigPath: src\nuget.config
   RID: win
-  TargetPlatform: 'Any CPU'
-  UwpBundlePlatform: 'x86|x64|arm|arm64'
+  TargetPlatform: "Any CPU"
+  UwpBundlePlatform: "x86|x64|arm|arm64"
   Configuration: Release
   AppxPackageDir: 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\'
   AppxBundle: Always
@@ -94,7 +94,7 @@ jobs:
       
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: DotNet Restore - solution
-      run: dotnet restore ${{ env.SolutionPath }} --configfile ${{ env.NugetConfigPath }} --runtime ${{ env.RID }}
+      run: dotnet restore ${{ env.SolutionPath }} --configfile ${{ env.NugetConfigPath }} --runtime "${{ env.RID }}"
       env:
         TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
         TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
@@ -116,7 +116,7 @@ jobs:
 
     # Restore the application
     - name:  Restore the Wpf application to populate the obj folder
-      run: msbuild ${{ env.WpfProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier=${{ env.RID }} /p:Platform=${{ env.TargetPlatform }}
+      run: msbuild ${{ env.WpfProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier="${{ env.RID }}" /p:Platform="${{ env.TargetPlatform}}"
 
 
     # ************************| BUILD AND DISTRIBUTION |************************ #
@@ -126,7 +126,7 @@ jobs:
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.LancelotSoftwareCert_Base64 }}")
         $currentDirectory = Get-Location
-        $certificatePath = Join-Path -Path $currentDirectory -ChildPath 'src\MediaFileManager\PackageProject' -AdditionalChildPath ${{ env.SigningCertificate }}
+        $certificatePath = Join-Path -Path $currentDirectory -ChildPath "src\MediaFileManager\PackageProject" -AdditionalChildPath "${{ env.SigningCertificate }}"
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
     
     # Build using SideLoad and AppInstaller instructions (requires code signing)
@@ -142,7 +142,7 @@ jobs:
       id: sideload-blob-upload
       uses: LanceMcCarthy/Action-AzureBlobUpload@v1.9.0
       with:
-        connection_string: ${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}
+        connection_string: "${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}"
         container_name: general-app-files
         source_folder: src\MediaFileManager\PackageProject\SideLoadPackages\
         destination_folder: Installers/MediaFileManager
@@ -155,7 +155,7 @@ jobs:
 
     # Remove the .pfx now that we're done with code signing
     - name: Remove the .pfx
-      run: Remove-Item -path ${{ env.WapProjectDirectory }}\${{ env.SigningCertificate }}
+      run: Remove-Item -path "${{ env.WapProjectDirectory }}\${{ env.SigningCertificate }}"
 
     # ************************| GITHUB RELEASE |************************ #
 
