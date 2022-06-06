@@ -43,7 +43,7 @@ jobs:
       with:
         script: |
           $buildDay = Get-Date -Format "yyyy.Mdd"
-          $ver = $buildDay + "." + "$env:GITHUB_RUN_NUMBER" + ".0"
+          $ver = $buildDay + "." + '${{ env.GITHUB_RUN_NUMBER }}' + ".0"
           Set-ActionVariable APP_VERSION $ver
     
     # Update the appxmanifest for SideLoad (and signing with PFX)
