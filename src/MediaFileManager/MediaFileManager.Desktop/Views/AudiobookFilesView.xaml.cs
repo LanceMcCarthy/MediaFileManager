@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using MediaFileManager.Desktop.Models;
+using MediaFileManager.Desktop.Models.AudioBook;
 using Microsoft.AppCenter.Crashes;
 using Telerik.Windows.Controls;
 using Analytics = Microsoft.AppCenter.Analytics.Analytics;
