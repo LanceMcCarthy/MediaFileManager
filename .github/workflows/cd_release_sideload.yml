@@ -38,29 +38,21 @@ jobs:
     # ******************| ASSEMBLY AND MANIFEST VERSIONING |********************* #
     
     # Create my own version number with a specific format using date. ex: 2020.805.1.0
-    # - uses: Amadevus/pwsh-script@v2
-    #   id: version-creator
-    #   with:
-    #     script: |
-    #       $buildDay = Get-Date -Format "yyyy.Mdd"
-    #       $runNum = "${{ env.GITHUB_RUN_NUMBER }}"
-    #       echo "run number is $runNum" 
-    #       $ver = "$buildDay" + "." + $runNum + ".0"
-    #       echo $ver
-    #       Set-ActionVariable APP_VERSION $ver
-    #       Write-Output "::set-env name=APP_VERSION::$ver"
-
-    - name: versioning
-      run: |
-        $buildDay = Get-Date -Format "yyyy.Mdd"
-        $ver = "$buildDay" + "." + "$env:GITHUB_RUN_NUMBER" + ".0"
-        Write-Output "::set-output name=APP_VERSION::$ver"
+    - uses: Amadevus/pwsh-script@v2
+      id: version-creator
+      with:
+        script: |
+          $buildDay = Get-Date -Format "yyyy.Mdd"
+          $runNum = $env:GITHUB_RUN_NUMBER
+          $ver = "$buildDay" + "." + "$runNum" + ".0"
+          echo $ver
+          Set-ActionVariable APP_VERSION $ver
 
     # Update the appxmanifest for SideLoad (and signing with PFX)
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "${{ steps.versioning.outputs.APP_VERSION }}"
+        $manifest.Package.Identity.Version = $env:APP_VERSION
         $manifest.Package.Identity.Name = "61469LanceLotSoftware.MediaFileManager"
         $manifest.Package.Identity.Publisher = 'CN="Lancelot Software, LLC", O="Lancelot Software, LLC", L="NORTH BILLERICA", S="Massachusetts", C="US"'
         $manifest.Package.Properties.DisplayName = "Media File Manager"
@@ -77,7 +69,7 @@ jobs:
               $verStart = $_.IndexOf("(")
               $verEnd = $_.IndexOf(")", $verStart)
               $origVersion = $_.SubString($verStart+2, $verEnd-$verStart-3)
-              $newVersion = "${{ steps.versioning.outputs.APP_VERSION }}"
+              $newVersion = "$env:APP_VERSION"
               write-host "Setting AssemblyFileVersion from $origVersion to $newVersion"
               $_.Replace($origVersion, $newVersion)
             }  else {
@@ -87,7 +79,7 @@ jobs:
           $newfile | Set-Content $assemblyInfoPath -encoding "UTF8"
         }
         $assemblyInfoPath = "src\MediaFileManager\MediaFileManager.Desktop\Properties\AssemblyInfo.cs"
-        SetAssemblyFileVersion $assemblyInfoPath "${{ steps.versioning.outputs.APP_VERSION }}"
+        SetAssemblyFileVersion $assemblyInfoPath $env:APP_VERSION
 
 
     # ******************| TOOL INSTALL and DEPENDENCY RESTORE |********************* #
@@ -176,8 +168,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: "v.${{ steps.versioning.outputs.APP_VERSION }}"
-        release_name: "Media File Manager v.${{ steps.versioning.outputs.APP_VERSION }}"
+        tag_name: "v.$env:APP_VERSION"
+        release_name: "Media File Manager v.$env:APP_VERSION"
         draft: false
         prerelease: false
         body_path: .github\other\preview_releasebody.md
