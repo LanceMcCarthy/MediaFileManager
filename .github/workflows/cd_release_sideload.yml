@@ -38,7 +38,7 @@ jobs:
     - name: var-test
       run: |
         Write-Output ${{ env.GITHUB_RUN_NUMBER }}
-        Write-Output $env:GITHUB_RUN_NUMBER }}
+        Write-Output $env:GITHUB_RUN_NUMBER
 
     # ******************| ASSEMBLY AND MANIFEST VERSIONING |********************* #
     
