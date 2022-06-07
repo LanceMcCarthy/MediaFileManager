@@ -37,8 +37,10 @@ jobs:
     
     - name: var-test
       run: |
-        Write-Output ${{ env.GITHUB_RUN_NUMBER }}
-        Write-Output $env:GITHUB_RUN_NUMBER
+        $runNum1 = "${{ env.GITHUB_RUN_NUMBER }}"
+        $runNum2 = $env:GITHUB_RUN_NUMBER
+        Write-Output $runNum1
+        Write-Output $runNum2
 
     # ******************| ASSEMBLY AND MANIFEST VERSIONING |********************* #
     
