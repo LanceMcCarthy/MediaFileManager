@@ -55,7 +55,6 @@ jobs:
         $buildDay = Get-Date -Format "yyyy.Mdd"
         $ver = "$buildDay" + "." + "${{ env.GITHUB_RUN_NUMBER }}" + ".0"
         Write-Output "::set-output name=APP_VERSION::$ver"
-        "${{ steps.versioning.outputs.APP_VERSION }}"
 
     # Update the appxmanifest for SideLoad (and signing with PFX)
     - name: Update manifest version
