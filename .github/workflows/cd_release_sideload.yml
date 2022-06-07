@@ -35,6 +35,11 @@ jobs:
       with:
         fetch-depth: 0
     
+    - name: var-test
+      run: |
+        Write-Output ${{ env.GITHUB_RUN_NUMBER }}
+        Write-Output $env:GITHUB_RUN_NUMBER }}
+
     # ******************| ASSEMBLY AND MANIFEST VERSIONING |********************* #
     
     # Create my own version number with a specific format using date. ex: 2020.805.1.0
@@ -53,7 +58,14 @@ jobs:
     - name: versioning
       run: |
         $buildDay = Get-Date -Format "yyyy.Mdd"
-        $ver = "$buildDay" + "." + "${{ env.GITHUB_RUN_NUMBER }}" + ".0"
+        $beginDay = Get-Date -Hour 0 -Minute 00 -Second 00
+
+        $now = Get-Date
+        $duration = $now - $beginDay
+        $buildMinutesStamp = "{0:N0}" -f $duration.TotalMinutes
+        Write-Output $buildMinutesStamp
+
+        $ver = "$buildDay" + "." + "$buildMinutesStamp" + ".0"
         Write-Output "::set-output name=APP_VERSION::$ver"
 
     # Update the appxmanifest for SideLoad (and signing with PFX)
