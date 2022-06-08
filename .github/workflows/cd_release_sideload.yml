@@ -168,8 +168,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: "v.$env:APP_VERSION"
-        release_name: "Media File Manager v.$env:APP_VERSION"
+        tag_name: "v.${{ env.APP_VERSION }}"
+        release_name: "Media File Manager v.${{ env.APP_VERSION }}"
         draft: false
         prerelease: false
         body_path: .github\other\preview_releasebody.md
