@@ -13,9 +13,9 @@ env:
   WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
   WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
   NugetConfigPath: src\nuget.config
-  RID: win-x86
-  TargetPlatform: "x86"
-  UwpBundlePlatform: "x86"
+  RID: win-x64
+  TargetPlatform: "x64"
+  UwpBundlePlatform: "x64"
   Configuration: Release
   AppxPackageDir: 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\'
   AppxBundle: Always
@@ -168,8 +168,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: "v.$env:APP_VERSION"
-        release_name: "Media File Manager v.$env:APP_VERSION"
+        tag_name: "v.${{ env.APP_VERSION }}"
+        release_name: "Media File Manager v.${{ env.APP_VERSION }}"
         draft: false
         prerelease: false
         body_path: .github\other\preview_releasebody.md
