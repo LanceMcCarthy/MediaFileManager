@@ -171,7 +171,7 @@ jobs:
         tag_name: "v.${{ env.APP_VERSION }}"
         release_name: "Media File Manager v.${{ env.APP_VERSION }}"
         draft: false
-        prerelease: false
+        prerelease: true
         body_path: .github\other\preview_releasebody.md
 
     # Add SideLoad artifacts to GitHub Release (via https://github.com/actions/upload-release-asset)
