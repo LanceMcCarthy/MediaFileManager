@@ -1,4 +1,4 @@
-This release contains the preview release installer both SideLoad and StoreUpload app packages for Media File Manager.
+This prerelease contains the appinstaller file that you can use instead of the Microsoft Store.
 
 ## Installation
 Chose one of the following options to install this release.
@@ -7,10 +7,12 @@ Chose one of the following options to install this release.
 
 This option provides automatic update support and is the fastest and easiest way.
  
-1. Open [Media File Manager .NET 6 Preview](https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager_Net60/index.html) web page
-2. Click **Get the App** button.
-
-![Screenshot of Get the App button](https://raw.githubusercontent.com/LanceMcCarthy/MediaFileManager/main/.images/SideLoadPageSS.png)
+1. Open [Media File Manager](https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/index.html) web page.
+2. Expand the **Additional Links** section.
+  - ![expand additional links](https://user-images.githubusercontent.com/3520532/172673610-ada746e2-8f2f-4418-b79e-7a4723f8aee5.png)
+3. Right-click on the **App Installer File** link and select **Save-As** option.
+  - ![save as](https://user-images.githubusercontent.com/3520532/172675376-c80a44b3-bc93-405c-b377-caffc41a9bf7.png)
+4. Run the saved `PackageProject.appinstaller` file
 
 ### B) Advanced Option - Powershell
 
