@@ -17,8 +17,6 @@
 	    <Platforms>x86;x64;ARM64</Platforms>
         <PlatformTarget>AnyCPU</PlatformTarget>
         <Nullable>disable</Nullable>
-        <GenerateDocumentationFile>True</GenerateDocumentationFile>
-        <DocumentationFile></DocumentationFile>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -82,5 +80,8 @@
         <Content Include="Images\SplashScreenLogo.png">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\MediaFileManager.Common\MediaFileManager.Common.csproj" />
     </ItemGroup>
 </Project>
