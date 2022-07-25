@@ -86,35 +86,31 @@ jobs:
     
     # Install the .NET Core workload
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v2.1.0
       with:
         dotnet-version: '6.0'
     
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v1.1
       
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: DotNet Restore - solution
       run: dotnet restore ${{ env.SolutionPath }} --configfile ${{ env.NugetConfigPath }} --runtime "${{ env.RID }}"
       env:
-        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+        TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
     
     # In order to generate project.assets.json, we need to use nuget.exe for the wapproject
     - name: NuGet Restore - Wapp Project (to ensure assets.json is available)
       run: nuget restore ${{ env.WappProjectPath }} -ConfigFile ${{ env.NugetConfigPath }}
       env:
-        NuGetConfig_Path: src\nuget.config
-        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+        TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
 
     # Restore NuGet packages using the nuget config (package sources authenticate using environment variable and nuget.config)
     #- name: NuGet Restore - Solution
     #  run: dotnet restore ${{ env.SolutionPath }} --configfile=${{ env.NuGetConfigPath }} --runtime ${{ env.RID }}
     #  env:
-    #    TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-    #    TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+    #    TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
 
     # Restore the application
     - name:  Restore the Wpf application to populate the obj folder
