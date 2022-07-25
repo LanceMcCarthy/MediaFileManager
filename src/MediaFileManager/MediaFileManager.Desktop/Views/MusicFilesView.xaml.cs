@@ -1,5 +1,5 @@
-﻿using MediaFileManager.Desktop.Models;
-using MediaFileManager.Desktop.Models.Audio;
+﻿using MediaFileManager.Common.Models;
+using MediaFileManager.Common.Models.Audio;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Media;
+using MediaFileManager.Desktop.Helpers;
 
 namespace MediaFileManager.Desktop.Views
 {
@@ -66,9 +67,9 @@ namespace MediaFileManager.Desktop.Views
                 var tfile = TagLib.File.Create(mp3File);
 
                 var song = tfile.Tag.Title;
-                var artist = tfile.Tag.FirstArtist;
                 var album = tfile.Tag.Album;
-
+                var artist = tfile.Tag.FirstPerformer;
+                
                 // check if artist exists,
                 var matchingArtist = artists.FirstOrDefault(a => a.Name == artist);
 
@@ -191,9 +192,9 @@ namespace MediaFileManager.Desktop.Views
 
                             foreach (var song in album.Songs)
                             {
-                                currentPass = currentPass + 1;
+                                currentPass += 1;
 
-                                double percentComplete = (double)currentPass / (double)totalSongs;
+                                var percentComplete = (double)currentPass / totalSongs;
 
                                 var validSongName = ReplaceInvalidChars(song.Name);
 
@@ -228,9 +229,9 @@ namespace MediaFileManager.Desktop.Views
             if (string.IsNullOrEmpty(filename))
             {
                 filename = "MISSING";
-                Console.WriteLine("----------------------------------------------------------------------------------");
-                Console.WriteLine("|*** ALERT - input string was null, check artist/album/song for 'MISSING' name ***|");
-                Console.WriteLine("----------------------------------------------------------------------------------");
+                Console.WriteLine(@"----------------------------------------------------------------------------------");
+                Console.WriteLine(@"|*** ALERT - input string was null, check artist/album/song for 'MISSING' name ***|");
+                Console.WriteLine(@"----------------------------------------------------------------------------------");
             }
 
             return string.Join("_", filename.Split(Path.GetInvalidFileNameChars()));
@@ -267,7 +268,7 @@ namespace MediaFileManager.Desktop.Views
                 var message = new OutputMessage
                 {
                     Message = text,
-                    MessageColor = messageColor
+                    MessageColor = messageColor.ToSystemDrawingColor()
                 };
 
                 statusMessages.Add(message);
@@ -286,7 +287,7 @@ namespace MediaFileManager.Desktop.Views
                     var message = new OutputMessage
                     {
                         Message = text,
-                        MessageColor = messageColor
+                        MessageColor = messageColor.ToSystemDrawingColor()
                     };
 
                     statusMessages.Add(message);

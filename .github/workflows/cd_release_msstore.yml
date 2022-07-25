@@ -8,6 +8,20 @@ on:
     paths:
       - "src/**/*"
       - ".github/workflows/cd_release_msstore.yml"
+env:
+  Solution_Path: src\MediaFileManager\MediaFileManager.sln
+  WappProject_Path: src\MediaFileManager\PackageProject\PackageProject.wapproj
+  Wpf_Project_Path: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+  NugetConfigPath: src\nuget.config
+  RID: win-x64
+  TargetPlatform: "x64"
+  Configuration: Release
+  AppxPackageDirectory: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\
+  BuildMode: StoreUpload
+  AppxBundle: Always
+  UwpBundlePlatform: x64 #package bundles, eg. x86|x64|arm|arm64
+  AppxPackageSigningEnabled: False #microsoft signs a devcenter-submitted package
+  GenerateAppInstallerFile: False
 
 jobs:
   build:
@@ -73,67 +87,43 @@ jobs:
 
     # Install the .NET Core workload
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v2.1.0
       with:
         dotnet-version: '6.0'
         include-prerelease: True
 
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v1.1
       
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: DotNet Restore - Solution
       run: dotnet restore $env:SolutionPath --configfile $env:NugetConfigPath --runtime $env:RID
       env:
-        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
-        SolutionPath: src\MediaFileManager\MediaFileManager.sln
-        NugetConfigPath: src\nuget.config
-        RID: win-x86 
+        TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
         
     # In order to generate project.assets.json, we need to use nuget.exe for the wapproject
     - name: NuGet Restore - Wapp Project (to ensure assets.json is available)
       run: nuget restore $env:WappProject_Path -ConfigFile $env:NuGetConfig_Path
       env:
-        NuGetConfig_Path: src\nuget.config
-        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
-        WappProject_Path: src\MediaFileManager\PackageProject\PackageProject.wapproj
+        TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
         
     # Restore NuGet packages using the nuget config (package sources authenticate using environment variable and nuget.config)
     - name: NuGet Restore - Solution
       run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path --runtime $env:RID
       env:
-        RID: win-x86
-        Solution_Path: src\MediaFileManager\MediaFileManager.sln
-        NuGetConfig_Path: src\nuget.config
-        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }} # this env variable is used in the nuget.config
-        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }} # this env variable is used in the nuget.config
+        TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
 
     # Restore the WPF application
     - name:  Restore the Wpf application to populate the obj folder
       run: msbuild $env:Wpf_Project_Path /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID
-      env:
-        Configuration: Release
-        RID: win-x86
-        Wpf_Project_Path: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+
 
     # ************************| BUILD AND DISTRIBUTION |************************ #
-
-
 
     # Build using StoreUpload instructions, no code signing required (Microsoft signs it during certification)
     - name: Build wapproj for Microsoft Store
       run: msbuild $env:Solution_Path /p:AppxPackageDir=$env:AppxPackageDirectory /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled
-      env:
-        Solution_Path: src\MediaFileManager\MediaFileManager.sln
-        AppxPackageDirectory: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\
-        UwpBundlePlatform: x86 #package bundles, eg. x86|x64|arm|arm64
-        Configuration: Release
-        BuildMode: StoreUpload
-        AppxBundle: Always
-        AppxPackageSigningEnabled: False #microsoft signs a devcenter-submitted package
     
     # Use Store Broker to publish to Microsoft Store
     - name: Submit to Partner Center (aka DevCenter)
@@ -142,7 +132,6 @@ jobs:
         $appxuploadPath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:APP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
         ./.scripts/SubmitToMsftStore.ps1 $appxuploadPath
       env:
-        UwpBundlePlatform: x86 #package bundles, eg. x86|x64|arm|arm64
         PartnerCenterClientId: ${{ secrets.PARTNER_CENTER_CLIENT_ID }}
         PartnerCenterClientSecret: ${{ secrets.PARTNER_CENTER_CLIENT_SECRET }}
         PartnerCenterStoreId: 9PD3JFK7W5MB

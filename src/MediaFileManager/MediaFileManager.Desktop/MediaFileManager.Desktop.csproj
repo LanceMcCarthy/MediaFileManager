@@ -12,9 +12,11 @@
         <RepositoryUrl>https://github.com/LanceMcCarthy/MediaFileManager/blob/master/LICENSE</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <ApplicationIcon>Images\MainIcon.ico</ApplicationIcon>
-        <Platforms>x86|x64</Platforms>
         <ApplicationManifest>app.manifest</ApplicationManifest>
-        <RuntimeIdentifiers>win-x86;win-x64;</RuntimeIdentifiers>
+        <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+	    <Platforms>x86;x64;ARM64</Platforms>
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <Nullable>disable</Nullable>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -31,30 +33,30 @@
         <PackageReference Include="Microsoft.ProjectReunion" Version="0.8.11" />
         <PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="0.8.11" />
         <Manifest Include="$(ApplicationManifest)" />
-        <PackageReference Include="Telerik.Windows.Controls.Data.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Controls.Docking.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Controls.FileDialogs.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Controls.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Controls.GridView.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Controls.Input.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Controls.Navigation.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Controls.RichTextBox.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Data.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Documents.Core" Version="2022.2.428" />
-        <PackageReference Include="Telerik.Windows.Themes.Crystal.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Themes.Expression_Dark.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Themes.Fluent.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Themes.Green.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Themes.Material.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Themes.Office2013.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Themes.Office2016.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Themes.Summer.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Themes.Transparent.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Themes.Vista.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Themes.VisualStudio2013.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Themes.VisualStudio2019.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Themes.Windows7.for.Wpf" Version="2022.2.511" />
-        <PackageReference Include="Telerik.Windows.Themes.Windows8.for.Wpf" Version="2022.2.511" />
+        <PackageReference Include="Telerik.Windows.Controls.Data.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Controls.Docking.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Controls.FileDialogs.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Controls.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Controls.GridView.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Controls.Input.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Controls.Navigation.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Controls.RichTextBox.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Data.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Documents.Core" Version="2022.2.613" />
+        <PackageReference Include="Telerik.Windows.Themes.Crystal.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Themes.Expression_Dark.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Themes.Fluent.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Themes.Green.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Themes.Material.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Themes.Office2013.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Themes.Office2016.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Themes.Summer.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Themes.Transparent.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Themes.Vista.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Themes.VisualStudio2013.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Themes.VisualStudio2019.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Themes.Windows7.for.Wpf" Version="2022.2.621" />
+        <PackageReference Include="Telerik.Windows.Themes.Windows8.for.Wpf" Version="2022.2.621" />
     </ItemGroup>
 
     <ItemGroup>
@@ -78,5 +80,8 @@
         <Content Include="Images\SplashScreenLogo.png">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\MediaFileManager.Common\MediaFileManager.Common.csproj" />
     </ItemGroup>
 </Project>

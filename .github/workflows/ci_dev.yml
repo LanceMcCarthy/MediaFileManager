@@ -29,7 +29,7 @@ jobs:
     
     # Install the .NET 6 workload
     - name: Install .NET 6
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v2.1.0
       with:
         dotnet-version: '6.0'
 
@@ -41,22 +41,19 @@ jobs:
     - name: DotNet Restore
       run: dotnet restore $env:SolutionPath --configfile $env:NugetConfigPath --runtime $env:RID
       env:
-        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+        TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
 
     # In order to generate project.assets.json, we need to use nuget.exe for the wapproject
     - name: NuGet Restore Wapp Project (to ensure assets.json is available)
       run: nuget restore $env:WappProject_Path -ConfigFile $env:NugetConfigPath
       env:
-        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+        TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
 
     # Restore WPF project to populate the obj folder (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: Build the Wpf application to populate the obj folder
       run: msbuild $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID
       env:
-        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+        TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
 
     # Build the WAP project. BuildMode is set to CI so we do not have to generate actual packages.
     #- name: Build the Windows Application Packaging Project (wapproj) 
