@@ -36,20 +36,19 @@ jobs:
     # ******************| ASSEMBLY AND MANIFEST VERSIONING |********************* #
     
     # Create my own version number with a specific format using date. ex: 2020.805.1.0
-    - uses: Amadevus/pwsh-script@v2
+    - name: Generate version number with date and workflow Run Number
       id: version-creator
-      with:
-        script: |
-          $buildDay = Get-Date -Format "yyyy.Mdd"
-          $runNumber = ${{ env.GITHUB_RUN_NUMBER }}
-          $ver = $buildDay + "." + $runNumber + ".0"
-          Set-ActionVariable APP_VERSION $ver
+      run: |
+        $buildDay = Get-Date -Format "yyyy.Mdd"
+        $runNumber = "$env:GITHUB_RUN_NUMBER"
+        $ver = $buildDay + "." + $runNumber + ".0"
+        echo "::set-output name=APP_VERSION::$ver"
 
     # Update the appxmanifest for Microsoft Store
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "${{ env.APP_VERSION }}"
+        $manifest.Package.Identity.Version = "${{ steps.version-creator.outputs.APP_VERSION }}"
         $manifest.Package.Identity.Name = ${{ env.PackageIdentity_Name }}
         $manifest.Package.Identity.Publisher = ${{ env.PackageIdentity_Publisher }}
         $manifest.Package.Properties.DisplayName = ${{ env.PackageProperties_DisplayName }}
@@ -73,7 +72,7 @@ jobs:
               $verStart = $_.IndexOf("(")
               $verEnd = $_.IndexOf(")", $verStart)
               $origVersion = $_.SubString($verStart+2, $verEnd-$verStart-3)
-              $newVersion = "${{ env.APP_VERSION }}"
+              $newVersion = "${{ steps.version-creator.outputs.APP_VERSION }}"
               write-host "Setting AssemblyFileVersion from $origVersion to $newVersion"
               $_.Replace($origVersion, $newVersion)
             }  else {
@@ -83,7 +82,7 @@ jobs:
           $newfile | Set-Content $assemblyInfoPath -encoding "UTF8"
         }
         $assemblyInfoPath = "src\MediaFileManager\MediaFileManager.Desktop\Properties\AssemblyInfo.cs"
-        SetAssemblyFileVersion $assemblyInfoPath ${{ env.APP_VERSION }}
+        SetAssemblyFileVersion $assemblyInfoPath "${{ steps.version-creator.outputs.APP_VERSION }}"
 
     # ******************| TOOL INSTALL and DEPENDENCY RESTORE |********************* #
 
@@ -127,7 +126,7 @@ jobs:
     - name: Submit to Partner Center (aka DevCenter)
       shell: pwsh
       run: |
-        $appxuploadPath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + ${{ env.APP_VERSION }} + "_" + ${{ env.UwpBundlePlatform }} + "_bundle.appxupload"
+        $appxuploadPath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_${{ steps.version-creator.outputs.APP_VERSION }}_${{ env.UwpBundlePlatform }}_bundle.appxupload"
         ./.scripts/SubmitToMsftStore.ps1 $appxuploadPath
       env:
         PartnerCenterClientId: ${{ secrets.PARTNER_CENTER_CLIENT_ID }}

@@ -33,7 +33,7 @@ jobs:
       id: version-creator
       run: |
         $buildDay = Get-Date -Format "yyyy.Mdd"
-        $runNumber = ${{ env.GITHUB_RUN_NUMBER }}
+        $runNumber = "$env:GITHUB_RUN_NUMBER"
         $ver = $buildDay + "." + $runNumber + ".0"
         echo "::set-output name=APP_VERSION::$ver"
 
