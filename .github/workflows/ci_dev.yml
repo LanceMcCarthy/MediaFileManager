@@ -10,10 +10,8 @@ on:
       - ".github/workflows/ci_dev.yml"
 
 jobs:
-
   build_dev:
-
-    runs-on: windows-2022
+    runs-on: windows-latest
     env:
       TFM: net6.0-windows10.0.22621.0
       RID: win-x64
