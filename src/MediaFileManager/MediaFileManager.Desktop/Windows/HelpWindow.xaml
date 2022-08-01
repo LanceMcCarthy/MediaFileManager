@@ -10,12 +10,27 @@
                    Height="600"
                    Width="980">
     <Grid>
-        <telerik:RadRichTextBox x:Name="RichTextBox" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <telerik:RadRichTextBox x:Name="RichTextBox" 
+                                Grid.Row="0"/>
+
+        <!-- Need to figure out a way if this was installed via appinstaller or msft store
+             If appinstaller was used, then we can show a 'check for updates' button
+        
+        <telerik:RadButton Content="check for updates"
+                           Click="RadButton_Click"
+                           Margin="5"/>
+        -->
 
         <telerik:RadBusyIndicator x:Name="BusyIndicator"
                                   Visibility="Visible"
                                   IsBusy="True"
-                                  IsIndeterminate="True" />
+                                  IsIndeterminate="True" 
+                                  Grid.RowSpan="2"/>
     </Grid>
     
 </telerik:RadWindow>

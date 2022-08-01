@@ -38,21 +38,19 @@ jobs:
     # ******************| ASSEMBLY AND MANIFEST VERSIONING |********************* #
     
     # Create my own version number with a specific format using date. ex: 2020.805.1.0
-    - uses: Amadevus/pwsh-script@v2
+    - name: Generate version number with date and workflow Run Number
       id: version-creator
-      with:
-        script: |
-          $buildDay = Get-Date -Format "yyyy.Mdd"
-          $runNum = $env:GITHUB_RUN_NUMBER
-          $ver = "$buildDay" + "." + "$runNum" + ".0"
-          echo $ver
-          Set-ActionVariable APP_VERSION $ver
+      run: |
+        $buildDay = Get-Date -Format "yyyy.Mdd"
+        $runNumber = "$env:GITHUB_RUN_NUMBER"
+        $ver = $buildDay + "." + $runNumber + ".0"
+        echo "::set-output name=APP_VERSION::$ver"
 
     # Update the appxmanifest for SideLoad (and signing with PFX)
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = $env:APP_VERSION
+        $manifest.Package.Identity.Version = "${{ steps.version-creator.outputs.APP_VERSION }}"
         $manifest.Package.Identity.Name = "61469LanceLotSoftware.MediaFileManager"
         $manifest.Package.Identity.Publisher = 'CN="Lancelot Software, LLC", O="Lancelot Software, LLC", L="NORTH BILLERICA", S="Massachusetts", C="US"'
         $manifest.Package.Properties.DisplayName = "Media File Manager"
@@ -69,7 +67,7 @@ jobs:
               $verStart = $_.IndexOf("(")
               $verEnd = $_.IndexOf(")", $verStart)
               $origVersion = $_.SubString($verStart+2, $verEnd-$verStart-3)
-              $newVersion = "$env:APP_VERSION"
+              $newVersion = "${{ steps.version-creator.outputs.APP_VERSION }}"
               write-host "Setting AssemblyFileVersion from $origVersion to $newVersion"
               $_.Replace($origVersion, $newVersion)
             }  else {
@@ -79,42 +77,36 @@ jobs:
           $newfile | Set-Content $assemblyInfoPath -encoding "UTF8"
         }
         $assemblyInfoPath = "src\MediaFileManager\MediaFileManager.Desktop\Properties\AssemblyInfo.cs"
-        SetAssemblyFileVersion $assemblyInfoPath $env:APP_VERSION
+        SetAssemblyFileVersion $assemblyInfoPath "${{ steps.version-creator.outputs.APP_VERSION }}"
 
 
     # ******************| TOOL INSTALL and DEPENDENCY RESTORE |********************* #
     
     # Install the .NET Core workload
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v2.1.0
       with:
         dotnet-version: '6.0'
     
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v1.1
       
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: DotNet Restore - solution
       run: dotnet restore ${{ env.SolutionPath }} --configfile ${{ env.NugetConfigPath }} --runtime "${{ env.RID }}"
       env:
-        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+        TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
+
+    # Restore class library project to populate the obj folder
+    - name: Build the Class library
+      run: msbuild $env:CommonProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier="${{ env.RID }}"
     
     # In order to generate project.assets.json, we need to use nuget.exe for the wapproject
     - name: NuGet Restore - Wapp Project (to ensure assets.json is available)
       run: nuget restore ${{ env.WappProjectPath }} -ConfigFile ${{ env.NugetConfigPath }}
       env:
-        NuGetConfig_Path: src\nuget.config
-        TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-        TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
-
-    # Restore NuGet packages using the nuget config (package sources authenticate using environment variable and nuget.config)
-    #- name: NuGet Restore - Solution
-    #  run: dotnet restore ${{ env.SolutionPath }} --configfile=${{ env.NuGetConfigPath }} --runtime ${{ env.RID }}
-    #  env:
-    #    TELERIK_USERNAME: ${{ secrets.TELERIK_USERNAME }}
-    #    TELERIK_PASSWORD: ${{ secrets.TELERIK_PASSWORD }}
+        TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
 
     # Restore the application
     - name:  Restore the Wpf application to populate the obj folder
@@ -133,7 +125,7 @@ jobs:
     
     # Build using SideLoad and AppInstaller instructions (requires code signing)
     - name: Build wapproj for Sideloading
-      run: msbuild ${{ env.SolutionPath }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppInstallerUri=${{ env.AppInstUri }} /p:HoursBetweenUpdateChecks=6 /p:AppxPackageDir=${{ env.AppxPackageDir }} /p:Platform=${{ env.UwpBundlePlatform }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:PackageCertificateKeyFile=${{ env.SigningCertificate }} /p:PackageCertificatePassword=${{ env.CertPrivateKey }} /p:PackageCertificateThumbprint=${{ env.CertThumbprint }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }}
+      run: msbuild ${{ env.WappProjectPath }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppInstallerUri=${{ env.AppInstUri }} /p:HoursBetweenUpdateChecks=6 /p:AppxPackageDir=${{ env.AppxPackageDir }} /p:Platform=${{ env.UwpBundlePlatform }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:PackageCertificateKeyFile=${{ env.SigningCertificate }} /p:PackageCertificatePassword=${{ env.CertPrivateKey }} /p:PackageCertificateThumbprint=${{ env.CertThumbprint }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }}
       env:
         CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
         CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
@@ -168,10 +160,10 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: "v.${{ env.APP_VERSION }}"
-        release_name: "Media File Manager v.${{ env.APP_VERSION }}"
+        tag_name: "v.${{ steps.version-creator.outputs.APP_VERSION }}"
+        release_name: "Media File Manager v.${{ steps.version-creator.outputs.APP_VERSION }}"
         draft: false
-        prerelease: false
+        prerelease: true
         body_path: .github\other\preview_releasebody.md
 
     # Add SideLoad artifacts to GitHub Release (via https://github.com/actions/upload-release-asset)
