@@ -99,18 +99,16 @@ jobs:
       run: dotnet restore ${{ env.SolutionPath }} --configfile ${{ env.NugetConfigPath }} --runtime "${{ env.RID }}"
       env:
         TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
+
+    # Restore class library project to populate the obj folder
+    - name: Build the Class library
+      run: msbuild $env:CommonProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier="${{ env.RID }}"
     
     # In order to generate project.assets.json, we need to use nuget.exe for the wapproject
     - name: NuGet Restore - Wapp Project (to ensure assets.json is available)
       run: nuget restore ${{ env.WappProjectPath }} -ConfigFile ${{ env.NugetConfigPath }}
       env:
         TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
-
-    # Restore NuGet packages using the nuget config (package sources authenticate using environment variable and nuget.config)
-    #- name: NuGet Restore - Solution
-    #  run: dotnet restore ${{ env.SolutionPath }} --configfile=${{ env.NuGetConfigPath }} --runtime ${{ env.RID }}
-    #  env:
-    #    TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
 
     # Restore the application
     - name:  Restore the Wpf application to populate the obj folder

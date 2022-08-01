@@ -9,9 +9,9 @@ on:
       - "src/**/*"
       - ".github/workflows/cd_release_msstore.yml"
 env:
-  Solution_Path: src\MediaFileManager\MediaFileManager.sln
-  WappProject_Path: src\MediaFileManager\PackageProject\PackageProject.wapproj
-  Wpf_Project_Path: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+  SolutionPath: src\MediaFileManager\MediaFileManager.sln
+  WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
+  WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
   NugetConfigPath: src\nuget.config
   RID: win-x64
   TargetPlatform: "x64"
@@ -41,19 +41,19 @@ jobs:
       with:
         script: |
           $buildDay = Get-Date -Format "yyyy.Mdd"
-          $ver = $buildDay + "." + $env:GITHUB_RUN_NUMBER + ".0"
+          $ver = $buildDay + "." + ${{ env.GITHUB_RUN_NUMBER }} + ".0"
           Set-ActionVariable APP_VERSION $ver
 
     # Update the appxmanifest for Microsoft Store
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "$env:APP_VERSION"
-        $manifest.Package.Identity.Name = $env:PackageIdentity_Name
-        $manifest.Package.Identity.Publisher = $env:PackageIdentity_Publisher
-        $manifest.Package.Properties.DisplayName = $env:PackageProperties_DisplayName
-        $manifest.Package.Properties.PublisherDisplayName = $env:PackageProperties_PublisherDisplayName
-        $manifest.Package.Applications.Application.VisualElements.DisplayName = $env:ApplicationVisualElements_DisplayName
+        $manifest.Package.Identity.Version = "${{ env.APP_VERSION }}"
+        $manifest.Package.Identity.Name = ${{ env.PackageIdentity_Name }}
+        $manifest.Package.Identity.Publisher = ${{ env.PackageIdentity_Publisher }}
+        $manifest.Package.Properties.DisplayName = ${{ env.PackageProperties_DisplayName }}
+        $manifest.Package.Properties.PublisherDisplayName = ${{ env.PackageProperties_PublisherDisplayName }}
+        $manifest.Package.Applications.Application.VisualElements.DisplayName = ${{ env.ApplicationVisualElements_DisplayName }}
         $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
       env:
         PackageIdentity_Name: "61469LanceLotSoftware.MediaFileManager"
@@ -61,6 +61,7 @@ jobs:
         PackageProperties_DisplayName: "Media File Manager"
         PackageProperties_PublisherDisplayName: "Lancelot Software"
         ApplicationVisualElements_DisplayName: "Media File Manager"
+        TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
 
     # Updates the WPF project's assembly version number.
     - name: Update WPF Assembly version
@@ -71,7 +72,7 @@ jobs:
               $verStart = $_.IndexOf("(")
               $verEnd = $_.IndexOf(")", $verStart)
               $origVersion = $_.SubString($verStart+2, $verEnd-$verStart-3)
-              $newVersion = "$env:APP_VERSION"
+              $newVersion = "${{ env.APP_VERSION }}"
               write-host "Setting AssemblyFileVersion from $origVersion to $newVersion"
               $_.Replace($origVersion, $newVersion)
             }  else {
@@ -81,7 +82,7 @@ jobs:
           $newfile | Set-Content $assemblyInfoPath -encoding "UTF8"
         }
         $assemblyInfoPath = "src\MediaFileManager\MediaFileManager.Desktop\Properties\AssemblyInfo.cs"
-        SetAssemblyFileVersion $assemblyInfoPath $env:APP_VERSION
+        SetAssemblyFileVersion $assemblyInfoPath ${{ env.APP_VERSION }}
 
     # ******************| TOOL INSTALL and DEPENDENCY RESTORE |********************* #
 
@@ -98,38 +99,32 @@ jobs:
       
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: DotNet Restore - Solution
-      run: dotnet restore $env:SolutionPath --configfile $env:NugetConfigPath --runtime $env:RID
-      env:
-        TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
+      run: dotnet restore ${{ env.SolutionPath }} --configfile ${{ env.NugetConfigPath }} --runtime ${{ env.RID }}
         
     # In order to generate project.assets.json, we need to use nuget.exe for the wapproject
     - name: NuGet Restore - Wapp Project (to ensure assets.json is available)
-      run: nuget restore $env:WappProject_Path -ConfigFile $env:NuGetConfig_Path
-      env:
-        TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
+      run: nuget restore ${{ env.WappProjectPath }} -ConfigFile ${{ env.NuGetConfigPath }}
         
     # Restore NuGet packages using the nuget config (package sources authenticate using environment variable and nuget.config)
     - name: NuGet Restore - Solution
-      run: dotnet restore $env:Solution_Path --configfile=$env:NuGetConfig_Path --runtime $env:RID
-      env:
-        TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
+      run: dotnet restore ${{ env.SolutionPath }} --configfile=${{ env.NuGetConfigPath }} --runtime ${{ env.RID }}
 
     # Restore the WPF application
     - name:  Restore the Wpf application to populate the obj folder
-      run: msbuild $env:Wpf_Project_Path /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID
+      run: msbuild ${{ env.WpfProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier=${{ env.RID }}
 
 
     # ************************| BUILD AND DISTRIBUTION |************************ #
 
     # Build using StoreUpload instructions, no code signing required (Microsoft signs it during certification)
     - name: Build wapproj for Microsoft Store
-      run: msbuild $env:Solution_Path /p:AppxPackageDir=$env:AppxPackageDirectory /p:Platform=$env:UwpBundlePlatform /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled
+      run: msbuild ${{ env.WappProjectPath }} /p:AppxPackageDir=${{ env.AppxPackageDirectory }} /p:Platform=${{ env.UwpBundlePlatform }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }}
     
     # Use Store Broker to publish to Microsoft Store
     - name: Submit to Partner Center (aka DevCenter)
       shell: pwsh
       run: |
-        $appxuploadPath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + $env:APP_VERSION + "_" + $env:UwpBundlePlatform + "_bundle.appxupload"
+        $appxuploadPath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_" + ${{ env.APP_VERSION }} + "_" + ${{ env.UwpBundlePlatform }} + "_bundle.appxupload"
         ./.scripts/SubmitToMsftStore.ps1 $appxuploadPath
       env:
         PartnerCenterClientId: ${{ secrets.PARTNER_CENTER_CLIENT_ID }}
