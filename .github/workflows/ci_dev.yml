@@ -42,6 +42,8 @@ jobs:
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: DotNet Restore
       run: dotnet restore ${{ env.SolutionPath }} --configfile ${{ env.NugetConfigPath }} --runtime ${{ env.RID }}
+      env:
+        TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
 
     # Restore class library project to populate the obj folder
     - name: Build the Class library
@@ -57,9 +59,9 @@ jobs:
 
     # Build the WAP project. BuildMode is set to CI so we do not have to generate actual packages.
     - name: Build the Windows Application Packaging Project (wapproj) 
-     run: msbuild ${{ env.WappProjectPath }} /p:Configuration=${{ env.Configuration }} /p:Platform=${{ env.TargetPlatform }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }}
-     env:
-       TargetPlatform: x64
-       BuildMode: CI
-       AppxBundle: Never
-       AppxPackageSigningEnabled: False
+      run: msbuild ${{ env.WappProjectPath }} /p:Configuration=${{ env.Configuration }} /p:Platform=${{ env.TargetPlatform }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }}
+      env:
+        TargetPlatform: x64
+        BuildMode: CI
+        AppxBundle: Never
+        AppxPackageSigningEnabled: False
