@@ -55,12 +55,13 @@ jobs:
     - name: NuGet Restore Wapp Project (to ensure assets.json is available)
       run: nuget restore ${{ env.UwpProjectPath }} -ConfigFile ${{ env.NugetConfigPath }}
 
+    # skip WAP build in CI-dev workflow
     # Build the WAP project. BuildMode is set to CI so we do not have to generate actual packages.
-    - name: Build the Windows Application Packaging Project (wapproj) 
-      run: msbuild ${{ env.UwpProjectPath }} /p:Configuration=${{ env.Configuration }} /p:Platform=${{ env.TargetPlatform }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }}
-      env:
-        TargetPlatform: x64
-        BuildMode: CI
-        AppxBundle: Never
-        AppxPackageSigningEnabled: False
-        GenerateAppInstallerFile: False
+    # - name: Build the Windows Application Packaging Project (wapproj) 
+    #   run: msbuild ${{ env.UwpProjectPath }} /p:Configuration=${{ env.Configuration }} /p:Platform=${{ env.TargetPlatform }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }}
+    #   env:
+    #     TargetPlatform: x64
+    #     BuildMode: CI
+    #     AppxBundle: Never
+    #     AppxPackageSigningEnabled: False
+    #     GenerateAppInstallerFile: False
