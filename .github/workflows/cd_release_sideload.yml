@@ -127,7 +127,7 @@ jobs:
     
     # Build using SideLoad and AppInstaller instructions (requires code signing)
     - name: Build wapproj for Sideloading
-      run: msbuild ${{ env.SolutionPath }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppInstallerUri=${{ env.AppInstUri }} /p:HoursBetweenUpdateChecks=6 /p:AppxPackageDir=${{ env.AppxPackageDir }} /p:Platform=${{ env.UwpBundlePlatform }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:PackageCertificateKeyFile=${{ env.SigningCertificate }} /p:PackageCertificatePassword=${{ env.CertPrivateKey }} /p:PackageCertificateThumbprint=${{ env.CertThumbprint }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }}
+      run: msbuild ${{ env.WappProjectPath }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppInstallerUri=${{ env.AppInstUri }} /p:HoursBetweenUpdateChecks=6 /p:AppxPackageDir=${{ env.AppxPackageDir }} /p:Platform=${{ env.UwpBundlePlatform }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:PackageCertificateKeyFile=${{ env.SigningCertificate }} /p:PackageCertificatePassword=${{ env.CertPrivateKey }} /p:PackageCertificateThumbprint=${{ env.CertThumbprint }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }}
       env:
         CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
         CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}

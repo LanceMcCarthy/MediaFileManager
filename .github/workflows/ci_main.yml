@@ -16,7 +16,7 @@ jobs:
       TFM: net6.0-windows10.0.22621.0
       RID: win-x64
       CommonProjectPath: src\MediaFileManager\MediaFileManager.Common\MediaFileManager.Common.csproj
-      WappProject_Path: src\MediaFileManager\PackageProject\PackageProject.wapproj
+      WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
       WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       SolutionPath: src\MediaFileManager\MediaFileManager.sln
       NugetConfigPath: src\nuget.config
@@ -92,9 +92,10 @@ jobs:
 
     # Build the WAP project. BuildMode is set to CI so we do not have to generate actual packages.
     - name: Build the Windows Application Packaging Project (wapproj) 
-      run: msbuild ${{ env.WappProjectPath }} /p:Configuration=${{ env.Configuration }} /p:Platform=${{ env.TargetPlatform }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} 
+      run: msbuild ${{ env.WappProjectPath }} /p:Configuration=${{ env.Configuration }} /p:Platform=${{ env.TargetPlatform }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }}
       env:
         TargetPlatform: x64
         BuildMode: CI
         AppxBundle: Never
         AppxPackageSigningEnabled: False
+        GenerateAppInstallerFile: False

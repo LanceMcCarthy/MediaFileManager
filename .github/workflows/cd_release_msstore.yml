@@ -118,7 +118,9 @@ jobs:
 
     # Build using StoreUpload instructions, no code signing required (Microsoft signs it during certification)
     - name: Build wapproj for Microsoft Store
-      run: msbuild ${{ env.WappProjectPath }} /p:AppxPackageDir=${{ env.AppxPackageDirectory }} /p:Platform=${{ env.UwpBundlePlatform }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }}
+      run: msbuild ${{ env.WappProjectPath }} /p:AppxPackageDir=${{ env.AppxPackageDirectory }} /p:Platform=${{ env.UwpBundlePlatform }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }}
+      env:
+        GenerateAppInstallerFile: False
     
     # Use Store Broker to publish to Microsoft Store
     - name: Submit to Partner Center (aka DevCenter)
