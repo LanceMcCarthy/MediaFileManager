@@ -8,25 +8,27 @@ on:
     paths:
       - "src/**/*"
       - ".github/workflows/cd_release_msstore.yml"
-env:
-  SolutionPath: src\MediaFileManager\MediaFileManager.sln
-  WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
-  WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
-  NugetConfigPath: src\nuget.config
-  RID: win-x64
-  TargetPlatform: "x64"
-  Configuration: Release
-  AppxPackageDirectory: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\
-  BuildMode: StoreUpload
-  AppxBundle: Always
-  UwpBundlePlatform: x64 #package bundles, eg. x86|x64|arm|arm64
-  AppxPackageSigningEnabled: False #microsoft signs a devcenter-submitted package
-  GenerateAppInstallerFile: False
 
 jobs:
   build:
     runs-on: windows-latest
-
+    env:
+      SolutionPath: src\MediaFileManager\MediaFileManager.sln
+      CommonProjectPath: src\MediaFileManager\MediaFileManager.Common\MediaFileManager.Common.csproj
+      WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
+      WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+      NugetConfigPath: src\nuget.config
+      RID: win-x64
+      TargetPlatform: "x64"
+      Configuration: Release
+      AppxPackageDirectory: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\
+      BuildMode: StoreUpload
+      AppxBundle: Always
+      UwpBundlePlatform: x64 #package bundles, eg. x86|x64|arm|arm64
+      AppxPackageSigningEnabled: False #microsoft signs a devcenter-submitted package
+      GenerateAppInstallerFile: False
+      TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
+    
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -100,15 +102,15 @@ jobs:
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: DotNet Restore - Solution
       run: dotnet restore ${{ env.SolutionPath }} --configfile ${{ env.NugetConfigPath }} --runtime ${{ env.RID }}
+
+    # Restore class library project to populate the obj folder
+    - name: Build the Class library
+      run: msbuild $env:CommonProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier="${{ env.RID }}"
         
     # In order to generate project.assets.json, we need to use nuget.exe for the wapproject
     - name: NuGet Restore - Wapp Project (to ensure assets.json is available)
       run: nuget restore ${{ env.WappProjectPath }} -ConfigFile ${{ env.NuGetConfigPath }}
         
-    # Restore NuGet packages using the nuget config (package sources authenticate using environment variable and nuget.config)
-    - name: NuGet Restore - Solution
-      run: dotnet restore ${{ env.SolutionPath }} --configfile=${{ env.NuGetConfigPath }} --runtime ${{ env.RID }}
-
     # Restore the WPF application
     - name:  Restore the Wpf application to populate the obj folder
       run: msbuild ${{ env.WpfProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier=${{ env.RID }}
