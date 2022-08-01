@@ -41,7 +41,8 @@ jobs:
       with:
         script: |
           $buildDay = Get-Date -Format "yyyy.Mdd"
-          $ver = $buildDay + "." + ${{ env.GITHUB_RUN_NUMBER }} + ".0"
+          $runNumber = ${{ env.GITHUB_RUN_NUMBER }}
+          $ver = $buildDay + "." + $runNumber + ".0"
           Set-ActionVariable APP_VERSION $ver
 
     # Update the appxmanifest for Microsoft Store
