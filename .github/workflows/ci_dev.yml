@@ -10,16 +10,18 @@ on:
       - ".github/workflows/ci_dev.yml"
 
 jobs:
-  build:
-    runs-on: windows-2022
+  build_dev:
+    runs-on: windows-latest
     env:
-      TFM: net6.0-windows10.0.18362.0
+      TFM: net6.0-windows10.0.22621.0
       RID: win-x64
-      ProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+      CommonProjectPath: src\MediaFileManager\MediaFileManager.Common\MediaFileManager.Common.csproj
+      WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       SolutionPath: src\MediaFileManager\MediaFileManager.sln
-      WappProject_Path: src\MediaFileManager\PackageProject\PackageProject.wapproj
+      UwpProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
       NugetConfigPath: src\nuget.config
       Configuration: Debug
+      TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
     
     steps:
     - name: Checkout
@@ -39,27 +41,27 @@ jobs:
 
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: DotNet Restore
-      run: dotnet restore $env:SolutionPath --configfile $env:NugetConfigPath --runtime $env:RID
-      env:
-        TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
+      run: dotnet restore ${{ env.SolutionPath }} --configfile ${{ env.NugetConfigPath }} --runtime ${{ env.RID }}
+
+    # Restore class library project to populate the obj folder
+    - name: Build the Class library
+      run: msbuild ${{ env.CommonProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier=${{ env.RID }}
+
+    # Restore WPF project to populate the obj folder
+    - name: Build the Wpf project
+      run: msbuild ${{ env.WpfProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier=${{ env.RID }}
 
     # In order to generate project.assets.json, we need to use nuget.exe for the wapproject
     - name: NuGet Restore Wapp Project (to ensure assets.json is available)
-      run: nuget restore $env:WappProject_Path -ConfigFile $env:NugetConfigPath
-      env:
-        TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
+      run: nuget restore ${{ env.UwpProjectPath }} -ConfigFile ${{ env.NugetConfigPath }}
 
-    # Restore WPF project to populate the obj folder (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
-    - name: Build the Wpf application to populate the obj folder
-      run: msbuild $env:ProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier=$env:RID
-      env:
-        TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
-
+    # skip WAP build in CI-dev workflow
     # Build the WAP project. BuildMode is set to CI so we do not have to generate actual packages.
-    #- name: Build the Windows Application Packaging Project (wapproj) 
-    #  run: msbuild $env:WappProject_Path /p:Configuration=$env:Configuration /p:Platform=$env:TargetPlatform /p:UapAppxPackageBuildMode=$env:BuildMode /p:AppxBundle=$env:AppxBundle /p:AppxPackageSigningEnabled=$env:AppxPackageSigningEnabled 
-    #  env:
-    #    TargetPlatform: x64
-    #    BuildMode: CI
-    #    AppxBundle: Never
-    #    AppxPackageSigningEnabled: False
+    # - name: Build the Windows Application Packaging Project (wapproj) 
+    #   run: msbuild ${{ env.UwpProjectPath }} /p:Configuration=${{ env.Configuration }} /p:Platform=${{ env.TargetPlatform }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }}
+    #   env:
+    #     TargetPlatform: x64
+    #     BuildMode: CI
+    #     AppxBundle: Never
+    #     AppxPackageSigningEnabled: False
+    #     GenerateAppInstallerFile: False

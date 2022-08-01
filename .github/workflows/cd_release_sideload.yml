@@ -99,18 +99,16 @@ jobs:
       run: dotnet restore ${{ env.SolutionPath }} --configfile ${{ env.NugetConfigPath }} --runtime "${{ env.RID }}"
       env:
         TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
+
+    # Restore class library project to populate the obj folder
+    - name: Build the Class library
+      run: msbuild $env:CommonProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier="${{ env.RID }}"
     
     # In order to generate project.assets.json, we need to use nuget.exe for the wapproject
     - name: NuGet Restore - Wapp Project (to ensure assets.json is available)
       run: nuget restore ${{ env.WappProjectPath }} -ConfigFile ${{ env.NugetConfigPath }}
       env:
         TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
-
-    # Restore NuGet packages using the nuget config (package sources authenticate using environment variable and nuget.config)
-    #- name: NuGet Restore - Solution
-    #  run: dotnet restore ${{ env.SolutionPath }} --configfile=${{ env.NuGetConfigPath }} --runtime ${{ env.RID }}
-    #  env:
-    #    TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
 
     # Restore the application
     - name:  Restore the Wpf application to populate the obj folder
@@ -129,7 +127,7 @@ jobs:
     
     # Build using SideLoad and AppInstaller instructions (requires code signing)
     - name: Build wapproj for Sideloading
-      run: msbuild ${{ env.SolutionPath }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppInstallerUri=${{ env.AppInstUri }} /p:HoursBetweenUpdateChecks=6 /p:AppxPackageDir=${{ env.AppxPackageDir }} /p:Platform=${{ env.UwpBundlePlatform }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:PackageCertificateKeyFile=${{ env.SigningCertificate }} /p:PackageCertificatePassword=${{ env.CertPrivateKey }} /p:PackageCertificateThumbprint=${{ env.CertThumbprint }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }}
+      run: msbuild ${{ env.WappProjectPath }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppInstallerUri=${{ env.AppInstUri }} /p:HoursBetweenUpdateChecks=6 /p:AppxPackageDir=${{ env.AppxPackageDir }} /p:Platform=${{ env.UwpBundlePlatform }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:PackageCertificateKeyFile=${{ env.SigningCertificate }} /p:PackageCertificatePassword=${{ env.CertPrivateKey }} /p:PackageCertificateThumbprint=${{ env.CertThumbprint }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }}
       env:
         CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
         CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
