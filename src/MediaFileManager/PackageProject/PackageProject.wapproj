@@ -43,12 +43,12 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <EntryPointProjectUniqueName>..\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj</EntryPointProjectUniqueName>
     <PackageCertificateThumbprint>F59E815B12EB302AFB967D855BDEC315D27DB6B3</PackageCertificateThumbprint>
-    <GenerateAppInstallerFile>True</GenerateAppInstallerFile>
+    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
-    <AppxBundlePlatforms>x64</AppxBundlePlatforms>
+    <AppxBundlePlatforms>x64|x86|arm|arm64</AppxBundlePlatforms>
     <AppInstallerUpdateFrequency>12</AppInstallerUpdateFrequency>
     <AppInstallerCheckForUpdateFrequency>Hourly</AppInstallerCheckForUpdateFrequency>
-    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+    <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
     <GenerateTestArtifacts>False</GenerateTestArtifacts>
     <HoursBetweenUpdateChecks>12</HoursBetweenUpdateChecks>
