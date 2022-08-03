@@ -125,8 +125,10 @@ jobs:
     - name: Submit to Partner Center (aka DevCenter)
       shell: pwsh
       run: |
-        $appxuploadPath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_${{ steps.version-creator.outputs.APP_VERSION }}_${{ env.AppxBundlePlatforms }}_bundle.msixupload"
-        ./.scripts/SubmitToMsftStore.ps1 $appxuploadPath
+        # replace pipe operator with underscores (e.g. 'x86|x64|arm64' becomes 'x86_x64_arm64' and filename safe)
+        $bundlePlatformsSafe = "${{ env.AppxBundlePlatforms }}".Replace("|", "_")
+        $uploadBundlePath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_${{ steps.version-creator.outputs.APP_VERSION }}_" + $bundlePlatformsSafe + "_bundle.msixupload"
+        ./.scripts/SubmitToMsftStore.ps1 $uploadBundlePath
       env:
         PartnerCenterClientId: ${{ secrets.PARTNER_CENTER_CLIENT_ID }}
         PartnerCenterClientSecret: ${{ secrets.PARTNER_CENTER_CLIENT_SECRET }}
