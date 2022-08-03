@@ -19,12 +19,12 @@ jobs:
       WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       NugetConfigPath: src\nuget.config
       RID: win-x64
-      TargetPlatform: "x64"
+      TargetPlatform: x64
       Configuration: Release
       AppxPackageDirectory: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\
       BuildMode: StoreUpload
       AppxBundle: Always
-      UwpBundlePlatform: x64 #package bundles, eg. x86|x64|arm|arm64
+      AppxBundlePlatforms: x86|x64|arm64 #package bundles, eg. x86|x64|arm|arm64
       AppxPackageSigningEnabled: False #microsoft signs a devcenter-submitted package
       GenerateAppInstallerFile: False
       TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
@@ -51,11 +51,11 @@ jobs:
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
         $manifest.Package.Identity.Version = "${{ steps.version-creator.outputs.APP_VERSION }}"
-        $manifest.Package.Identity.Name = ${{ env.PackageIdentity_Name }}
-        $manifest.Package.Identity.Publisher = ${{ env.PackageIdentity_Publisher }}
-        $manifest.Package.Properties.DisplayName = ${{ env.PackageProperties_DisplayName }}
-        $manifest.Package.Properties.PublisherDisplayName = ${{ env.PackageProperties_PublisherDisplayName }}
-        $manifest.Package.Applications.Application.VisualElements.DisplayName = ${{ env.ApplicationVisualElements_DisplayName }}
+        $manifest.Package.Identity.Name = "${{ env.PackageIdentity_Name }}"
+        $manifest.Package.Identity.Publisher = "${{ env.PackageIdentity_Publisher }}"
+        $manifest.Package.Properties.DisplayName = "${{ env.PackageProperties_DisplayName }}"
+        $manifest.Package.Properties.PublisherDisplayName = "${{ env.PackageProperties_PublisherDisplayName }}"
+        $manifest.Package.Applications.Application.VisualElements.DisplayName = "${{ env.ApplicationVisualElements_DisplayName }}"
         $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
       env:
         PackageIdentity_Name: "61469LanceLotSoftware.MediaFileManager"
@@ -63,7 +63,6 @@ jobs:
         PackageProperties_DisplayName: "Media File Manager"
         PackageProperties_PublisherDisplayName: "Lancelot Software"
         ApplicationVisualElements_DisplayName: "Media File Manager"
-        TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
 
     # Updates the WPF project's assembly version number.
     - name: Update WPF Assembly version
@@ -120,15 +119,13 @@ jobs:
 
     # Build using StoreUpload instructions, no code signing required (Microsoft signs it during certification)
     - name: Build wapproj for Microsoft Store
-      run: msbuild ${{ env.SolutionPath }} /p:AppxPackageDir=${{ env.AppxPackageDirectory }} /p:Platform=${{ env.UwpBundlePlatform }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }}
-      env:
-        GenerateAppInstallerFile: False
+      run: msbuild "${{ env.SolutionPath }}" /p:AppxPackageDir="${{ env.AppxPackageDirectory }}" /p:Platform="${{ env.TargetPlatform }}" /p:AppxBundlePlatforms="${{ env.AppxBundlePlatforms }}" /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }}  /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }}
     
     # Use Store Broker to publish to Microsoft Store
     - name: Submit to Partner Center (aka DevCenter)
       shell: pwsh
       run: |
-        $appxuploadPath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_${{ steps.version-creator.outputs.APP_VERSION }}_${{ env.UwpBundlePlatform }}_bundle.appxupload"
+        $appxuploadPath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_${{ steps.version-creator.outputs.APP_VERSION }}_${{ env.AppxBundlePlatforms }}_bundle.appxupload"
         ./.scripts/SubmitToMsftStore.ps1 $appxuploadPath
       env:
         PartnerCenterClientId: ${{ secrets.PARTNER_CENTER_CLIENT_ID }}
