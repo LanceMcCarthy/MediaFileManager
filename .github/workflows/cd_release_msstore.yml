@@ -125,7 +125,7 @@ jobs:
     - name: Submit to Partner Center (aka DevCenter)
       shell: pwsh
       run: |
-        $appxuploadPath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_${{ steps.version-creator.outputs.APP_VERSION }}_${{ env.AppxBundlePlatforms }}_bundle.appxupload"
+        $appxuploadPath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_${{ steps.version-creator.outputs.APP_VERSION }}_${{ env.AppxBundlePlatforms }}_bundle.msixupload"
         ./.scripts/SubmitToMsftStore.ps1 $appxuploadPath
       env:
         PartnerCenterClientId: ${{ secrets.PARTNER_CENTER_CLIENT_ID }}
