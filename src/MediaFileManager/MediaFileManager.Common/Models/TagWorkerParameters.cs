@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using MediaFileManager.Common.Models.AudioBook;
 
-namespace MediaFileManager.Desktop.Models
+namespace MediaFileManager.Common.Models
 {
     public class TagWorkerParameters
     {
