@@ -33,8 +33,8 @@
         <PackageReference Include="Microsoft.Windows.CsWinRT" Version="1.6.5" />
         <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.22621.2" />
         <PackageReference Include="taglib-sharp-netstandard2.0" Version="2.1.0" />
-        <PackageReference Include="Microsoft.ProjectReunion" Version="0.8.11" />
-        <PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="0.8.11" />
+        <PackageReference Include="Microsoft.ProjectReunion" Version="0.8.12" />
+        <PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="0.8.12" />
         <Manifest Include="$(ApplicationManifest)" />
         <PackageReference Include="Telerik.Windows.Controls.Data.for.Wpf" Version="2022.2.621" />
         <PackageReference Include="Telerik.Windows.Controls.Docking.for.Wpf" Version="2022.2.621" />
