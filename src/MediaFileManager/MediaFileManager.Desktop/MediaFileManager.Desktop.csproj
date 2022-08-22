@@ -30,7 +30,7 @@
         <PackageReference Include="MarkdownSharp" Version="2.0.5" />
         <PackageReference Include="Microsoft.AppCenter.Analytics" Version="4.5.3" />
         <PackageReference Include="Microsoft.AppCenter.Crashes" Version="4.5.3" />
-        <PackageReference Include="Microsoft.Windows.CsWinRT" Version="1.6.5" />
+        <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
         <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.22621.2" />
         <PackageReference Include="taglib-sharp-netstandard2.0" Version="2.1.0" />
         <PackageReference Include="Microsoft.ProjectReunion" Version="0.8.12" />
