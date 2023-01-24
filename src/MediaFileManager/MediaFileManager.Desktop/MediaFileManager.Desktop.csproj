@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
-	    <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
+        <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
 	    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
         <RootNamespace>MediaFileManager.Desktop</RootNamespace>
         <AssemblyName>MediaFileManager.Desktop</AssemblyName>
@@ -35,30 +34,30 @@
         <PackageReference Include="Microsoft.ProjectReunion" Version="0.8.12" />
         <PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="0.8.12" />
         <Manifest Include="$(ApplicationManifest)" />
-        <PackageReference Include="Telerik.Windows.Controls.Data.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Controls.Docking.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Controls.FileDialogs.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Controls.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Controls.GridView.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Controls.Input.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Controls.Navigation.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Controls.RichTextBox.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Data.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Documents.Core" Version="2022.3.906" />
-        <PackageReference Include="Telerik.Windows.Themes.Crystal.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Themes.Expression_Dark.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Themes.Fluent.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Themes.Green.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Themes.Material.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Themes.Office2013.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Themes.Office2016.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Themes.Summer.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Themes.Transparent.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Themes.Vista.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Themes.VisualStudio2013.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Themes.VisualStudio2019.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Themes.Windows7.for.Wpf" Version="2022.3.912" />
-        <PackageReference Include="Telerik.Windows.Themes.Windows8.for.Wpf" Version="2022.3.912" />
+        <PackageReference Include="Telerik.Windows.Controls.Data.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Controls.Docking.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Controls.FileDialogs.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Controls.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Controls.GridView.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Controls.Input.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Controls.Navigation.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Controls.RichTextBox.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Data.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Documents.Core" Version="2023.1.104" />
+        <PackageReference Include="Telerik.Windows.Themes.Crystal.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Themes.Expression_Dark.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Themes.Fluent.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Themes.Green.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Themes.Material.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Themes.Office2013.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Themes.Office2016.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Themes.Summer.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Themes.Transparent.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Themes.Vista.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Themes.VisualStudio2013.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Themes.VisualStudio2019.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Themes.Windows7.for.Wpf" Version="2023.1.117" />
+        <PackageReference Include="Telerik.Windows.Themes.Windows8.for.Wpf" Version="2023.1.117" />
     </ItemGroup>
 
     <ItemGroup>
