@@ -13,7 +13,7 @@ jobs:
   build:
     runs-on: windows-2022
     env:
-      TFM: net6.0-windows10.0.22621.0
+      TFM: net7.0-windows10.0.22621.0
       RID: win-x64
       CommonProjectPath: src\MediaFileManager\MediaFileManager.Common\MediaFileManager.Common.csproj
       WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
@@ -25,7 +25,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
     
@@ -67,9 +67,9 @@ jobs:
 
     # Install the .NET Core workload
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v2.1.0
+      uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '6.0'
+        dotnet-version: '7.0'
 
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
