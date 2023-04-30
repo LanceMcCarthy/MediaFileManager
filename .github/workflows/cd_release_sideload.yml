@@ -95,7 +95,7 @@ jobs:
     
     # Build using SideLoad and AppInstaller instructions (requires code signing)
     - name: Build wapproj for Sideloading
-      run: msbuild ${{ env.WappProjectPath }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppInstallerUri=${{ env.AppInstUri }} /p:HoursBetweenUpdateChecks=${{ env.HoursBetweenUpdateChecks }} /p:AppxPackageDir=${{ env.AppxPackageDir }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:PackageCertificateKeyFile=${{ env.SigningCertificate }} /p:PackageCertificatePassword=${{ env.CertPrivateKey }} /p:PackageCertificateThumbprint=${{ env.CertThumbprint }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:Platform=${{ env.TargetPlatform }} /p:AppxBundlePlatforms="${{ env.BundlePlatforms }}"
+      run: msbuild ${{ env.WappProjectPath }} /t:Restore /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppInstallerUri=${{ env.AppInstUri }} /p:HoursBetweenUpdateChecks=${{ env.HoursBetweenUpdateChecks }} /p:AppxPackageDir=${{ env.AppxPackageDir }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:PackageCertificateKeyFile=${{ env.SigningCertificate }} /p:PackageCertificatePassword=${{ env.CertPrivateKey }} /p:PackageCertificateThumbprint=${{ env.CertThumbprint }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:Platform=${{ env.TargetPlatform }} /p:AppxBundlePlatforms="${{ env.BundlePlatforms }}"
       env:
         WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
         CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
