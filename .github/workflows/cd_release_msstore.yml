@@ -100,11 +100,15 @@ jobs:
         CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
         HoursBetweenUpdateChecks: 6
         AppxBundle: Always
-        AppxPackageDir: 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\'
         AppxPackageSigningEnabled: False
         GenerateAppInstallerFile: False
         BuildMode: StoreUpload
         AppInstUri: 'https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/'
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: store-artifacts
+        path: ${{ env.AppxPackageDirectory }}
 
     # Use Store Broker to publish to Microsoft Store
     - name: Submit to Partner Center (aka DevCenter)
