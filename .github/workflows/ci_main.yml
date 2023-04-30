@@ -13,9 +13,6 @@ jobs:
   build:
     runs-on: windows-2022
     env:
-      TFM: net7.0-windows10.0.22621.0
-      RID: win-x64
-      WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       NugetConfigPath: src\nuget.config
       Configuration: Release
       TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
@@ -74,6 +71,7 @@ jobs:
     - name: Build the Windows Application Packaging Project (wapproj) 
       run: msbuild ${{ env.WappProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:Platform=${{ env.TargetPlatform }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppxBundlePlatforms="${{ env.BundlePlatforms }}"
       env:
+        WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
         TargetPlatform: "x64"
         BuildMode: CI
         BundlePlatforms: "x86|x64|ARM|ARM64"
