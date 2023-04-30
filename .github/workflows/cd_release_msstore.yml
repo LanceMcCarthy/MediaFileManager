@@ -13,17 +13,10 @@ jobs:
   build:
     runs-on: windows-latest
     env:
-      WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
       NugetConfigPath: src\nuget.config
-      RID: win-x64
-      TargetPlatform: x64
       Configuration: Release
+      BundlePlatforms: "x86|x64|ARM|ARM64"
       AppxPackageDirectory: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\
-      BuildMode: StoreUpload
-      AppxBundle: Always
-      AppxBundlePlatforms: x86|x64|ARM|ARM64
-      AppxPackageSigningEnabled: False # microsoft signs a devcenter-submitted package
-      GenerateAppInstallerFile: False
       TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
     
     steps:
@@ -100,13 +93,24 @@ jobs:
 
     # Build using StoreUpload instructions, no code signing required (Microsoft signs it during certification)
     - name: Build wapproj for Microsoft Store
-      run: msbuild "${{ env.WappProjectPath }}" /p:AppxPackageDir="${{ env.AppxPackageDirectory }}" /p:AppxBundlePlatforms="${{ env.AppxBundlePlatforms }}" /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }}  /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }}
-    
+      run: msbuild "${{ env.WappProjectPath }}" /t:Restore /p:AppxPackageDir="${{ env.AppxPackageDirectory }}" /p:AppxBundlePlatforms="${{ env.BundlePlatforms }}" /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }}  /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }}
+      env:
+        WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
+        CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
+        CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
+        HoursBetweenUpdateChecks: 6
+        AppxBundle: Always
+        AppxPackageDir: 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\'
+        AppxPackageSigningEnabled: False
+        GenerateAppInstallerFile: False
+        BuildMode: StoreUpload
+        AppInstUri: 'https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/'
+
     # Use Store Broker to publish to Microsoft Store
     - name: Submit to Partner Center (aka DevCenter)
       shell: pwsh
       run: |
-        $bundlePlatformsSafe = "${{ env.AppxBundlePlatforms }}".Replace("|", "_")
+        $bundlePlatformsSafe = "${{ env.BundlePlatforms }}".Replace("|", "_")
         $uploadBundlePath = "D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\PackageProject_${{ steps.version-creator.outputs.APP_VERSION }}_" + $bundlePlatformsSafe + "_bundle.msixupload"
         ./.scripts/SubmitToMsftStore.ps1 $uploadBundlePath
       env:
