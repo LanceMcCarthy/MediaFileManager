@@ -24,7 +24,7 @@ jobs:
       AppxPackageDirectory: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\
       BuildMode: StoreUpload
       AppxBundle: Always
-      AppxBundlePlatforms: x86|x64|arm64 #package bundles, eg. x86|x64|arm|arm64
+      AppxBundlePlatforms: x86|x64|arm|arm64 #package bundles, eg. x86|x64|arm|arm64
       AppxPackageSigningEnabled: False #microsoft signs a devcenter-submitted package
       GenerateAppInstallerFile: False
       TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
@@ -95,7 +95,7 @@ jobs:
 
     # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1.1
+      uses: microsoft/setup-msbuild@v1.3.1
       
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: DotNet Restore - Solution
@@ -118,7 +118,7 @@ jobs:
 
     # Build using StoreUpload instructions, no code signing required (Microsoft signs it during certification)
     - name: Build wapproj for Microsoft Store
-      run: msbuild "${{ env.SolutionPath }}" /p:AppxPackageDir="${{ env.AppxPackageDirectory }}" /p:Platform="${{ env.TargetPlatform }}" /p:AppxBundlePlatforms="${{ env.AppxBundlePlatforms }}" /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }}  /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }}
+      run: msbuild "${{ env.SolutionPath }}" /p:AppxPackageDir="${{ env.AppxPackageDirectory }}" /p:AppxBundlePlatforms="${{ env.AppxBundlePlatforms }}" /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }}  /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }}
     
     # Use Store Broker to publish to Microsoft Store
     - name: Submit to Partner Center (aka DevCenter)
