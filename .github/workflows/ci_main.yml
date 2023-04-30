@@ -98,7 +98,7 @@ jobs:
     - name: Build the Windows Application Packaging Project (wapproj) 
       run: msbuild ${{ env.WappProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:Platform=${{ env.TargetPlatform }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }}
       env:
-        TargetPlatform: x64 | x86 | ARM | ARM64
+        TargetPlatform: "x64 | x86 | ARM | ARM64"
         BuildMode: CI
         AppxBundle: Never
         AppxPackageSigningEnabled: False
