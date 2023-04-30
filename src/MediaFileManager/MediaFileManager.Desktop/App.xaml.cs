@@ -2,12 +2,7 @@
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media;
-using MediaFileManager.Desktop.UserControls;
-using Telerik.Windows.Controls.SplashScreen;
 
 namespace MediaFileManager.Desktop
 {
@@ -21,20 +16,6 @@ namespace MediaFileManager.Desktop
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Irrelevant")]
         protected override async void OnStartup(StartupEventArgs e)
         {
-            var dataContext = (SplashScreenDataContext)Telerik.Windows.Controls.RadSplashScreenManager.SplashScreenDataContext;
-            dataContext.ImagePath = "/MediaFileManager.Desktop;component/Images/SplashScreenLogo.png";
-            dataContext.ImageWidth = 600;
-            dataContext.ImageHeight = 400;
-            dataContext.ImageStretch = Stretch.UniformToFill;
-
-            dataContext.Content = "Loading Media File Manager...";
-            
-            dataContext.IsIndeterminate = false;
-            dataContext.MinValue = 0;
-            dataContext.MaxValue = 100;
-
-            Telerik.Windows.Controls.RadSplashScreenManager.Show<LoadingControl>();
-
             // AppCenter
             AppCenter.Start(MediaFileManager.Desktop.Properties.Settings.Default.AppCenterAnalyticsKey, 
                 typeof(Analytics), 
@@ -67,29 +48,6 @@ namespace MediaFileManager.Desktop
                         break;
                 }
             }
-
-            // Temporarily pausing 5 seconds for the loading indicator, will be used for real data in the future
-            for (var i = 0; i < 100; i++)
-            {
-                dataContext.ProgressValue = i;
-
-                await Task.Delay(20);
-
-                if (i < 40)
-                {
-                    dataContext.Footer = "Hi! Loading resources, this will be quick.";
-                }
-                else if (i < 80)
-                {
-                    dataContext.Footer = "Just a little bit more...";
-                }
-                else
-                {
-                    dataContext.Footer = "Finishing up...";
-                }
-            }
-
-            Telerik.Windows.Controls.RadSplashScreenManager.Close();
 
             base.OnStartup(e);
         }

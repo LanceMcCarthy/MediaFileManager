@@ -13,30 +13,18 @@ jobs:
   build:
     runs-on: windows-latest
     env:
-      SolutionPath: src\MediaFileManager\MediaFileManager.sln
-      CommonProjectPath: src\MediaFileManager\MediaFileManager.Common\MediaFileManager.Common.csproj
-      WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
-      WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       NugetConfigPath: src\nuget.config
-      RID: win-x64
-      TargetPlatform: "x64"
-      UwpBundlePlatform: "x64"
       Configuration: Release
-      AppxPackageDir: 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\'
-      AppxBundle: Always
-      AppxPackageSigningEnabled: True
-      GenerateAppInstallerFile: True
-      BuildMode: SideloadOnly
-      AppInstUri: 'https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/'
       SigningCertificate: LancelotSoftwareLLC.pfx
       WapProjectDirectory: 'src\MediaFileManager\PackageProject'
       TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
+
 
     # ******************| ASSEMBLY AND MANIFEST VERSIONING |********************* #
     
@@ -87,29 +75,13 @@ jobs:
     
     # Install the .NET Core workload
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v2.1.0
+      uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '6.0'
-    
-    # Add  MsBuild to the PATH: https://github.com/microsoft/setup-msbuild
+        dotnet-version: '7.0'
+
     - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1.1
-      
-    # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
-    - name: DotNet Restore - solution
-      run: dotnet restore ${{ env.SolutionPath }} --configfile ${{ env.NugetConfigPath }} --runtime "${{ env.RID }}"
+      uses: microsoft/setup-msbuild@v1.3.1
 
-    # Restore class library project to populate the obj folder
-    - name: Build the Class library
-      run: msbuild $env:CommonProjectPath /t:Restore /p:Configuration=$env:Configuration /p:RuntimeIdentifier="${{ env.RID }}"
-    
-    # Restore the WPF application
-    - name:  Restore the Wpf application to populate the obj folder
-      run: msbuild ${{ env.WpfProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier="${{ env.RID }}" /p:Platform="${{ env.TargetPlatform}}"
-
-    # In order to generate project.assets.json, we need to use nuget.exe for the wapproject
-    - name: NuGet Restore - Wapp Project (to ensure assets.json is available)
-      run: nuget restore ${{ env.WappProjectPath }} -ConfigFile ${{ env.NugetConfigPath }}
 
     # ************************| BUILD AND DISTRIBUTION |************************ #
 
@@ -123,11 +95,20 @@ jobs:
     
     # Build using SideLoad and AppInstaller instructions (requires code signing)
     - name: Build wapproj for Sideloading
-      run: msbuild ${{ env.SolutionPath }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppInstallerUri=${{ env.AppInstUri }} /p:HoursBetweenUpdateChecks=${{ env.HoursBetweenUpdateChecks }} /p:AppxPackageDir=${{ env.AppxPackageDir }} /p:Platform=${{ env.UwpBundlePlatform }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:PackageCertificateKeyFile=${{ env.SigningCertificate }} /p:PackageCertificatePassword=${{ env.CertPrivateKey }} /p:PackageCertificateThumbprint=${{ env.CertThumbprint }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }}
+      run: msbuild ${{ env.WappProjectPath }} /t:Restore /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppInstallerUri=${{ env.AppInstUri }} /p:HoursBetweenUpdateChecks=${{ env.HoursBetweenUpdateChecks }} /p:AppxPackageDir=${{ env.AppxPackageDir }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:PackageCertificateKeyFile=${{ env.SigningCertificate }} /p:PackageCertificatePassword=${{ env.CertPrivateKey }} /p:PackageCertificateThumbprint=${{ env.CertThumbprint }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:Platform=${{ env.TargetPlatform }} /p:AppxBundlePlatforms="${{ env.BundlePlatforms }}"
       env:
+        WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
         CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
         CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
         HoursBetweenUpdateChecks: 6
+        TargetPlatform: "x64"
+        BundlePlatforms: "x86|x64|ARM|ARM64"
+        AppxBundle: Always
+        AppxPackageDir: 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\'
+        AppxPackageSigningEnabled: True
+        GenerateAppInstallerFile: True
+        BuildMode: SideloadOnly
+        AppInstUri: 'https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/'
 
     # UPLOAD TO AZURE STORAGE BLOB
     # This automatically distributes the sideLoad package, which users can visit the index.html page and run the appinstaller
@@ -149,6 +130,7 @@ jobs:
     # Remove the .pfx now that we're done with code signing
     - name: Remove the .pfx
       run: Remove-Item -path "${{ env.WapProjectDirectory }}\${{ env.SigningCertificate }}"
+
 
     # ************************| GITHUB RELEASE |************************ #
 

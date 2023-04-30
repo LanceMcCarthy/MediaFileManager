@@ -22,13 +22,14 @@
                        FontWeight="SemiBold" />
         </StackPanel>
 
-        <TextBlock Text="Copyright 2017-2021, Lancelot Software"
+        <TextBlock x:Name="CopyrightTextBlock"
+                   Text="Copyright 2017-*, Lancelot Software"
                    HorizontalAlignment="Center"
                    FontSize="14" />
 
         <ucs:AnimatedLogo />
         
-        <TextBlock Text="Media File Manager is a UWP-packaged WPF application for easily naming thousands of files that use a specific naming paradigm."
+        <TextBlock Text="Media File Manager is a MSIX-packaged WPF modern .NET application for easily naming thousands of files that use a specific naming paradigm."
                    TextWrapping="Wrap"
                    HorizontalAlignment="Center"
                    TextAlignment="Center"
