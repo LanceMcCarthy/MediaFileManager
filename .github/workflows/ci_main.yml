@@ -76,15 +76,15 @@ jobs:
       uses: microsoft/setup-msbuild@v1.1
       with:
         msbuild-architecture: x64
-        vs-version: '(17.0,)'
+        #vs-version: '(17.0,)'
 
-    # Restore class library project to populate the obj folder
-    - name: Build the Class library
-      run: msbuild ${{ env.CommonProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier=win
+    # # Restore class library project to populate the obj folder
+    # - name: Build the Class library
+    #   run: msbuild ${{ env.CommonProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier=win
 
-    # Restore WPF project to populate the obj folder (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
-    - name: Build the Wpf application to populate the obj folder
-      run: msbuild ${{ env.WpfProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier=win
+    # # Restore WPF project to populate the obj folder (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
+    # - name: Build the Wpf application to populate the obj folder
+    #   run: msbuild ${{ env.WpfProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier=win
 
     # In order to generate project.assets.json, we need to use nuget.exe for the wapproject
     # - name: NuGet Restore Wapp Project (to ensure assets.json is available)
