@@ -23,6 +23,7 @@ jobs:
       GenerateAppInstallerFile: False
       HoursBetweenUpdateChecks: 6
       AppxPackageDirectory: 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\'
+      ArtifactsFilePath: 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\StoreUploadPackages\ReleasePackages.zip'
       AppInstUri: 'https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/'
       TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
     
@@ -96,7 +97,7 @@ jobs:
       uses: microsoft/setup-msbuild@v1.3.1
 
 
-    # ************************| BUILD AND DISTRIBUTION |************************ #
+    # ************************| BUILD |************************ #
 
     # Build using StoreUpload instructions, no code signing required (Microsoft signs it during certification)
     - name: Build wapproj for Microsoft Store
@@ -105,7 +106,39 @@ jobs:
         CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
         CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
 
-    # Use Store Broker to publish to Microsoft Store
+
+    # ************************| GitHub Release |************************ #
+    
+        # ZIP up the sideload packages for GitHub release using Powershell
+    - name: Create ReleasePackages.zip
+      run: Compress-Archive -Path ${{ env.AppxPackageDirectory }} -DestinationPath ${{ env.ArtifactsFilePath }}
+
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: "v.${{ steps.version-creator.outputs.APP_VERSION }}"
+        release_name: "Media File Manager v.${{ steps.version-creator.outputs.APP_VERSION }}"
+        draft: false
+        prerelease: false
+        body_path: .github\other\releasebody.md
+
+    - name: Uploading Release asset
+      id: upload-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ env.ArtifactsFilePath }}
+        asset_name: ReleasePackages.zip
+        asset_content_type: application/zip
+
+
+    # ************************| Microsoft Store Release |************************ #
+
     - name: Submit to Partner Center (aka DevCenter)
       shell: pwsh
       run: |
@@ -115,5 +148,5 @@ jobs:
       env:
         PartnerCenterClientId: ${{ secrets.PARTNER_CENTER_CLIENT_ID }}
         PartnerCenterClientSecret: ${{ secrets.PARTNER_CENTER_CLIENT_SECRET }}
-        PartnerCenterStoreId: 9PD3JFK7W5MB
+        PartnerCenterStoreId: ${{ secrets.PARTNER_CENTER_STORE_ID }}
         PartnerCenterTenantId: ${{ secrets.PARTNER_CENTER_TENANT_ID }}
