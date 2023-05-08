@@ -17,6 +17,17 @@ jobs:
       Configuration: Release
       SigningCertificate: LancelotSoftwareLLC.pfx
       WapProjectDirectory: 'src\MediaFileManager\PackageProject'
+      WappProjectPath: 'src\MediaFileManager\PackageProject\PackageProject.wapproj'
+      AppxPackageDirectory: 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\'
+      ArtifactsFilePath: 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\SideLoadPackages.zip'
+      AppInstUri: 'https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/'
+      TargetPlatform: "x64"
+      AppxBundlePlatforms: "x86|x64|ARM64"
+      AppxBundleMode: Always
+      AppxBuildMode: SideloadOnly
+      AppxPackageSigningEnabled: True
+      GenerateAppInstallerFile: True
+      HoursBetweenUpdateChecks: 6
       TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
 
     steps:
@@ -95,20 +106,10 @@ jobs:
     
     # Build using SideLoad and AppInstaller instructions (requires code signing)
     - name: Build wapproj for Sideloading
-      run: msbuild ${{ env.WappProjectPath }} /t:Restore /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppInstallerUri=${{ env.AppInstUri }} /p:HoursBetweenUpdateChecks=${{ env.HoursBetweenUpdateChecks }} /p:AppxPackageDir=${{ env.AppxPackageDir }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:PackageCertificateKeyFile=${{ env.SigningCertificate }} /p:PackageCertificatePassword=${{ env.CertPrivateKey }} /p:PackageCertificateThumbprint=${{ env.CertThumbprint }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:Platform=${{ env.TargetPlatform }} /p:AppxBundlePlatforms="${{ env.BundlePlatforms }}"
+      run: msbuild ${{ env.WappProjectPath }} /t:Restore /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppInstallerUri=${{ env.AppInstUri }} /p:HoursBetweenUpdateChecks=${{ env.HoursBetweenUpdateChecks }} /p:AppxPackageDir=${{ env.AppxPackageDirectory }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.AppxBuildMode }} /p:AppxBundle=${{ env.AppxBundleMode }} /p:PackageCertificateKeyFile=${{ env.SigningCertificate }} /p:PackageCertificatePassword=${{ env.CertPrivateKey }} /p:PackageCertificateThumbprint=${{ env.CertThumbprint }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:Platform=${{ env.TargetPlatform }} /p:AppxBundlePlatforms="${{ env.AppxBundlePlatforms }}"
       env:
-        WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
         CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
         CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
-        HoursBetweenUpdateChecks: 6
-        TargetPlatform: "x64"
-        BundlePlatforms: "x86|x64|ARM|ARM64"
-        AppxBundle: Always
-        AppxPackageDir: 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\'
-        AppxPackageSigningEnabled: True
-        GenerateAppInstallerFile: True
-        BuildMode: SideloadOnly
-        AppInstUri: 'https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/'
 
     # UPLOAD TO AZURE STORAGE BLOB
     # This automatically distributes the sideLoad package, which users can visit the index.html page and run the appinstaller
@@ -118,14 +119,14 @@ jobs:
       with:
         connection_string: "${{ secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING }}"
         container_name: general-app-files
-        source_folder: src\MediaFileManager\PackageProject\SideLoadPackages\
+        source_folder: ${{ env.AppxPackageDirectory }}
         destination_folder: Installers/MediaFileManager
         clean_destination_folder: true
         is_recursive: true
 
     # ZIP up the sideload packages for GitHub release using Powershell
     - name: Create SideLoadPackages.zip
-      run: Compress-Archive -Path 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\*' -DestinationPath 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\SideLoadPackages.zip'
+      run: Compress-Archive -Path ${{ env.AppxPackageDirectory }} -DestinationPath ${{ env.ArtifactsFilePath }}
 
     # Remove the .pfx now that we're done with code signing
     - name: Remove the .pfx
@@ -142,7 +143,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: "v.${{ steps.version-creator.outputs.APP_VERSION }}"
-        release_name: "Media File Manager v.${{ steps.version-creator.outputs.APP_VERSION }}"
+        release_name: "Media File Manager (Release Preview) v.${{ steps.version-creator.outputs.APP_VERSION }}"
         draft: false
         prerelease: true
         body_path: .github\other\preview_releasebody.md
@@ -155,6 +156,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: 'D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\SideLoadPackages.zip'
+        asset_path: ${{ env.ArtifactsFilePath }}
         asset_name: SideLoadPackages.zip
         asset_content_type: application/zip

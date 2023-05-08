@@ -13,7 +13,7 @@ jobs:
   build_dev:
     runs-on: windows-latest
     env:
-      TFM: net7.0-windows10.0.22621.0
+      TFM: net7.0-windows10.0.19041.0
       RID: win-x64
       CommonProjectPath: src\MediaFileManager\MediaFileManager.Common\MediaFileManager.Common.csproj
       WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
@@ -51,17 +51,6 @@ jobs:
     - name: Build the Wpf project
       run: msbuild ${{ env.WpfProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier=${{ env.RID }}
 
-    # # In order to generate project.assets.json, we need to use nuget.exe for the wapproject
-    # - name: NuGet Restore Wapp Project (to ensure assets.json is available)
-    #   run: nuget restore ${{ env.UwpProjectPath }} -ConfigFile ${{ env.NugetConfigPath }}
-
-    # skip WAP build in CI-dev workflow
-    # Build the WAP project. BuildMode is set to CI so we do not have to generate actual packages.
+    # We're not building the MSIX package, no need for wasting time and CPU cycles for quick dev build
     # - name: Build the Windows Application Packaging Project (wapproj) 
-    #   run: msbuild ${{ env.UwpProjectPath }} /p:Configuration=${{ env.Configuration }} /p:Platform=${{ env.TargetPlatform }} /p:UapAppxPackageBuildMode=${{ env.BuildMode }} /p:AppxBundle=${{ env.AppxBundle }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }}
-    #   env:
-    #     TargetPlatform: x64
-    #     BuildMode: CI
-    #     AppxBundle: Never
-    #     AppxPackageSigningEnabled: False
-    #     GenerateAppInstallerFile: False
+    #   run: msbuild ${{ env.WappProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:Platform=${{ env.TargetPlatform }} /p:UapAppxPackageBuildMode=${{ env.AppxBuildMode }} /p:AppxBundle=${{ env.AppxBundleMode }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppxBundlePlatforms="${{ env.AppxBundlePlatforms }}"
