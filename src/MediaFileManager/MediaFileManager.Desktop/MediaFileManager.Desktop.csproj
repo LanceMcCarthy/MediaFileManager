@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
@@ -48,7 +48,7 @@
         <PackageReference Include="Telerik.Windows.Themes.Windows8.for.Wpf" Version="2023.1.315" />
         <PackageReference Include="MarkdownSharp" Version="2.0.5" />
         <PackageReference Include="Microsoft.AppCenter.Analytics" Version="5.0.1" />
-        <PackageReference Include="Microsoft.AppCenter.Crashes" Version="5.0.1" />
+        <PackageReference Include="Microsoft.AppCenter.Crashes" Version="5.0.2" />
         <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.2" />
         <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.22621.755" />
         <PackageReference Include="taglib-sharp-netstandard2.0" Version="2.1.0" />
