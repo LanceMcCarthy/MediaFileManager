@@ -2,6 +2,7 @@
 name: Release (sideload)
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - release-sideload

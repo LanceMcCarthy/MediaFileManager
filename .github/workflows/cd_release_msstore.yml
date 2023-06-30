@@ -2,6 +2,7 @@
 name: Release (Microsoft Store)
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - release-microsoft-store
