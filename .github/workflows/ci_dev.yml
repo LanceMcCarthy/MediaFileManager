@@ -34,20 +34,17 @@ jobs:
       id: version-creator
       run: |
         $buildDay = Get-Date -Format "yyyy.Mdd"
-        echo $buildDay
         $runNumber = "$env:GITHUB_RUN_NUMBER"
-        echo $runNumber
         $ver = $buildDay + "." + $runNumber + ".0"
-        echo $ver
-        $keypair = "APP_VERSION=" + $ver
+        $keypair = "APP_VERSION=$ver"
         echo "$keypair"
         echo $keypair >> "$GITHUB_OUTPUT"
         echo $keypair >> "$GITHUB_ENV"
 
     - name: verify outputs and vars
       run: |
-        echo ${{ steps.version-creator.outputs.APP_VERSION }}
-        echo ${{ env.APP_VERSION }}
+        echo "${{ steps.version-creator.outputs.APP_VERSION }}"
+        echo "${{ env.APP_VERSION }}"
 
 
     - name: Checkout
