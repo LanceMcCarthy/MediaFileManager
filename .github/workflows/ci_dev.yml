@@ -41,8 +41,9 @@ jobs:
         $buildDay = Get-Date -Format "yyyy.Mdd"
         $runNumber = "$env:GITHUB_RUN_NUMBER"
         $ver = $buildDay + "." + $runNumber + ".0"
-        echo "APP_VERSION=$ver" >> $GITHUB_OUTPUT
-        echo "APP_VERSION=$ver" >> "$GITHUB_ENV"
+        $keypair = "APP_VERSION=" + $ver
+        echo $keypair >> $GITHUB_OUTPUT
+        echo $keypair >> "$GITHUB_ENV"
 
     - name: verify outputs and vars
       run: |
