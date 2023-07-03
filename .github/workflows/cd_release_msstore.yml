@@ -49,12 +49,13 @@ jobs:
         $runNumber = "$env:GITHUB_RUN_NUMBER"
         $ver = $buildDay + "." + $runNumber + ".0"
         echo "APP_VERSION=$ver" >> $GITHUB_OUTPUT
+        echo "APP_VERSION=$ver" >> "$GITHUB_ENV"
 
     # Update the appxmanifest for Microsoft Store
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "${{ steps.version-creator.outputs.APP_VERSION }}"
+        $manifest.Package.Identity.Version = "${{ env.APP_VERSION }}"
         $manifest.Package.Identity.Name = "${{ env.PackageIdentity_Name }}"
         $manifest.Package.Identity.Publisher = "${{ env.PackageIdentity_Publisher }}"
         $manifest.Package.Properties.DisplayName = "${{ env.PackageProperties_DisplayName }}"
@@ -77,7 +78,7 @@ jobs:
               $verStart = $_.IndexOf("(")
               $verEnd = $_.IndexOf(")", $verStart)
               $origVersion = $_.SubString($verStart+2, $verEnd-$verStart-3)
-              $newVersion = "${{ steps.version-creator.outputs.APP_VERSION }}"
+              $newVersion = "${{ env.APP_VERSION }}"
               write-host "Setting AssemblyFileVersion from $origVersion to $newVersion"
               $_.Replace($origVersion, $newVersion)
             }  else {
@@ -87,7 +88,7 @@ jobs:
           $newfile | Set-Content $assemblyInfoPath -encoding "UTF8"
         }
         $assemblyInfoPath = "src\MediaFileManager\MediaFileManager.Desktop\Properties\AssemblyInfo.cs"
-        SetAssemblyFileVersion $assemblyInfoPath "${{ steps.version-creator.outputs.APP_VERSION }}"
+        SetAssemblyFileVersion $assemblyInfoPath "${{ env.APP_VERSION }}"
 
 
     # ******************| TOOL INSTALL and DEPENDENCY RESTORE |********************* #
@@ -127,8 +128,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: "v.${{ steps.version-creator.outputs.APP_VERSION }}"
-        release_name: "Media File Manager v.${{ steps.version-creator.outputs.APP_VERSION }}"
+        tag_name: "v.${{ env.APP_VERSION }}"
+        release_name: "Media File Manager v.${{ env.APP_VERSION }}"
         draft: false
         prerelease: false
         body_path: .github\other\releasebody.md
@@ -151,7 +152,7 @@ jobs:
       shell: pwsh
       run: |
         $bundlePlatformsSafe = "${{ env.AppxBundlePlatforms }}".Replace("|", "_")
-        $uploadBundlePath = "${{ env.AppxPackageDirectory }}PackageProject_${{ steps.version-creator.outputs.APP_VERSION }}_" + $bundlePlatformsSafe + "_bundle.msixupload"
+        $uploadBundlePath = "${{ env.AppxPackageDirectory }}PackageProject_${{ env.APP_VERSION }}_" + $bundlePlatformsSafe + "_bundle.msixupload"
         ./.scripts/SubmitToMsftStore.ps1 $uploadBundlePath
       env:
         PartnerCenterClientId: ${{ secrets.PARTNER_CENTER_CLIENT_ID }}
