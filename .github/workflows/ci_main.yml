@@ -20,10 +20,10 @@ jobs:
       CommonProjectPath: src\MediaFileManager\MediaFileManager.Common\MediaFileManager.Common.csproj
       WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       SolutionPath: src\MediaFileManager\MediaFileManager.sln
-      RID: win-x64
+      TFM: net7.0-windows10.0.19041.0
       TargetPlatform: "x64"
       AppxBuildMode: CI
-      AppxBundlePlatforms: "x86|x64|ARM64"
+      AppxBundlePlatforms: "x86|x64|arm64"
       AppxBundleMode: Never
       AppxPackageSigningEnabled: False
       GenerateAppInstallerFile: False
@@ -81,15 +81,7 @@ jobs:
 
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: DotNet Restore
-      run: dotnet restore ${{ env.SolutionPath }} --configfile ${{ env.NugetConfigPath }} --runtime ${{ env.RID }}
-
-    # Restore class library project to populate the obj folder
-    - name: Build the Class library
-      run: msbuild ${{ env.CommonProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier=${{ env.RID }}
-
-    # Restore WPF project to populate the obj folder
-    - name: Build the Wpf project
-      run: msbuild ${{ env.WpfProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier=${{ env.RID }}
+      run: dotnet restore ${{ env.WappProjectPath }} --configfile ${{ env.NugetConfigPath }} --runtime ${{ env.TFM }}
 
     # Build the WAP project. BuildMode is set to CI so we do not have to generate actual packages.
     - name: Build the Windows Application Packaging Project (wapproj) 
