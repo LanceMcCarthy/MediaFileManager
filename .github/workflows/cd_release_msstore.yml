@@ -48,7 +48,10 @@ jobs:
         $buildDay = Get-Date -Format "yyyy.Mdd"
         $runNumber = "$env:GITHUB_RUN_NUMBER"
         $ver = $buildDay + "." + $runNumber + ".0"
-        echo "APP_VERSION=$ver" >> $GITHUB_OUTPUT
+        echo "APP_VERSION=$ver"
+        #echo "APP_VERSION=$ver" >> $GITHUB_OUTPUT
+        #echo "APP_VERSION=$ver" >> "$GITHUB_ENV"
+        echo "::set-output name=APP_VERSION::$ver"
 
     # Update the appxmanifest for Microsoft Store
     - name: Update manifest version
