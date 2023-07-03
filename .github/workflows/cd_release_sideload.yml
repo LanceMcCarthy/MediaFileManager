@@ -25,9 +25,9 @@ jobs:
       AppxPackageDirectory: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\
       ArtifactsFilePath: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\SideLoadPackages.zip
       AppInstUri: https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/
+      TFM: net7.0-windows10.0.19041.0
       TargetPlatform: "x64"
-      RID: win-x64
-      AppxBundlePlatforms: "x86|x64|ARM64"
+      AppxBundlePlatforms: "x86|x64|arm64"
       AppxBundleMode: Always
       AppxBuildMode: SideloadOnly
       AppxPackageSigningEnabled: True
@@ -100,15 +100,7 @@ jobs:
 
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: DotNet Restore
-      run: dotnet restore ${{ env.SolutionPath }} --configfile ${{ env.NugetConfigPath }} --runtime ${{ env.RID }}
-
-    # Restore class library project to populate the obj folder
-    - name: Build the Class library
-      run: msbuild ${{ env.CommonProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier=${{ env.RID }}
-
-    # Restore WPF project to populate the obj folder
-    - name: Build the Wpf project
-      run: msbuild ${{ env.WpfProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier=${{ env.RID }}
+      run: dotnet restore ${{ env.WappProjectPath }} --configfile ${{ env.NugetConfigPath }} --runtime ${{ env.TFM }}
 
     # ************************| BUILD AND DISTRIBUTION |************************ #
 
