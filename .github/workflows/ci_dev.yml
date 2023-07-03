@@ -37,14 +37,21 @@ jobs:
         $runNumber = "$env:GITHUB_RUN_NUMBER"
         $ver = $buildDay + "." + $runNumber + ".0"
         echo "APP_VERSION=$ver"
-        #echo "APP_VERSION=$ver" >> "$GITHUB_OUTPUT"
-        echo "APP_VERSION='$ver'" >> "$GITHUB_ENV"
+
+        # doesn't work
+        echo "APP_VERSION_OUTPUT=$ver" >> $GITHUB_OUTPUT
+
+        # doesn't work
+        echo "APP_VERSION_VAR=$ver" >> $GITHUB_ENV
+
+        # works
         echo "::set-output name=APP_VERSION::$ver"
 
     - name: verify outputs and vars
       run: |
-        echo "JobOutput: ${{ steps.version-creator.outputs.APP_VERSION }}"
-        echo "Env Var: ${{ env.APP_VERSION }}"
+        echo "Output (using environment file): ${{ steps.version-creator.outputs.APP_VERSION_OUTPUT }}"
+        echo "Env Var (using environment file): ${{ env.APP_VERSION_VAR }}"
+        echo "Output (using deprecated set-output): ${{ steps.version-creator.outputs.APP_VERSION }}"
 
 
     - name: Checkout
