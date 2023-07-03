@@ -38,8 +38,8 @@ jobs:
         $ver = $buildDay + "." + $runNumber + ".0"
         $keypair = "APP_VERSION=$ver"
         echo "$keypair"
-        echo $keypair >> "$GITHUB_OUTPUT"
-        echo $keypair >> "$GITHUB_ENV"
+        echo $keypair >> $GITHUB_OUTPUT
+        echo $keypair >> $GITHUB_ENV
 
     - name: verify outputs and vars
       run: |
