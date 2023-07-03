@@ -15,13 +15,18 @@ jobs:
     runs-on: windows-latest
     env:
       TFM: net7.0-windows10.0.19041.0
-      RID: win-x64
-      CommonProjectPath: src\MediaFileManager\MediaFileManager.Common\MediaFileManager.Common.csproj
       WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+      WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
       SolutionPath: src\MediaFileManager\MediaFileManager.sln
       UwpProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
+      AppxBundlePlatforms: "x86|x64|arm64"
+      TargetPlatform: "x64"
+      AppxBundleMode: Never
+      AppxBuildMode: CI
       NugetConfigPath: src\nuget.config
       Configuration: Debug
+      AppxPackageSigningEnabled: False
+      GenerateAppInstallerFile: False
       TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
     
     steps:
@@ -30,8 +35,8 @@ jobs:
       with:
         fetch-depth: 0
     
-    # Install the .NET 6 workload
-    - name: Install .NET 6
+    # Install the .NET SDK workload
+    - name: Install .NET
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: '7.0'
@@ -42,16 +47,8 @@ jobs:
 
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: DotNet Restore
-      run: dotnet restore ${{ env.SolutionPath }} --configfile ${{ env.NugetConfigPath }} --runtime ${{ env.RID }}
-
-    # Restore class library project to populate the obj folder
-    - name: Build the Class library
-      run: msbuild ${{ env.CommonProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier=${{ env.RID }}
-
-    # Restore WPF project to populate the obj folder
-    - name: Build the Wpf project
-      run: msbuild ${{ env.WpfProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier=${{ env.RID }}
+      run: dotnet restore ${{ env.WappProjectPath }} --configfile ${{ env.NugetConfigPath }} --runtime ${{ env.TFM }}
 
     # We're not building the MSIX package, no need for wasting time and CPU cycles for quick dev build
-    # - name: Build the Windows Application Packaging Project (wapproj) 
-    #   run: msbuild ${{ env.WappProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:Platform=${{ env.TargetPlatform }} /p:UapAppxPackageBuildMode=${{ env.AppxBuildMode }} /p:AppxBundle=${{ env.AppxBundleMode }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppxBundlePlatforms="${{ env.AppxBundlePlatforms }}"
+    - name: Build the Windows Application Packaging Project (wapproj) 
+      run: msbuild ${{ env.WappProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:Platform=${{ env.TargetPlatform }} /p:UapAppxPackageBuildMode=${{ env.AppxBuildMode }} /p:AppxBundle=${{ env.AppxBundleMode }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppxBundlePlatforms="${{ env.AppxBundlePlatforms }}"
