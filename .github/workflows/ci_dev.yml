@@ -30,27 +30,31 @@ jobs:
       TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
     
     steps:
+    - name: Generate version number with date and workflow Run Number
+      id: version-creator
+      run: |
+        $buildDay = Get-Date -Format "yyyy.Mdd"
+        echo $buildDay
+        $runNumber = "$env:GITHUB_RUN_NUMBER"
+        echo $runNumber
+        $ver = $buildDay + "." + $runNumber + ".0"
+        echo $ver
+        $keypair = "APP_VERSION=" + $ver
+        echo "$keypair"
+        echo $keypair >> "$GITHUB_OUTPUT"
+        echo $keypair >> "$GITHUB_ENV"
+
+    - name: verify outputs and vars
+      run: |
+        echo ${{ steps.version-creator.outputs.APP_VERSION }}
+        echo ${{ env.APP_VERSION }}
+
+
     - name: Checkout
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
     
-    - name: Generate version number with date and workflow Run Number
-      id: version-creator
-      run: |
-        $buildDay = Get-Date -Format "yyyy.Mdd"
-        $runNumber = "$env:GITHUB_RUN_NUMBER"
-        $ver = $buildDay + "." + $runNumber + ".0"
-        $keypair = "APP_VERSION=" + $ver
-        echo $keypair >> $GITHUB_OUTPUT
-        echo $keypair >> "$GITHUB_ENV"
-
-    - name: verify outputs and vars
-      run: |
-        echo "${{ steps.version-creator.outputs.APP_VERSION }}"
-        echo "${{ env.APP_VERSION }}"
-
-
     # Install the .NET SDK workload
     - name: Install .NET
       uses: actions/setup-dotnet@v3
