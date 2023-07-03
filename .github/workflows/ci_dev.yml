@@ -30,8 +30,8 @@ jobs:
       with:
         fetch-depth: 0
     
-    # Install the .NET 6 workload
-    - name: Install .NET 6
+    # Install the .NET SDK workload
+    - name: Install .NET
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: '7.0'

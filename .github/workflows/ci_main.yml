@@ -17,9 +17,13 @@ jobs:
       NugetConfigPath: src\nuget.config
       Configuration: Release
       WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
+      CommonProjectPath: src\MediaFileManager\MediaFileManager.Common\MediaFileManager.Common.csproj
+      WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
+      SolutionPath: src\MediaFileManager\MediaFileManager.sln
+      RID: win-x64
       TargetPlatform: "x64"
       AppxBuildMode: CI
-      AppxBundlePlatforms: "x86|x64|ARM|ARM64"
+      AppxBundlePlatforms: "x86|x64|ARM64"
       AppxBundleMode: Never
       AppxPackageSigningEnabled: False
       GenerateAppInstallerFile: False
@@ -65,7 +69,7 @@ jobs:
         $assemblyInfoPath = "src\MediaFileManager\MediaFileManager.Desktop\Properties\AssemblyInfo.cs"
         SetAssemblyFileVersion $assemblyInfoPath "${{ steps.version-creator.outputs.APP_VERSION }}"
 
-    - name: Install .NET Core
+    - name: Install .NET
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: '7.0'
@@ -74,6 +78,18 @@ jobs:
       uses: microsoft/setup-msbuild@v1.3.1
       with:
         msbuild-architecture: x64
+
+    # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
+    - name: DotNet Restore
+      run: dotnet restore ${{ env.SolutionPath }} --configfile ${{ env.NugetConfigPath }} --runtime ${{ env.RID }}
+
+    # Restore class library project to populate the obj folder
+    - name: Build the Class library
+      run: msbuild ${{ env.CommonProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier=${{ env.RID }}
+
+    # Restore WPF project to populate the obj folder
+    - name: Build the Wpf project
+      run: msbuild ${{ env.WpfProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:RuntimeIdentifier=${{ env.RID }}
 
     # Build the WAP project. BuildMode is set to CI so we do not have to generate actual packages.
     - name: Build the Windows Application Packaging Project (wapproj) 
