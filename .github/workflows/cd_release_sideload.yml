@@ -134,6 +134,7 @@ jobs:
         destination_folder: Installers/MediaFileManager
         clean_destination_folder: true
         is_recursive: true
+        delete_if_exists: true
 
     # ZIP up the sideload packages for GitHub release using Powershell
     - name: Create SideLoadPackages.zip
