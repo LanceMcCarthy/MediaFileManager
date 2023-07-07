@@ -116,12 +116,17 @@ jobs:
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
     
     # Build using SideLoad and AppInstaller instructions (requires code signing)
-    - name: Build wapproj for Sideloading
-      run: msbuild ${{ env.WappProjectPath }} /t:Restore /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppInstallerUri=${{ env.AppInstUri }} /p:HoursBetweenUpdateChecks=${{ env.HoursBetweenUpdateChecks }} /p:AppxPackageDir=${{ env.AppxPackageDirectory }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.AppxBuildMode }} /p:AppxBundle=${{ env.AppxBundleMode }} /p:PackageCertificateKeyFile=${{ env.SigningCertificate }} /p:PackageCertificatePassword=${{ env.CertPrivateKey }} /p:PackageCertificateThumbprint=${{ env.CertThumbprint }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:Platform=${{ env.TargetPlatform }} /p:AppxBundlePlatforms="${{ env.AppxBundlePlatforms }}"
+    - name: Restore wapproj
+      run: msbuild ${{ env.WappProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }}
       env:
         CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
         CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
 
+    - name: Build wapproj for Sideloading
+      run: msbuild ${{ env.WappProjectPath }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppInstallerUri=${{ env.AppInstUri }} /p:HoursBetweenUpdateChecks=${{ env.HoursBetweenUpdateChecks }} /p:AppxPackageDir=${{ env.AppxPackageDirectory }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.AppxBuildMode }} /p:AppxBundle=${{ env.AppxBundleMode }} /p:PackageCertificateKeyFile=${{ env.SigningCertificate }} /p:PackageCertificatePassword=${{ env.CertPrivateKey }} /p:PackageCertificateThumbprint=${{ env.CertThumbprint }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:Platform=${{ env.TargetPlatform }} /p:AppxBundlePlatforms="${{ env.AppxBundlePlatforms }}"
+      env:
+        CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
+        CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
     # UPLOAD TO AZURE STORAGE BLOB
     # This automatically distributes the sideLoad package, which users can visit the index.html page and run the appinstaller
     - name: Uploading appInstaller to Azure Blob
