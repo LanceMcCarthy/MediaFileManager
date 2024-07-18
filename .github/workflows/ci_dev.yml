@@ -14,7 +14,7 @@ jobs:
   build_dev:
     runs-on: windows-latest
     env:
-      TFM: net7.0-windows10.0.19041.0
+      TFM: net8.0-windows10.0.19041.0
       WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
       SolutionPath: src\MediaFileManager\MediaFileManager.sln
@@ -48,19 +48,19 @@ jobs:
     #     echo "Output (using deprecated set-output): ${{ steps.version-creator.outputs.APP_VERSION }}"
 
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     
     # Install the .NET SDK workload
     - name: Install .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '7.0'
+        dotnet-version: '8.0'
 
     # Add msbuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1.3.1
+      uses: microsoft/setup-msbuild@v1.3.2
 
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: DotNet Restore
