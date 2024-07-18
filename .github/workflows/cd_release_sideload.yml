@@ -116,8 +116,11 @@ jobs:
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
     
     # Build using SideLoad and AppInstaller instructions (requires code signing)
+    - name: Restore wapproj
+      run: msbuild ${{ env.WappProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }}
+
     - name: Build wapproj for Sideloading
-      run: msbuild ${{ env.WappProjectPath }} /t:Restore /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppInstallerUri=${{ env.AppInstUri }} /p:HoursBetweenUpdateChecks=${{ env.HoursBetweenUpdateChecks }} /p:AppxPackageDir=${{ env.AppxPackageDirectory }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.AppxBuildMode }} /p:AppxBundle=${{ env.AppxBundleMode }} /p:PackageCertificateKeyFile=${{ env.SigningCertificate }} /p:PackageCertificatePassword=${{ env.CertPrivateKey }} /p:PackageCertificateThumbprint=${{ env.CertThumbprint }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:Platform=${{ env.TargetPlatform }} /p:AppxBundlePlatforms="${{ env.AppxBundlePlatforms }}"
+      run: msbuild ${{ env.WappProjectPath }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppInstallerUri=${{ env.AppInstUri }} /p:HoursBetweenUpdateChecks=${{ env.HoursBetweenUpdateChecks }} /p:AppxPackageDir=${{ env.AppxPackageDirectory }} /p:Configuration=${{ env.Configuration }} /p:UapAppxPackageBuildMode=${{ env.AppxBuildMode }} /p:AppxBundle=${{ env.AppxBundleMode }} /p:PackageCertificateKeyFile=${{ env.SigningCertificate }} /p:PackageCertificatePassword=${{ env.CertPrivateKey }} /p:PackageCertificateThumbprint=${{ env.CertThumbprint }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:Platform=${{ env.TargetPlatform }} /p:AppxBundlePlatforms="${{ env.AppxBundlePlatforms }}"
       env:
         CertPrivateKey: ${{ secrets.LancelotSoftwareCert_Key }}
         CertThumbprint: ${{ secrets.LancelotSoftwareCert_Thumbprint }}
@@ -134,7 +137,6 @@ jobs:
         destination_folder: Installers/MediaFileManager
         clean_destination_folder: true
         is_recursive: true
-        delete_if_exists: true
 
     # ZIP up the sideload packages for GitHub release using Powershell
     - name: Create SideLoadPackages.zip
