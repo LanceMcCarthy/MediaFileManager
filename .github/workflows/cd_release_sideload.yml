@@ -25,7 +25,7 @@ jobs:
       AppxPackageDirectory: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\
       ArtifactsFilePath: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\SideLoadPackages.zip
       AppInstUri: https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/
-      TFM: net8.0-windows10.0.19041.0
+      TFM: net6.0-windows10.0.19041.0
       TargetPlatform: "x64"
       AppxBundlePlatforms: "x86|x64|arm64"
       AppxBundleMode: Always

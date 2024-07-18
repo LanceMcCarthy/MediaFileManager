@@ -21,7 +21,7 @@ jobs:
       SolutionPath: src\MediaFileManager\MediaFileManager.sln
       Configuration: Release
       AppxBundlePlatforms: "x86|x64|arm64"
-      TFM: net8.0-windows10.0.19041.0
+      TFM: net6.0-windows10.0.19041.0
       AppxBundleMode: Always
       AppxBuildMode: StoreUpload
       AppxPackageSigningEnabled: False
