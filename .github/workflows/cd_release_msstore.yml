@@ -16,12 +16,11 @@ jobs:
     env:
       NugetConfigPath: src\nuget.config
       WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
-      CommonProjectPath: src\MediaFileManager\MediaFileManager.Common\MediaFileManager.Common.csproj
       WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       SolutionPath: src\MediaFileManager\MediaFileManager.sln
       Configuration: Release
       AppxBundlePlatforms: "x86|x64|arm64"
-      TFM: net6.0-windows10.0.19041.0
+      TFM: net8.0-windows10.0.19041.0
       AppxBundleMode: Always
       AppxBuildMode: StoreUpload
       AppxPackageSigningEnabled: False
