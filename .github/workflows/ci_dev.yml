@@ -27,7 +27,8 @@ jobs:
       Configuration: Debug
       AppxPackageSigningEnabled: False
       GenerateAppInstallerFile: False
-      TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
+      TELERIK_NUGET_KEY: ${{secrets.TELERIK_NUGET_KEY}}
+      TELERIK_LICENSE: ${{secrets.TELERIK_LICENSE_KEY}}
     
     steps:
     # - name: Generate version number with date and workflow Run Number
@@ -43,9 +44,9 @@ jobs:
 
     # - name: verify outputs and vars
     #   run: |
-    #     echo "Output (using environment file): ${{ steps.version-creator.outputs.APP_VERSION_OUTPUT }}"
-    #     echo "Env Var (using environment file): ${{ env.APP_VERSION_VAR }}"
-    #     echo "Output (using deprecated set-output): ${{ steps.version-creator.outputs.APP_VERSION }}"
+    #     echo "Output (using environment file): ${{steps.version-creator.outputs.APP_VERSION_OUTPUT}}"
+    #     echo "Env Var (using environment file): ${{env.APP_VERSION_VAR}}"
+    #     echo "Output (using deprecated set-output): ${{steps.version-creator.outputs.APP_VERSION}}"
 
     - name: Checkout
       uses: actions/checkout@v4
@@ -64,8 +65,8 @@ jobs:
 
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: DotNet Restore
-      run: dotnet restore ${{ env.WappProjectPath }} --configfile ${{ env.NugetConfigPath }} --runtime ${{ env.TFM }}
+      run: dotnet restore ${{env.WappProjectPath}} --configfile ${{env.NugetConfigPath}} --runtime ${{env.TFM}}
 
     # We're not building the MSIX package, no need for wasting time and CPU cycles for quick dev build
     - name: Build the Windows Application Packaging Project (wapproj) 
-      run: msbuild ${{ env.WappProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:Platform=${{ env.TargetPlatform }} /p:UapAppxPackageBuildMode=${{ env.AppxBuildMode }} /p:AppxBundle=${{ env.AppxBundleMode }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppxBundlePlatforms="${{ env.AppxBundlePlatforms }}"
+      run: msbuild ${{env.WappProjectPath}} /t:Restore /p:Configuration=${{env.Configuration}} /p:Platform=${{env.TargetPlatform}} /p:UapAppxPackageBuildMode=${{env.AppxBuildMode}} /p:AppxBundle=${{env.AppxBundleMode}} /p:AppxPackageSigningEnabled=${{env.AppxPackageSigningEnabled}} /p:GenerateAppInstallerFile=${{env.GenerateAppInstallerFile}} /p:AppxBundlePlatforms="${{env.AppxBundlePlatforms}}"

@@ -33,6 +33,7 @@ jobs:
       GenerateAppInstallerFile: True
       HoursBetweenUpdateChecks: 12
       TELERIK_NUGET_KEY: ${{secrets.TELERIK_NUGET_KEY}}
+      TELERIK_LICENSE: ${{secrets.TELERIK_LICENSE_KEY}}
 
     steps:
     - name: Checkout
@@ -130,7 +131,7 @@ jobs:
       with:
         connection_string: "${{secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING}}"
         container_name: general-app-files
-        source_folder: ${{ env.AppxPackageDirectory }}
+        source_folder: ${{env.AppxPackageDirectory}}
         destination_folder: Installers/MediaFileManager
         clean_destination_folder: true
         is_recursive: true
@@ -164,7 +165,7 @@ jobs:
       id: upload-sideload-asset
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       with:
         upload_url: ${{steps.create_release.outputs.upload_url}}
         asset_path: ${{env.ArtifactsFilePath}}
