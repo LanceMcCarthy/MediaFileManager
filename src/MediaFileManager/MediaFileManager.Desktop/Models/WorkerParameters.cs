@@ -2,14 +2,9 @@
 
 namespace MediaFileManager.Desktop.Models;
 
-public class WorkerParameters
+public class WorkerParameters(List<string> selectedEpisodes)
 {
-    public WorkerParameters(List<string> selectedEpisodes)
-    {
-        SelectedEpisodes = selectedEpisodes;
-    }
-
-    public List<string> SelectedEpisodes { get; }
+    public List<string> SelectedEpisodes { get; } = selectedEpisodes;
 
     public bool IsPreview { get; set; }
 

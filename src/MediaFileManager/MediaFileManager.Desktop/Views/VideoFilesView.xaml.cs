@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MediaFileManager.Desktop.Models;
+using Microsoft.AppCenter.Crashes;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -9,10 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Microsoft.AppCenter.Crashes;
 using Telerik.Windows.Controls;
-using MediaFileManager.Desktop.Helpers;
-using MediaFileManager.Desktop.Models;
 
 namespace MediaFileManager.Desktop.Views;
 
@@ -25,7 +24,6 @@ public partial class VideoFilesView
     private readonly ObservableCollection<string> seasons;
     private readonly ObservableCollection<string> episodes;
     private readonly ObservableCollection<string> renamedEpisodesPreviewList;
-
 
     public VideoFilesView()
     {
