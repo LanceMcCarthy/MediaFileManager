@@ -1,4 +1,6 @@
-﻿namespace MediaFileManager.Common.Models;
+﻿using System.Collections.Generic;
+
+namespace MediaFileManager.Desktop.Models;
 
 public class WorkerParameters
 {

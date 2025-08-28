@@ -1,6 +1,4 @@
-﻿using MediaFileManager.Common.Models;
-using MediaFileManager.Common.Models.Audio;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -8,25 +6,27 @@ using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Media;
 using MediaFileManager.Desktop.Helpers;
+using MediaFileManager.Desktop.Models;
+using MediaFileManager.Desktop.Models.Audio;
 
 namespace MediaFileManager.Desktop.Views
 {
     public partial class MusicFilesView : UserControl
     {
-        private readonly ObservableCollection<Artist> sourceList;
-        private readonly ObservableCollection<OutputMessage> statusMessages;
+        private readonly ObservableCollection<Artist> sourceList = new();
+        private readonly ObservableCollection<OutputMessage> statusMessages = new();
         private int totalSongs;
 
         public MusicFilesView()
         {
-            InitializeComponent(); 
+            InitializeComponent();
         }
 
         private void ScanSourceFolderButton_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             // TODO Validate inputs
             var sourceDirectory = SourceFolderTextBox.Text;
-            
+
             GenerateSourceList(sourceDirectory);
         }
 
@@ -69,7 +69,7 @@ namespace MediaFileManager.Desktop.Views
                 var song = tfile.Tag.Title;
                 var album = tfile.Tag.Album;
                 var artist = tfile.Tag.FirstPerformer;
-                
+
                 // check if artist exists,
                 var matchingArtist = artists.FirstOrDefault(a => a.Name == artist);
 
@@ -268,7 +268,7 @@ namespace MediaFileManager.Desktop.Views
                 var message = new OutputMessage
                 {
                     Message = text,
-                    MessageColor = messageColor.ToSystemDrawingColor()
+                    MessageColor = messageColor
                 };
 
                 statusMessages.Add(message);
@@ -287,7 +287,7 @@ namespace MediaFileManager.Desktop.Views
                     var message = new OutputMessage
                     {
                         Message = text,
-                        MessageColor = messageColor.ToSystemDrawingColor()
+                        MessageColor = messageColor
                     };
 
                     statusMessages.Add(message);

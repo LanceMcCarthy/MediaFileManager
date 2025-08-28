@@ -9,9 +9,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
-using MediaFileManager.Common.Models;
-using MediaFileManager.Common.Models.AudioBook;
 using MediaFileManager.Desktop.Helpers;
+using MediaFileManager.Desktop.Models;
+using MediaFileManager.Desktop.Models.AudioBook;
 using Microsoft.AppCenter.Crashes;
 using Telerik.Windows.Controls;
 
@@ -427,7 +427,7 @@ public partial class AudiobookFilesView
             var message = new OutputMessage
             {
                 Message = text,
-                MessageColor = messageColor.ToSystemDrawingColor()
+                MessageColor = messageColor
             };
 
             statusMessages.Add(message);
@@ -446,7 +446,7 @@ public partial class AudiobookFilesView
                 var message = new OutputMessage
                 {
                     Message = text,
-                    MessageColor = messageColor.ToSystemDrawingColor()
+                    MessageColor = messageColor
                 };
 
                 statusMessages.Add(message);

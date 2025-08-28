@@ -1,4 +1,4 @@
-﻿namespace MediaFileManager.Common.Models.Audio;
+﻿namespace MediaFileManager.Desktop.Models.Audio;
 
 public class Song : BindableBase
 {

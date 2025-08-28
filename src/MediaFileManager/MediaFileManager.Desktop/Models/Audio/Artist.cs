@@ -1,4 +1,6 @@
-﻿namespace MediaFileManager.Common.Models.Audio;
+﻿using System.Collections.Generic;
+
+namespace MediaFileManager.Desktop.Models.Audio;
 
 public class Artist : BindableBase
 {

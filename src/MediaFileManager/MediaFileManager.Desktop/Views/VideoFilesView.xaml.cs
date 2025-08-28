@@ -9,11 +9,10 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Threading;
-using MediaFileManager.Common.Models;
 using Microsoft.AppCenter.Crashes;
 using Telerik.Windows.Controls;
 using MediaFileManager.Desktop.Helpers;
+using MediaFileManager.Desktop.Models;
 
 namespace MediaFileManager.Desktop.Views;
 
@@ -690,7 +689,7 @@ public partial class VideoFilesView
             var message = new OutputMessage
             {
                 Message = text,
-                MessageColor = messageColor.ToSystemDrawingColor()
+                MessageColor = messageColor
             };
 
             statusMessages.Add(message);
@@ -709,7 +708,7 @@ public partial class VideoFilesView
                 var message = new OutputMessage
                 {
                     Message = text,
-                    MessageColor = messageColor.ToSystemDrawingColor()
+                    MessageColor = messageColor
                 };
 
                 statusMessages.Add(message);
@@ -724,5 +723,3 @@ public partial class VideoFilesView
         renumberWorker.Dispose();
     }
 }
-
-
