@@ -1,12 +1,11 @@
 ﻿using System.Windows.Controls;
 
-namespace MediaFileManager.Desktop.UserControls
+namespace MediaFileManager.Desktop.UserControls;
+
+public partial class LoadingControl : UserControl
 {
-    public partial class LoadingControl : UserControl
+    public LoadingControl()
     {
-        public LoadingControl()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

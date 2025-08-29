@@ -17,7 +17,6 @@ jobs:
       NugetConfigPath: src\nuget.config
       Configuration: Release
       SigningCertificate: LancelotSoftwareLLC.pfx
-      CommonProjectPath: src\MediaFileManager\MediaFileManager.Common\MediaFileManager.Common.csproj
       WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       SolutionPath: src\MediaFileManager\MediaFileManager.sln
       WapProjectDirectory: src\MediaFileManager\PackageProject
@@ -25,7 +24,7 @@ jobs:
       AppxPackageDirectory: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\
       ArtifactsFilePath: D:\a\MediaFileManager\MediaFileManager\src\MediaFileManager\PackageProject\SideLoadPackages\SideLoadPackages.zip
       AppInstUri: https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/
-      TFM: net6.0-windows10.0.19041.0
+      TFM: net8.0-windows10.0.19041.0
       TargetPlatform: "x64"
       AppxBundlePlatforms: "x86|x64|arm64"
       AppxBundleMode: Always
@@ -34,6 +33,7 @@ jobs:
       GenerateAppInstallerFile: True
       HoursBetweenUpdateChecks: 12
       TELERIK_NUGET_KEY: ${{secrets.TELERIK_NUGET_KEY}}
+      TELERIK_LICENSE: ${{secrets.TELERIK_LICENSE_KEY}}
 
     steps:
     - name: Checkout
@@ -131,7 +131,7 @@ jobs:
       with:
         connection_string: "${{secrets.AZURE_DVLUP_BLOB_CONNECTION_STRING}}"
         container_name: general-app-files
-        source_folder: ${{ env.AppxPackageDirectory }}
+        source_folder: ${{env.AppxPackageDirectory}}
         destination_folder: Installers/MediaFileManager
         clean_destination_folder: true
         is_recursive: true
@@ -165,7 +165,7 @@ jobs:
       id: upload-sideload-asset
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       with:
         upload_url: ${{steps.create_release.outputs.upload_url}}
         asset_path: ${{env.ArtifactsFilePath}}

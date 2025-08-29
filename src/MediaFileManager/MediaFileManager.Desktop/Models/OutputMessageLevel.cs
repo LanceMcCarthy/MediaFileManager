@@ -1,4 +1,4 @@
-﻿namespace MediaFileManager.Common.Models;
+﻿namespace MediaFileManager.Desktop.Models;
 
 public enum OutputMessageLevel
 {

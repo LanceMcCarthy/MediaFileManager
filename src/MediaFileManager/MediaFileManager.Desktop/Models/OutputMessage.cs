@@ -1,6 +1,6 @@
-﻿using System.Drawing;
+﻿using System.Windows.Media;
 
-namespace MediaFileManager.Common.Models;
+namespace MediaFileManager.Desktop.Models;
 
 public class OutputMessage
 {

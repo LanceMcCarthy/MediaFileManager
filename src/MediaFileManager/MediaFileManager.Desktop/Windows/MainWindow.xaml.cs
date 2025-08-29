@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using MediaFileManager.Desktop.Helpers;
+using MediaFileManager.Desktop.Views;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using MediaFileManager.Desktop.Helpers;
-using MediaFileManager.Desktop.Views;
 
 namespace MediaFileManager.Desktop.Windows;
 
