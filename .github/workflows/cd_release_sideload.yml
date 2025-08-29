@@ -26,7 +26,7 @@ jobs:
       AppInstUri: https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/
       TFM: net8.0-windows10.0.19041.0
       TargetPlatform: "x64"
-      AppxBundlePlatforms: "x86|x64|arm64"
+      AppxBundlePlatforms: "x64|arm64"
       AppxBundleMode: Always
       AppxBuildMode: SideloadOnly
       AppxPackageSigningEnabled: True
@@ -114,13 +114,16 @@ jobs:
         $currentDirectory = Get-Location
         $certificatePath = Join-Path -Path $currentDirectory -ChildPath "src\MediaFileManager\PackageProject" -AdditionalChildPath "${{env.SigningCertificate}}"
         [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
-    
+
+    - name: Restore wpf project
+      run: msbuild ${{env.WpfProjectPath}} /t:Restore /p:Configuration=${{env.Configuration}}
+
     # Build using SideLoad and AppInstaller instructions (requires code signing)
     - name: Restore wapproj
       run: msbuild ${{env.WappProjectPath}} /t:Restore /p:Configuration=${{env.Configuration}}
 
     - name: Build wapproj for Sideloading
-      run: msbuild ${{env.WappProjectPath}} /p:GenerateAppInstallerFile=${{env.GenerateAppInstallerFile}} /p:AppInstallerUri=${{env.AppInstUri}} /p:HoursBetweenUpdateChecks=${{env.HoursBetweenUpdateChecks}} /p:AppxPackageDir=${{env.AppxPackageDirectory}} /p:Configuration=${{env.Configuration}} /p:UapAppxPackageBuildMode=${{env.AppxBuildMode}} /p:AppxBundle=${{env.AppxBundleMode}} /p:PackageCertificateKeyFile=${{env.SigningCertificate}} /p:Platform=${{env.TargetPlatform}} /p:AppxBundlePlatforms="${{env.AppxBundlePlatforms}}" /p:AppxPackageSigningEnabled=${{env.AppxPackageSigningEnabled}} /p:PackageCertificatePassword=${{secrets.LancelotSoftwareCert_Key}} /p:PackageCertificateThumbprint=${{secrets.LancelotSoftwareCert_Thumbprint}}
+      run: msbuild ${{env.SolutionPath}} /p:GenerateAppInstallerFile=${{env.GenerateAppInstallerFile}} /p:AppInstallerUri=${{env.AppInstUri}} /p:HoursBetweenUpdateChecks=${{env.HoursBetweenUpdateChecks}} /p:AppxPackageDir=${{env.AppxPackageDirectory}} /p:Configuration=${{env.Configuration}} /p:UapAppxPackageBuildMode=${{env.AppxBuildMode}} /p:AppxBundle=${{env.AppxBundleMode}} /p:PackageCertificateKeyFile=${{env.SigningCertificate}} /p:Platform=${{env.TargetPlatform}} /p:AppxBundlePlatforms="${{env.AppxBundlePlatforms}}" /p:AppxPackageSigningEnabled=${{env.AppxPackageSigningEnabled}} /p:PackageCertificatePassword=${{secrets.LancelotSoftwareCert_Key}} /p:PackageCertificateThumbprint=${{secrets.LancelotSoftwareCert_Thumbprint}}
 
 
     # UPLOAD TO AZURE STORAGE BLOB
