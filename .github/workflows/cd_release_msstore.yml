@@ -3,12 +3,6 @@ name: Release (Microsoft Store)
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - release-microsoft-store
-    paths:
-      - "src/**/*"
-      - ".github/workflows/cd_release_msstore.yml"
 
 jobs:
   build:
@@ -19,7 +13,7 @@ jobs:
       WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       SolutionPath: src\MediaFileManager\MediaFileManager.sln
       Configuration: Release
-      AppxBundlePlatforms: "x86|x64|arm64"
+      AppxBundlePlatforms: "x64|arm64"
       TFM: net8.0-windows10.0.19041.0
       AppxBundleMode: Always
       AppxBuildMode: StoreUpload
@@ -48,10 +42,7 @@ jobs:
         $buildDay = Get-Date -Format "yyyy.Mdd"
         $runNumber = "$env:GITHUB_RUN_NUMBER"
         $ver = $buildDay + "." + $runNumber + ".0"
-        echo "APP_VERSION=$ver"
-        #echo "APP_VERSION=$ver" >> $GITHUB_OUTPUT
-        #echo "APP_VERSION=$ver" >> "$GITHUB_ENV"
-        echo "::set-output name=APP_VERSION::$ver"
+        echo "APP_VERSION=$ver" >> $env:GITHUB_OUTPUT
 
     # Update the appxmanifest for Microsoft Store
     - name: Update manifest version
@@ -104,6 +95,9 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.3.2
 
+    - name: Restore wpf project
+      run: msbuild ${{env.WpfProjectPath}} /t:Restore /p:Configuration=${{env.Configuration}}
+
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: DotNet Restore
       run: dotnet restore ${{env.WappProjectPath}} --configfile ${{env.NugetConfigPath}} --runtime ${{env.TFM}}
@@ -112,10 +106,25 @@ jobs:
 
     # Build using StoreUpload instructions, no code signing required (Microsoft signs it during certification)
     - name: Build wapproj for Microsoft Store
-      run: msbuild "${{env.WappProjectPath}}" /t:Restore /p:AppxPackageDir="${{env.AppxPackageDirectory}}" /p:AppxBundlePlatforms="${{env.AppxBundlePlatforms}}" /p:Configuration=${{env.Configuration}} /p:UapAppxPackageBuildMode=${{env.AppxBuildMode}} /p:AppxBundle=${{env.AppxBundleMode}}  /p:AppxPackageSigningEnabled=${{env.AppxPackageSigningEnabled}} /p:GenerateAppInstallerFile=${{env.GenerateAppInstallerFile}}
+      run: msbuild "${{env.SolutionPath}}" /t:Restore /p:AppxPackageDir="${{env.AppxPackageDirectory}}" /p:AppxBundlePlatforms="${{env.AppxBundlePlatforms}}" /p:Configuration=${{env.Configuration}} /p:UapAppxPackageBuildMode=${{env.AppxBuildMode}} /p:AppxBundle=${{env.AppxBundleMode}}  /p:AppxPackageSigningEnabled=${{env.AppxPackageSigningEnabled}} /p:GenerateAppInstallerFile=${{env.GenerateAppInstallerFile}}
       env:
         CertPrivateKey: ${{secrets.LancelotSoftwareCert_Key}}
         CertThumbprint: ${{secrets.LancelotSoftwareCert_Thumbprint}}
+
+
+    # ************************| Microsoft Store Release |************************ #
+
+    - name: Submit to Partner Center (aka DevCenter)
+      shell: pwsh
+      run: |
+        $bundlePlatformsSafe = "${{env.AppxBundlePlatforms}}".Replace("|", "_")
+        $uploadBundlePath = "${{env.AppxPackageDirectory}}PackageProject_${{steps.version-creator.outputs.APP_VERSION}}_" + $bundlePlatformsSafe + "_bundle.msixupload"
+        ./.scripts/SubmitToMsftStore.ps1 $uploadBundlePath
+      env:
+        PartnerCenterClientId: ${{secrets.PARTNER_CENTER_CLIENT_ID}}
+        PartnerCenterClientSecret: ${{secrets.PARTNER_CENTER_CLIENT_SECRET}}
+        PartnerCenterStoreId: ${{secrets.PARTNER_CENTER_STORE_ID}}
+        PartnerCenterTenantId: ${{secrets.PARTNER_CENTER_TENANT_ID}}
 
 
     # ************************| GitHub Release |************************ #
@@ -148,16 +157,3 @@ jobs:
         asset_content_type: application/zip
 
 
-    # ************************| Microsoft Store Release |************************ #
-
-    - name: Submit to Partner Center (aka DevCenter)
-      shell: pwsh
-      run: |
-        $bundlePlatformsSafe = "${{env.AppxBundlePlatforms}}".Replace("|", "_")
-        $uploadBundlePath = "${{env.AppxPackageDirectory}}PackageProject_${{steps.version-creator.outputs.APP_VERSION}}_" + $bundlePlatformsSafe + "_bundle.msixupload"
-        ./.scripts/SubmitToMsftStore.ps1 $uploadBundlePath
-      env:
-        PartnerCenterClientId: ${{secrets.PARTNER_CENTER_CLIENT_ID}}
-        PartnerCenterClientSecret: ${{secrets.PARTNER_CENTER_CLIENT_SECRET}}
-        PartnerCenterStoreId: ${{secrets.PARTNER_CENTER_STORE_ID}}
-        PartnerCenterTenantId: ${{secrets.PARTNER_CENTER_TENANT_ID}}

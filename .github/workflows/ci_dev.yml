@@ -1,11 +1,8 @@
-# If you are looking for guidance for your builds, see https://github.com/microsoft/github-actions-for-desktop-apps
 name: Development
 
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main-dev
     paths:
       - "src/**/*"
       - ".github/workflows/ci_dev.yml"
@@ -19,7 +16,7 @@ jobs:
       WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
       SolutionPath: src\MediaFileManager\MediaFileManager.sln
       UwpProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
-      AppxBundlePlatforms: "x86|x64|arm64"
+      AppxBundlePlatforms: "x64|arm64"
       TargetPlatform: "x64"
       AppxBundleMode: Never
       AppxBuildMode: CI
@@ -31,23 +28,6 @@ jobs:
       TELERIK_LICENSE: ${{secrets.TELERIK_LICENSE_KEY}}
     
     steps:
-    # - name: Generate version number with date and workflow Run Number
-    #   id: version-creator
-    #   run: |
-    #     $buildDay = Get-Date -Format "yyyy.Mdd"
-    #     $runNumber = "$env:GITHUB_RUN_NUMBER"
-    #     $ver = $buildDay + "." + $runNumber + ".0"
-    #     echo "APP_VERSION=$ver"
-    #     echo "APP_VERSION_OUTPUT=$ver" >> $GITHUB_OUTPUT
-    #     echo "APP_VERSION_VAR=$ver" >> $GITHUB_ENV
-    #     echo "::set-output name=APP_VERSION::$ver"
-
-    # - name: verify outputs and vars
-    #   run: |
-    #     echo "Output (using environment file): ${{steps.version-creator.outputs.APP_VERSION_OUTPUT}}"
-    #     echo "Env Var (using environment file): ${{env.APP_VERSION_VAR}}"
-    #     echo "Output (using deprecated set-output): ${{steps.version-creator.outputs.APP_VERSION}}"
-
     - name: Checkout
       uses: actions/checkout@v4
       with:

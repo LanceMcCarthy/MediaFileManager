@@ -22,7 +22,7 @@ jobs:
       TFM: net8.0-windows10.0.19041.0
       TargetPlatform: "x64"
       AppxBuildMode: CI
-      AppxBundlePlatforms: "x86|x64|arm64"
+      AppxBundlePlatforms: "x64|arm64"
       AppxBundleMode: Never
       AppxPackageSigningEnabled: False
       GenerateAppInstallerFile: False
@@ -41,7 +41,7 @@ jobs:
         $buildDay = Get-Date -Format "yyyy.Mdd"
         $runNumber = "$env:GITHUB_RUN_NUMBER"
         $ver = $buildDay + "." + $runNumber + ".0"
-        echo "::set-output name=APP_VERSION::$ver"
+        echo "APP_VERSION=$ver" >> $env:GITHUB_OUTPUT
 
     - name: Update manifest version
       run: |
