@@ -17,17 +17,17 @@ jobs:
       NugetConfigPath: src\nuget.config
       Configuration: Release
       WappProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
-      CommonProjectPath: src\MediaFileManager\MediaFileManager.Common\MediaFileManager.Common.csproj
       WpfProjectPath: src\MediaFileManager\MediaFileManager.Desktop\MediaFileManager.Desktop.csproj
       SolutionPath: src\MediaFileManager\MediaFileManager.sln
-      TFM: net6.0-windows10.0.19041.0
+      TFM: net8.0-windows10.0.19041.0
       TargetPlatform: "x64"
       AppxBuildMode: CI
       AppxBundlePlatforms: "x86|x64|arm64"
       AppxBundleMode: Never
       AppxPackageSigningEnabled: False
       GenerateAppInstallerFile: False
-      TELERIK_NUGET_KEY: ${{ secrets.TELERIK_NUGET_KEY }}
+      TELERIK_NUGET_KEY: ${{secrets.TELERIK_NUGET_KEY}}
+      TELERIK_LICENSE: ${{secrets.TELERIK_LICENSE_KEY}}
 
     steps:
     - name: Checkout
@@ -46,7 +46,7 @@ jobs:
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
-        $manifest.Package.Identity.Version = "${{ steps.version-creator.outputs.APP_VERSION }}"
+        $manifest.Package.Identity.Version = "${{steps.version-creator.outputs.APP_VERSION}}"
         $manifest.save("src\MediaFileManager\PackageProject\Package.appxmanifest")
     
     - name: Update WPF Assembly version
@@ -57,7 +57,7 @@ jobs:
               $verStart = $_.IndexOf("(")
               $verEnd = $_.IndexOf(")", $verStart)
               $origVersion = $_.SubString($verStart+2, $verEnd-$verStart-3)
-              $newVersion = "${{ steps.version-creator.outputs.APP_VERSION }}"
+              $newVersion = "${{steps.version-creator.outputs.APP_VERSION}}"
               write-host "Setting AssemblyFileVersion from $origVersion to $newVersion"
               $_.Replace($origVersion, $newVersion)
             }  else {
@@ -67,7 +67,7 @@ jobs:
           $newfile | Set-Content $assemblyInfoPath -encoding "UTF8"
         }
         $assemblyInfoPath = "src\MediaFileManager\MediaFileManager.Desktop\Properties\AssemblyInfo.cs"
-        SetAssemblyFileVersion $assemblyInfoPath "${{ steps.version-creator.outputs.APP_VERSION }}"
+        SetAssemblyFileVersion $assemblyInfoPath "${{steps.version-creator.outputs.APP_VERSION}}"
 
     - name: Install .NET
       uses: actions/setup-dotnet@v4
@@ -81,8 +81,8 @@ jobs:
 
     # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: DotNet Restore
-      run: dotnet restore ${{ env.WappProjectPath }} --configfile ${{ env.NugetConfigPath }} --runtime ${{ env.TFM }}
+      run: dotnet restore ${{env.WappProjectPath}} --configfile ${{env.NugetConfigPath}} --runtime ${{env.TFM}}
 
     # Build the WAP project. BuildMode is set to CI so we do not have to generate actual packages.
     - name: Build the Windows Application Packaging Project (wapproj) 
-      run: msbuild ${{ env.WappProjectPath }} /t:Restore /p:Configuration=${{ env.Configuration }} /p:Platform=${{ env.TargetPlatform }} /p:UapAppxPackageBuildMode=${{ env.AppxBuildMode }} /p:AppxBundle=${{ env.AppxBundleMode }} /p:AppxPackageSigningEnabled=${{ env.AppxPackageSigningEnabled }} /p:GenerateAppInstallerFile=${{ env.GenerateAppInstallerFile }} /p:AppxBundlePlatforms="${{ env.AppxBundlePlatforms }}"
+      run: msbuild ${{env.WappProjectPath}} /t:Restore /p:Configuration=${{env.Configuration}} /p:Platform=${{env.TargetPlatform}} /p:UapAppxPackageBuildMode=${{env.AppxBuildMode}} /p:AppxBundle=${{env.AppxBundleMode}} /p:AppxPackageSigningEnabled=${{env.AppxPackageSigningEnabled}} /p:GenerateAppInstallerFile=${{env.GenerateAppInstallerFile}} /p:AppxBundlePlatforms="${{env.AppxBundlePlatforms}}"

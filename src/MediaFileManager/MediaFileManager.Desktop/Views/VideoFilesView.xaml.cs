@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MediaFileManager.Desktop.Models;
+using Microsoft.AppCenter.Crashes;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -9,11 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Threading;
-using MediaFileManager.Common.Models;
-using Microsoft.AppCenter.Crashes;
 using Telerik.Windows.Controls;
-using MediaFileManager.Desktop.Helpers;
 
 namespace MediaFileManager.Desktop.Views;
 
@@ -26,7 +24,6 @@ public partial class VideoFilesView
     private readonly ObservableCollection<string> seasons;
     private readonly ObservableCollection<string> episodes;
     private readonly ObservableCollection<string> renamedEpisodesPreviewList;
-
 
     public VideoFilesView()
     {
@@ -690,7 +687,7 @@ public partial class VideoFilesView
             var message = new OutputMessage
             {
                 Message = text,
-                MessageColor = messageColor.ToSystemDrawingColor()
+                MessageColor = messageColor
             };
 
             statusMessages.Add(message);
@@ -709,7 +706,7 @@ public partial class VideoFilesView
                 var message = new OutputMessage
                 {
                     Message = text,
-                    MessageColor = messageColor.ToSystemDrawingColor()
+                    MessageColor = messageColor
                 };
 
                 statusMessages.Add(message);
@@ -724,5 +721,3 @@ public partial class VideoFilesView
         renumberWorker.Dispose();
     }
 }
-
-

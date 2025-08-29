@@ -1,4 +1,4 @@
-﻿namespace MediaFileManager.Common.Models.AudioBook;
+﻿namespace MediaFileManager.Desktop.Models.AudioBook;
 
 public class AudiobookFile : BindableBase
 {

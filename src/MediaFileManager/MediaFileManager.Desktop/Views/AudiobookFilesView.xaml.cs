@@ -1,4 +1,7 @@
-﻿using System;
+﻿using MediaFileManager.Desktop.Models;
+using MediaFileManager.Desktop.Models.AudioBook;
+using Microsoft.AppCenter.Crashes;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -8,11 +11,6 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Threading;
-using MediaFileManager.Common.Models;
-using MediaFileManager.Common.Models.AudioBook;
-using MediaFileManager.Desktop.Helpers;
-using Microsoft.AppCenter.Crashes;
 using Telerik.Windows.Controls;
 
 namespace MediaFileManager.Desktop.Views;
@@ -427,7 +425,7 @@ public partial class AudiobookFilesView
             var message = new OutputMessage
             {
                 Message = text,
-                MessageColor = messageColor.ToSystemDrawingColor()
+                MessageColor = messageColor
             };
 
             statusMessages.Add(message);
@@ -446,7 +444,7 @@ public partial class AudiobookFilesView
                 var message = new OutputMessage
                 {
                     Message = text,
-                    MessageColor = messageColor.ToSystemDrawingColor()
+                    MessageColor = messageColor
                 };
 
                 statusMessages.Add(message);

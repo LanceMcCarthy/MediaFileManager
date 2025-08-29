@@ -1,7 +1,9 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace MediaFileManager.Common.Models;
+namespace MediaFileManager.Desktop.Models;
 
 public class BindableBase : INotifyPropertyChanged
 {
