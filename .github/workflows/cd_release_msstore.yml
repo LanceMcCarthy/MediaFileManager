@@ -1,4 +1,3 @@
-# If you are looking for guidance for your builds, see https://github.com/microsoft/github-actions-for-desktop-apps
 name: Release (Microsoft Store)
 
 on:
@@ -15,6 +14,7 @@ jobs:
       Configuration: Release
       AppxBundlePlatforms: "x64|arm64"
       TFM: net8.0-windows10.0.19041.0
+      DOTNET_VERSION: "9.0.x"
       AppxBundleMode: Always
       AppxBuildMode: StoreUpload
       AppxPackageSigningEnabled: False
@@ -32,10 +32,6 @@ jobs:
       with:
         fetch-depth: 0
 
-
-    # ******************| ASSEMBLY AND MANIFEST VERSIONING |********************* #
-    
-    # Create my own version number with a specific format using date. ex: 2020.805.1.0
     - name: Generate version number with date and workflow Run Number
       id: version-creator
       run: |
@@ -44,7 +40,6 @@ jobs:
         $ver = $buildDay + "." + $runNumber + ".0"
         echo "APP_VERSION=$ver" >> $env:GITHUB_OUTPUT
 
-    # Update the appxmanifest for Microsoft Store
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
@@ -83,14 +78,10 @@ jobs:
         $assemblyInfoPath = "src\MediaFileManager\MediaFileManager.Desktop\Properties\AssemblyInfo.cs"
         SetAssemblyFileVersion $assemblyInfoPath "${{steps.version-creator.outputs.APP_VERSION}}"
 
-
-    # ******************| TOOL INSTALL and DEPENDENCY RESTORE |********************* #
-
-    # Install the .NET SDK workload
     - name: Install .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0'
+        dotnet-version: ${{env.DOTNET_VERSION}}
 
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.3.2
@@ -98,41 +89,55 @@ jobs:
     - name: Restore wpf project
       run: msbuild ${{env.WpfProjectPath}} /t:Restore /p:Configuration=${{env.Configuration}}
 
-    # Use dotnet restore command for the solution (see RIDs https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
     - name: DotNet Restore
       run: dotnet restore ${{env.WappProjectPath}} --configfile ${{env.NugetConfigPath}} --runtime ${{env.TFM}}
 
-    # ************************| BUILD |************************ #
 
-    # Build using StoreUpload instructions, no code signing required (Microsoft signs it during certification)
-    - name: Build wapproj for Microsoft Store
-      run: msbuild "${{env.SolutionPath}}" /t:Restore /p:AppxPackageDir="${{env.AppxPackageDirectory}}" /p:AppxBundlePlatforms="${{env.AppxBundlePlatforms}}" /p:Configuration=${{env.Configuration}} /p:UapAppxPackageBuildMode=${{env.AppxBuildMode}} /p:AppxBundle=${{env.AppxBundleMode}}  /p:AppxPackageSigningEnabled=${{env.AppxPackageSigningEnabled}} /p:GenerateAppInstallerFile=${{env.GenerateAppInstallerFile}}
+    # Building for store upload - no code signing with pfx
+    - name: Build msixupload for Microsoft Store
+      run: msbuild "${{env.SolutionPath}}" /p:AppxPackageDir="${{env.AppxPackageDirectory}}" /p:AppxBundlePlatforms="${{env.AppxBundlePlatforms}}" /p:Configuration=${{env.Configuration}} /p:UapAppxPackageBuildMode=${{env.AppxBuildMode}} /p:AppxBundle=${{env.AppxBundleMode}}  /p:AppxPackageSigningEnabled=${{env.AppxPackageSigningEnabled}} /p:GenerateAppInstallerFile=${{env.GenerateAppInstallerFile}}
       env:
         CertPrivateKey: ${{secrets.LancelotSoftwareCert_Key}}
         CertThumbprint: ${{secrets.LancelotSoftwareCert_Thumbprint}}
 
 
-    # ************************| Microsoft Store Release |************************ #
+    # ************************| Microsoft Store Submission |************************ #
 
-    - name: Submit to Partner Center (aka DevCenter)
+    - name: Generate Paths
+      id: generate-paths
       shell: pwsh
       run: |
-        $bundlePlatformsSafe = "${{env.AppxBundlePlatforms}}".Replace("|", "_")
-        $uploadBundlePath = "${{env.AppxPackageDirectory}}PackageProject_${{steps.version-creator.outputs.APP_VERSION}}_" + $bundlePlatformsSafe + "_bundle.msixupload"
-        ./.scripts/SubmitToMsftStore.ps1 $uploadBundlePath
-      env:
-        PartnerCenterClientId: ${{secrets.PARTNER_CENTER_CLIENT_ID}}
-        PartnerCenterClientSecret: ${{secrets.PARTNER_CENTER_CLIENT_SECRET}}
-        PartnerCenterStoreId: ${{secrets.PARTNER_CENTER_STORE_ID}}
-        PartnerCenterTenantId: ${{secrets.PARTNER_CENTER_TENANT_ID}}
+        $platformsWithUnderscore = "${{env.AppxBundlePlatforms}}".Replace("|", "_")
+        $fileName = "PackageProject_${{steps.version-creator.outputs.APP_VERSION}}_" + $platformsWithUnderscore + "_bundle.msix"
+        $uploadBundlePath = "${{env.AppxPackageDirectory}}$fileName
+        echo "BUNDLE_FILENAME=$fileName" >> $env:GITHUB_OUTPUT
+        echo "BUNDLE_PATH=$uploadBundlePath" >> $env:GITHUB_OUTPUT
+
+    - name: Configure Credentials
+      uses: microsoft/store-submission@v1
+      with:
+        command: configure
+        type: win32
+        seller-id: '10113620'
+        product-id: '9PD3JFK7W5MB'
+        tenant-id: '237e90e1-29b9-4350-913d-f3837799f3c0'
+        client-id: '99d69d81-6234-46be-acf5-e7b59e7887af'
+        client-secret: ${{secrets.PARTNER_CENTER_CLIENT_SECRET}}
+
+    - name: Draft Submission
+      uses: microsoft/store-submission@v1
+      with:
+        command: update
+        product-update: '{"packages":[{"packageUrl":"${{steps.generate-paths.outputs.BUNDLE_PATH}}","languages":["en"],"architectures":["X64", "ARM64"],"isSilentInstall":true}]}'
+
+    - name: Publish Submission
+      uses: microsoft/store-submission@v1
+      with:
+        command: publish
 
 
     # ************************| GitHub Release |************************ #
     
-        # ZIP up the sideload packages for GitHub release using Powershell
-    - name: Create ReleasePackages.zip
-      run: Compress-Archive -Path ${{env.AppxPackageDirectory}} -DestinationPath ${{env.ArtifactsFilePath}}
-
     - name: Create GitHub Release
       id: create_release
       uses: actions/create-release@v1
@@ -152,8 +157,6 @@ jobs:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       with:
         upload_url: ${{steps.create_release.outputs.upload_url}}
-        asset_path: ${{env.ArtifactsFilePath}}
-        asset_name: ReleasePackages.zip
+        asset_path: ${{steps.generate-paths.outputs.BUNDLE_PATH}}
+        asset_name: ${{steps.generate-paths.outputs.BUNDLE_FILENAME}}
         asset_content_type: application/zip
-
-

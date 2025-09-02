@@ -21,6 +21,7 @@ jobs:
       SolutionPath: src\MediaFileManager\MediaFileManager.sln
       TFM: net8.0-windows10.0.19041.0
       TargetPlatform: "x64"
+      DOTNET_VERSION: "9.0.x"
       AppxBuildMode: CI
       AppxBundlePlatforms: "x64|arm64"
       AppxBundleMode: Never
@@ -72,7 +73,7 @@ jobs:
     - name: Install .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0'
+        dotnet-version: ${{env.DOTNET_VERSION}}
 
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.3.2

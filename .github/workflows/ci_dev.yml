@@ -18,6 +18,7 @@ jobs:
       UwpProjectPath: src\MediaFileManager\PackageProject\PackageProject.wapproj
       AppxBundlePlatforms: "x64|arm64"
       TargetPlatform: "x64"
+      DOTNET_VERSION: "9.0.x"
       AppxBundleMode: Never
       AppxBuildMode: CI
       NugetConfigPath: src\nuget.config
@@ -37,7 +38,7 @@ jobs:
     - name: Install .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0'
+        dotnet-version: ${{env.DOTNET_VERSION}}
 
     # Add msbuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
