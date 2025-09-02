@@ -25,11 +25,7 @@ jobs:
       AppInstUri: https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/
       TELERIK_NUGET_KEY: ${{secrets.TELERIK_NUGET_KEY}}
       TELERIK_LICENSE: ${{secrets.TELERIK_LICENSE_KEY}}
-      PARTNER_CENTER_TENANT_ID: "bd47e796-3473-4b8a-9101-1f4c0c7af31a"
-      PARTNER_CENTER_CLIENT_ID: "941fd128-cfc5-4cff-84d4-85481b6cff2a"
-      PARTNER_CENTER_SELLER_ID: "10113620"
-      PARTNER_CENTER_PRODUCT_ID: "9PD3JFK7W5MB"
-    
+
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -55,17 +51,6 @@ jobs:
         uploadBundlePath="${{env.AppxPackageDirectory}}${fileName}"
         echo "BUNDLE_FILENAME=$fileName" >> $env:GITHUB_OUTPUT
         echo "BUNDLE_PATH=$uploadBundlePath" >> $env:GITHUB_OUTPUT
-
-    - name: Configure Partner Center Credentials
-      uses: microsoft/store-submission@v1
-      with:
-        command: configure
-        type: win32
-        seller-id: ${{env.PARTNER_CENTER_SELLER_ID}}
-        product-id: ${{env.PARTNER_CENTER_PRODUCT_ID}}
-        tenant-id: ${{env.PARTNER_CENTER_TENANT_ID}}
-        client-id: ${{env.PARTNER_CENTER_CLIENT_ID}}
-        client-secret: ${{secrets.PARTNER_CENTER_CLIENT_SECRET}}
 
     - name: Update manifest version
       run: |
@@ -129,8 +114,22 @@ jobs:
 
 
     # ************************| Microsoft Store Submission |************************ #
-
-
+    # Not a typical Entra app, see https://github.com/marketplace/actions/microsoft-store-publish#obtaining-your-credentials 
+    - name: Configure Partner Center Credentials
+      uses: microsoft/store-submission@v1
+      with:
+        command: configure
+        type: win32
+        seller-id: ${{env.PARTNER_CENTER_SELLER_ID}}
+        product-id: ${{env.PARTNER_CENTER_PRODUCT_ID}}
+        tenant-id: ${{env.PARTNER_CENTER_TENANT_ID}}
+        client-id: ${{env.PARTNER_CENTER_CLIENT_ID}}
+        client-secret: ${{secrets.PARTNER_CENTER_CLIENT_SECRET}}
+      env:
+        PARTNER_CENTER_TENANT_ID: "237e90e1-29b9-4350-913d-f3837799f3c0"
+        PARTNER_CENTER_CLIENT_ID: "99d69d81-6234-46be-acf5-e7b59e7887af"
+        PARTNER_CENTER_SELLER_ID: "10113620"
+        PARTNER_CENTER_PRODUCT_ID: "9PD3JFK7W5MB"
 
     - name: Draft Submission
       uses: microsoft/store-submission@v1
