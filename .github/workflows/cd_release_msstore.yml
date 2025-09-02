@@ -40,6 +40,18 @@ jobs:
         $ver = $buildDay + "." + $runNumber + ".0"
         echo "APP_VERSION=$ver" >> $env:GITHUB_OUTPUT
 
+    - name: Generate Paths
+      id: generate-paths
+      shell: bash
+      run: |
+        platforms="${{env.AppxBundlePlatforms}}"
+        version="${{steps.version-creator.outputs.APP_VERSION}}"
+        platformsWithUnderscore="${platforms//|/_}"
+        fileName="PackageProject_${version}_${platformsWithUnderscore}_bundle.msix"
+        uploadBundlePath="${{env.AppxPackageDirectory}}${fileName}"
+        echo "BUNDLE_FILENAME=$fileName" >> $env:GITHUB_OUTPUT
+        echo "BUNDLE_PATH=$uploadBundlePath" >> $env:GITHUB_OUTPUT
+
     - name: Update manifest version
       run: |
         [xml]$manifest = get-content "src\MediaFileManager\PackageProject\Package.appxmanifest"
@@ -99,17 +111,6 @@ jobs:
       env:
         CertPrivateKey: ${{secrets.LancelotSoftwareCert_Key}}
         CertThumbprint: ${{secrets.LancelotSoftwareCert_Thumbprint}}
-
-    - name: Generate Paths
-      id: generate-paths
-      shell: bash
-      run: |
-        AppxBundlePlatforms="${{env.AppxBundlePlatforms}}"
-        platformsWithUnderscore="${AppxBundlePlatforms//|/_}"
-        fileName = "PackageProject_${{steps.version-creator.outputs.APP_VERSION}}_" + $platformsWithUnderscore + "_bundle.msix"
-        uploadBundlePath = "${{env.AppxPackageDirectory}}$fileName
-        echo "BUNDLE_FILENAME=$fileName" >> $env:GITHUB_OUTPUT
-        echo "BUNDLE_PATH=$uploadBundlePath" >> $env:GITHUB_OUTPUT
 
 
     # ************************| Microsoft Store Submission |************************ #
