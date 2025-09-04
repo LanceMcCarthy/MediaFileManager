@@ -25,6 +25,11 @@ jobs:
       AppInstUri: https://dvlup.blob.core.windows.net/general-app-files/Installers/MediaFileManager/
       TELERIK_NUGET_KEY: ${{secrets.TELERIK_NUGET_KEY}}
       TELERIK_LICENSE: ${{secrets.TELERIK_LICENSE_KEY}}
+      msstore-seller-id: "10113620"
+      msstore-product-id: "9PD3JFK7W5MB"
+      msstore-tenant-id: "237e90e1-29b9-4350-913d-f3837799f3c0"
+      msstore-client-id: "99d69d81-6234-46be-acf5-e7b59e7887af"
+      msstore-subscription-id: "48ab4839-62af-4ab3-afe6-043ea4d7c137"
 
     steps:
     - name: Checkout
@@ -114,30 +119,51 @@ jobs:
 
 
     # ************************| Microsoft Store Submission |************************ #
-    
-    # Not a typical Entra app, see https://github.com/marketplace/actions/microsoft-store-publish#obtaining-your-credentials 
-    - name: Configure Partner Center Credentials
-      uses: microsoft/store-submission@v1
-      with:
-        command: configure
-        type: win32
-        seller-id: "10113620"
-        product-id: "9PD3JFK7W5MB"
-        tenant-id: "237e90e1-29b9-4350-913d-f3837799f3c0"
-        client-id: "99d69d81-6234-46be-acf5-e7b59e7887af"
-        client-secret: ${{secrets.PARTNER_CENTER_CLIENT_SECRET}}
 
-    - name: Draft Submission
-      uses: microsoft/store-submission@v1
+    # Not a typical Entra app, see https://github.com/marketplace/actions/microsoft-store-publish#obtaining-your-credentials 
+    # - name: Configure Partner Center Credentials
+    #   uses: microsoft/store-submission@v1
+    #   with:
+    #     command: configure
+    #     type: win32
+    #     seller-id: ${{env.msstore-seller-id}}
+    #     product-id: ${{env.msstore-product-id}}
+    #     tenant-id: ${{env.msstore-tenant-id}}
+    #     client-id: ${{env.msstore-client-id}}
+    #     client-secret: ${{secrets.PARTNER_CENTER_CLIENT_SECRET}}
+
+    # - name: Draft Submission
+    #   uses: microsoft/store-submission@v1
+    #   with:
+    #     command: update
+    #     product-update: '{"packages":[{"packageUrl":"${{steps.generate-paths.outputs.BUNDLE_PATH}}","languages":["en"],"architectures":["X64", "ARM64"],"isSilentInstall":true}]}'
+
+    # - name: Publish Submission
+    #   uses: microsoft/store-submission@v1
+    #   with:
+    #     command: publish
+
+    - name: Log in to Azure
+      uses: azure/login@v2
       with:
-        command: update
-        product-update: '{"packages":[{"packageUrl":"${{steps.generate-paths.outputs.BUNDLE_PATH}}","languages":["en"],"architectures":["X64", "ARM64"],"isSilentInstall":true}]}'
+        client-id: ${{env.msstore-client-id}}
+        tenant-id: ${{env.msstore-tenant-id}}
+        subscription-id: ${{env.msstore-subscription-id}}
+        enable-AzPSSession: true
+
+    - uses: microsoft/setup-msstore-cli@v1
+
+    - name: Configure Store Credentials
+      run: msstore reconfigure -c ${{env.msstore-client-id}} -t ${{env.msstore-tenant-id}} -s ${{env.msstore-seller-id}} --clientSecret ${{secrets.PARTNER_CENTER_CLIENT_SECRET}}
+      
+    # just to confirm auth is correct
+    - run: msstore apps list
+
+    - name: Update draft submission
+      run: msstore submission update ${{env.msstore-product-id}} '{"packages":[{"packageUrl":"${{steps.generate-paths.outputs.BUNDLE_PATH}}","languages":["en"],"architectures":["X64", "ARM64"],"isSilentInstall":true}]}
 
     - name: Publish Submission
-      uses: microsoft/store-submission@v1
-      with:
-        command: publish
-
+      run: msstore submission publish ${{env.msstore-product-id}}
 
     # ************************| GitHub Release |************************ #
     
