@@ -37,6 +37,12 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        creds: '{"clientId":"${{env.msstore-client-id}}","clientSecret":"${{secrets.PARTNER_CENTER_CLIENT_SECRET}}","subscriptionId":"${{env.msstore-subscription-id}}","tenantId":"${{env.msstore-tenant-id}}"}'
+        enable-AzPSSession: true
+
     - name: Generate version number with date and workflow Run Number
       id: version-creator
       run: |
@@ -143,13 +149,6 @@ jobs:
     #   with:
     #     command: publish
 
-    - name: Log in to Azure
-      uses: azure/login@v2
-      with:
-        client-id: ${{env.msstore-client-id}}
-        tenant-id: ${{env.msstore-tenant-id}}
-        subscription-id: ${{env.msstore-subscription-id}}
-        enable-AzPSSession: true
 
     - uses: microsoft/setup-msstore-cli@v1
 
