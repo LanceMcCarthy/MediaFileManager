@@ -126,31 +126,9 @@ jobs:
 
     # ************************| Microsoft Store Submission |************************ #
 
-    # Not a typical Entra app, see https://github.com/marketplace/actions/microsoft-store-publish#obtaining-your-credentials 
-    # - name: Configure Partner Center Credentials
-    #   uses: microsoft/store-submission@v1
-    #   with:
-    #     command: configure
-    #     type: win32
-    #     seller-id: ${{env.msstore-seller-id}}
-    #     product-id: ${{env.msstore-product-id}}
-    #     tenant-id: ${{env.msstore-tenant-id}}
-    #     client-id: ${{env.msstore-client-id}}
-    #     client-secret: ${{secrets.PARTNER_CENTER_CLIENT_SECRET}}
-
-    # - name: Draft Submission
-    #   uses: microsoft/store-submission@v1
-    #   with:
-    #     command: update
-    #     product-update: '{"packages":[{"packageUrl":"${{steps.generate-paths.outputs.BUNDLE_PATH}}","languages":["en"],"architectures":["X64", "ARM64"],"isSilentInstall":true}]}'
-
-    # - name: Publish Submission
-    #   uses: microsoft/store-submission@v1
-    #   with:
-    #     command: publish
-
-
-    - uses: microsoft/setup-msstore-cli@v1
+    - uses: microsoft/microsoft-store-apppublisher@cc9910a8d59f2eb55cbb83df0a3800cf3b5300e0 # v1.4
+      with:
+        version: v0.4.1
 
     - name: Configure Store Credentials
       run: msstore reconfigure -c ${{env.msstore-client-id}} -t ${{env.msstore-tenant-id}} -s ${{env.msstore-seller-id}} --clientSecret ${{secrets.PARTNER_CENTER_CLIENT_SECRET}}
@@ -159,7 +137,7 @@ jobs:
     - run: msstore apps list
 
     - name: Update draft submission
-      run: msstore submission update ${{env.msstore-product-id}} '{"packages":[{"packageUrl":"${{steps.generate-paths.outputs.BUNDLE_PATH}}","languages":["en"],"architectures":["X64", "ARM64"],"isSilentInstall":true}]}
+      run: msstore submission update ${{env.msstore-product-id}} '{"packages":[{"packageUrl":"${{steps.generate-paths.outputs.BUNDLE_PATH}}","languages":["en"],"architectures":["X64", "ARM64"],"isSilentInstall":true}]}'
 
     - name: Publish Submission
       run: msstore submission publish ${{env.msstore-product-id}}
